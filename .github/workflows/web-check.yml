@@ -43,19 +43,42 @@ jobs:
 
           for LEVEL in 1 2 3 4 5
           do
-            echo "Testing location $LEVEL"
+            echo "=== Testing location $LEVEL ==="
 
-            timeout 25s "$CHROME" \
+            "$CHROME" \
               --headless \
               --no-sandbox \
+              --disable-dev-shm-usage \
               --disable-gpu \
               --window-size=1280,720 \
               --virtual-time-budget=7000 \
+              --run-all-compositor-stages-before-draw \
               --screenshot="screenshots/location-$LEVEL.png" \
-              "http://127.0.0.1:8080/?autotest=1&level=$LEVEL"
+              "http://127.0.0.1:8080/?autotest=1&level=$LEVEL" \
+              >"/tmp/chrome-$LEVEL.log" 2>&1 &
 
-            test -s "screenshots/location-$LEVEL.png"
+            PID=$!
+
+            for i in {1..20}
+            do
+              if [ -s "screenshots/location-$LEVEL.png" ]; then
+                echo "Screenshot for location $LEVEL created"
+                break
+              fi
+              sleep 1
+            done
+
+            kill "$PID" 2>/dev/null || true
+            wait "$PID" 2>/dev/null || true
+
+            if [ ! -s "screenshots/location-$LEVEL.png" ]; then
+              echo "ERROR: Location $LEVEL did not render"
+              cat "/tmp/chrome-$LEVEL.log" || true
+              exit 1
+            fi
           done
+
+          echo "All 5 locations rendered successfully"
 
       - name: Save screenshots
         if: always()
