@@ -119,7 +119,118 @@ jobs:
           fi
 
           echo "ALL 5 LOCATIONS PASSED"
+      - name: Install Playwright
+        run: |
+          npm init -y
+          npm install playwright
+          npx playwright install chromium
 
+      - name: Check JavaScript runtime
+        run: |
+          cat > /tmp/kabanchiki-runtime-test.mjs <<'EOF'
+          import { chromium } from 'playwright';
+
+          const browser = await chromium.launch({
+            headless: true
+          });
+
+          let failed = false;
+
+          for (let level = 1; level <= 5; level++) {
+            console.log(`\n=== JS TEST LOCATION ${level} ===`);
+
+            const page = await browser.newPage({
+              viewport: { width: 1280, height: 720 }
+            });
+
+            const errors = [];
+
+            page.on('pageerror', error => {
+              errors.push(`PAGE ERROR: ${error.message}`);
+            });
+
+            page.on('console', msg => {
+              if (msg.type() === 'error') {
+                errors.push(`CONSOLE ERROR: ${msg.text()}`);
+              }
+            });
+
+            try {
+              await page.goto(
+                `http://127.0.0.1:8080/?autotest=1&level=${level}`,
+                {
+                  waitUntil: 'domcontentloaded',
+                  timeout: 30000
+                }
+              );
+
+              await page.waitForFunction(
+                () => window.__KABANCHIKI_TEST__?.ready === true,
+                null,
+                { timeout: 30000 }
+              );
+
+              // Даём игровому циклу поработать несколько секунд.
+              await page.waitForTimeout(5000);
+
+              const state = await page.evaluate(() => ({
+                ready: window.__KABANCHIKI_TEST__?.ready,
+                level: window.__KABANCHIKI_TEST__?.level,
+                errors: window.__KABANCHIKI_TEST__?.errors || []
+              }));
+
+              console.log('Test state:', JSON.stringify(state));
+
+              if (state.ready !== true) {
+                errors.push('Game did not report ready=true');
+              }
+
+              if (Number(state.level) !== level) {
+                errors.push(
+                  `Wrong level: expected ${level}, got ${state.level}`
+                );
+              }
+
+              if (state.errors.length) {
+                for (const error of state.errors) {
+                  errors.push(`GAME ERROR: ${error}`);
+                }
+              }
+
+              await page.screenshot({
+                path: `screenshots/runtime-location-${level}.png`,
+                fullPage: false
+              });
+
+            } catch (error) {
+              errors.push(`TEST ERROR: ${error.message}`);
+            }
+
+            if (errors.length) {
+              failed = true;
+              console.log(`FAIL: Location ${level}`);
+
+              for (const error of errors) {
+                console.log(error);
+              }
+            } else {
+              console.log(`PASS: Location ${level} - no JS errors`);
+            }
+
+            await page.close();
+          }
+
+          await browser.close();
+
+          if (failed) {
+            console.error('\nKABANCHIKI RUNTIME TEST FAILED');
+            process.exit(1);
+          }
+
+          console.log('\nALL 5 LOCATIONS PASSED RUNTIME TEST');
+          EOF
+
+          node /tmp/kabanchiki-runtime-test.mjs
 
 
       - name: Save screenshots
