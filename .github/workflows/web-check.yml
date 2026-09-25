@@ -1,0 +1,65 @@
+name: Kabanchiki 3D Auto Test
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test-game:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get game
+        uses: actions/checkout@v4
+
+      - name: Check required files
+        run: |
+          test -f index.html
+          test -f src/game.js
+          test -f levels/levels.js
+          echo "Required files OK"
+
+      - name: Check JavaScript syntax
+        run: |
+          cp src/game.js /tmp/game.mjs
+          sed -i '/from.*three.*cdn/d' /tmp/game.mjs || true
+          node --check /tmp/game.mjs
+
+      - name: Start local game server
+        run: |
+          python3 -m http.server 8080 > /tmp/kabanchiki-server.log 2>&1 &
+          sleep 2
+
+      - name: Install Chromium
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y chromium-browser || sudo apt-get install -y chromium
+
+      - name: Test all 5 locations
+        run: |
+          mkdir -p screenshots
+          CHROME=$(command -v chromium-browser || command -v chromium)
+
+          for LEVEL in 1 2 3 4 5
+          do
+            echo "Testing location $LEVEL"
+
+            timeout 25s "$CHROME" \
+              --headless \
+              --no-sandbox \
+              --disable-gpu \
+              --window-size=1280,720 \
+              --virtual-time-budget=7000 \
+              --screenshot="screenshots/location-$LEVEL.png" \
+              "http://127.0.0.1:8080/?autotest=1&level=$LEVEL"
+
+            test -s "screenshots/location-$LEVEL.png"
+          done
+
+      - name: Save screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kabanchiki-test-screenshots
+          path: screenshots/
