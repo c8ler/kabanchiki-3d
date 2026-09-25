@@ -127,7 +127,7 @@ jobs:
 
       - name: Check JavaScript runtime
         run: |
-          cat > /tmp/kabanchiki-runtime-test.mjs <<'EOF'
+          cat > kabanchiki-runtime-test.mjs <<'EOF'
           import { chromium } from 'playwright';
 
           const browser = await chromium.launch({
@@ -230,7 +230,7 @@ jobs:
           console.log('\nALL 5 LOCATIONS PASSED RUNTIME TEST');
           EOF
 
-          node /tmp/kabanchiki-runtime-test.mjs
+          node kabanchiki-runtime-test.mjs
 
 
       - name: Save screenshots
