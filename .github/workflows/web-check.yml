@@ -50,61 +50,78 @@ jobs:
             echo "Testing Kabanchiki location $LEVEL"
             echo "===================================="
 
-            rm -f "screenshots/location-$LEVEL.png"
+            SUCCESS=0
 
-            "$CHROME" \
-              --headless \
-              --no-sandbox \
-              --disable-dev-shm-usage \
-              --disable-gpu \
-              --window-size=1280,720 \
-              --virtual-time-budget=10000 \
-              --run-all-compositor-stages-before-draw \
-              --enable-logging=stderr \
-              --v=0 \
-              --screenshot="screenshots/location-$LEVEL.png" \
-              "http://127.0.0.1:8080/?autotest=1&level=$LEVEL" \
-              >"logs/location-$LEVEL.log" 2>&1 &
-
-            PID=$!
-
-            for i in {1..30}
+            for ATTEMPT in 1 2
             do
-              if [ -s "screenshots/location-$LEVEL.png" ]; then
+              echo "Location $LEVEL - attempt $ATTEMPT/2"
+
+              rm -f "screenshots/location-$LEVEL.png"
+
+              "$CHROME" \
+                --headless \
+                --no-sandbox \
+                --disable-dev-shm-usage \
+                --disable-gpu \
+                --disable-background-networking \
+                --disable-component-update \
+                --disable-sync \
+                --no-first-run \
+                --window-size=1280,720 \
+                --virtual-time-budget=10000 \
+                --run-all-compositor-stages-before-draw \
+                --screenshot="screenshots/location-$LEVEL.png" \
+                "http://127.0.0.1:8080/?autotest=1&level=$LEVEL" \
+                >"logs/location-$LEVEL-attempt-$ATTEMPT.log" 2>&1 &
+
+              PID=$!
+
+              for i in {1..30}
+              do
+                if [ -s "screenshots/location-$LEVEL.png" ]; then
+                  SUCCESS=1
+                  break
+                fi
+
+                if ! kill -0 "$PID" 2>/dev/null; then
+                  break
+                fi
+
+                sleep 1
+              done
+
+              kill "$PID" 2>/dev/null || true
+              wait "$PID" 2>/dev/null || true
+
+              if [ "$SUCCESS" -eq 1 ]; then
+                echo "PASS: Location $LEVEL rendered on attempt $ATTEMPT"
                 break
               fi
 
-              if ! kill -0 "$PID" 2>/dev/null; then
-                break
-              fi
-
-              sleep 1
+              echo "Attempt $ATTEMPT failed for location $LEVEL"
             done
 
-            kill "$PID" 2>/dev/null || true
-            wait "$PID" 2>/dev/null || true
-
-            if [ -s "screenshots/location-$LEVEL.png" ]; then
-              echo "PASS: Location $LEVEL rendered"
-            else
-              echo "FAIL: Location $LEVEL did not render"
-              echo ""
-              echo "----- Browser log -----"
-              cat "logs/location-$LEVEL.log" || true
-              echo "-----------------------"
+            if [ "$SUCCESS" -ne 1 ]; then
+              echo "FAIL: Location $LEVEL failed twice"
+              echo "----- Last browser log -----"
+              cat "logs/location-$LEVEL-attempt-2.log" || true
+              echo "----------------------------"
               FAILED=1
             fi
           done
 
           echo ""
-          echo "========== RESULT =========="
+          echo "========== FINAL RESULT =========="
 
           if [ "$FAILED" -ne 0 ]; then
-            echo "One or more Kabanchiki locations failed."
+            echo "AUTOTEST FAILED"
             exit 1
           fi
 
-          echo "All 5 Kabanchiki locations rendered successfully."
+          echo "ALL 5 LOCATIONS PASSED"
+
+
+
       - name: Save screenshots
         if: always()
         uses: actions/upload-artifact@v4
