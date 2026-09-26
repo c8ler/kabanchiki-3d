@@ -3,7 +3,10 @@ const html=fs.readFileSync('index.html','utf8');
 const game=fs.readFileSync('src/game.js','utf8');
 const levels=fs.readFileSync('levels/levels.js','utf8');
 const checks=[
- ['version v87',/GAME_VERSION='v87'/.test(game)],
+ ['version v89',/GAME_VERSION='v89'/.test(game)],
+ ['mounted defense',/function mountedFriendDefense/.test(game)&&/mountedFriendDefense\(\)/.test(game)&&/Друг отогнал/.test(game)],
+ ['spawn guard',/function repairAndAuditSpawns\(\)/.test(game)&&/__KABANCHIKI_SPAWN_AUDIT__/.test(game)],
+ ['loading version',/loadingVersion/.test(html)&&/>v89</.test(html)],
  ['precise rock footprint',/function rockFootprintHit/.test(game)],
  ['jump clears low rocks',/py>b.max.y/.test(game)],
  ['page audio suspension',/visibilitychange/.test(game)&&/audio.suspend/.test(game)],
