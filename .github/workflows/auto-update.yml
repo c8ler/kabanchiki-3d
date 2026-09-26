@@ -1,35 +1,38 @@
 name: Kabanchiki Auto Update
 
 on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: "Version to publish, for example v71"
-        required: true
-        default: "v71"
-      zip_url:
-        description: "Direct URL to Kabanchiki ZIP"
-        required: true
+  issues:
+    types: [opened]
 
 permissions:
   contents: write
+  issues: write
 
 jobs:
-  update-game:
+  publish:
+    if: startsWith(github.event.issue.title, '[KABANCHIKI-UPDATE]')
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Download new version
+      - name: Decode update package
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
         run: |
-          curl -L --fail "${{ inputs.zip_url }}" -o /tmp/kabanchiki.zip
+          printf '%s' "$ISSUE_BODY" \
+            | sed -n '/KABANCHIKI_BASE64_BEGIN/,/KABANCHIKI_BASE64_END/p' \
+            | sed '1d;$d' \
+            | tr -d '\r\n ' \
+            | base64 --decode > /tmp/kabanchiki.zip
+
+          unzip -t /tmp/kabanchiki.zip
+
+          rm -rf /tmp/kabanchiki
           mkdir -p /tmp/kabanchiki
           unzip -q /tmp/kabanchiki.zip -d /tmp/kabanchiki
 
-      - name: Find game root
-        run: |
           GAME_INDEX=$(find /tmp/kabanchiki -name index.html -type f | head -1)
 
           if [ -z "$GAME_INDEX" ]; then
@@ -40,7 +43,7 @@ jobs:
           GAME_ROOT=$(dirname "$GAME_INDEX")
           echo "GAME_ROOT=$GAME_ROOT" >> "$GITHUB_ENV"
 
-      - name: Install new game
+      - name: Install update
         run: |
           find . -mindepth 1 -maxdepth 1 \
             ! -name '.git' \
@@ -54,23 +57,32 @@ jobs:
           test -f index.html
           test -f src/game.js
 
-          cp src/game.js /tmp/game.mjs
-          sed -i '/from.*three.*;/d' /tmp/game.mjs
+          sed '/^import .*three.*;/d' src/game.js > /tmp/game.mjs
           node --check /tmp/game.mjs
 
-          echo "Game files verified"
+          if [ -f scripts/validate.mjs ]; then
+            node scripts/validate.mjs
+          fi
 
-      - name: Commit new version
+      - name: Commit and publish
         run: |
-          git config user.name "Kabanchiki Bot"
+          git config user.name "Kabanchiki Update Bot"
           git config user.email "actions@users.noreply.github.com"
 
           git add -A
 
           if git diff --cached --quiet; then
-            echo "No changes to publish"
-            exit 0
+            echo "No game changes detected"
+          else
+            VERSION="${{ github.event.issue.title }}"
+            VERSION="${VERSION#'[KABANCHIKI-UPDATE] '}"
+            git commit -m "Publish ${VERSION}"
+            git push
           fi
 
-          git commit -m "Publish ${{ inputs.version }}"
-          git push
+      - name: Close update issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue close "${{ github.event.issue.number }}" \
+            --comment "✅ Kabanchiki update processed by GitHub Actions."
