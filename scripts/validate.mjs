@@ -3,7 +3,7 @@ const html=fs.readFileSync('index.html','utf8');
 const game=fs.readFileSync('src/game.js','utf8');
 const levels=fs.readFileSync('levels/levels.js','utf8');
 const checks=[
- ['version v71',/GAME_VERSION='v71'/.test(game)],
+ ['version v74',/GAME_VERSION='v74'/.test(game)],
  ['external game module',/src="\.\/src\/game\.js"/.test(html)],
  ['no giant inline game module',!/<script type="module">[\s\S]{5000,}<\/script>/.test(html)],
  ['five level metadata entries',(levels.match(/id:/g)||[]).length===5],
@@ -24,7 +24,9 @@ const checks=[
  ['game loop',/function loop\(now\)/.test(game)],
  ['friend portal persistence',/const carriedFriend=friend,carriedFriendHP=friendHP/.test(game)],
  ['difficulty system',/const DIFF_CONFIG=\[/.test(game)],
- ['automation hook',/__KABANCHIKI_TEST__/.test(game)]
+ ['automation hook',/__KABANCHIKI_TEST__/.test(game)],
+ ['global leaderboard config',game.includes('SUPABASE_URL')&&game.includes('submitGlobalResult')&&game.includes('globalStatsHtml')]
 ];
 let bad=0;for(const [n,ok] of checks){console.log(`${ok?'✓':'✗'} ${n}`);if(!ok)bad++}
 if(bad)process.exit(1);
+
