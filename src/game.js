@@ -1,6 +1,6 @@
 window.__gameLoadProgress?.(84);let __loadFinished=false;
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
-const GAME_VERSION='v81';
+const GAME_VERSION='v82';
 const SUPABASE_URL='https://usszaimdbepgexnigiau.supabase.co';
 const SUPABASE_KEY='sb_publishable_x3H1Px6JaDTwpyZy_ARyiA_OqEKLINZ'; const $=id=>document.getElementById(id), mobile=matchMedia('(pointer:coarse)').matches;if(mobile){$('message').textContent='🕹️ Джойстик — идти · проведи пальцем — камера · справа — Прыжок и Кормить';$('introControls').innerHTML='<b>На телефоне:</b> левый джойстик — движение, проведи пальцем по миру — поворот камеры, кнопки «Прыжок» и «Кормить» справа.';$('pauseControls').innerHTML='<b>Телефон:</b> левый джойстик — движение · проведи пальцем по миру — камера · кнопки «Прыжок» и «Кормить» справа.'}else{$('message').textContent='WASD — идти · ПРОБЕЛ — прыжок · E/F — кормить · ESC — меню · V — вид';$('introControls').innerHTML='<b>На ПК:</b> WASD/стрелки — идти, ПРОБЕЛ — прыжок, E или F — бросить еду, V — сменить вид, ESC — пауза. Мышь — горизонтальный поворот камеры.';$('pauseControls').innerHTML='<b>Управление ПК:</b> WASD/стрелки — движение · ПРОБЕЛ — прыжок · E/F — кормить · мышь — камера · V — вид · ESC — меню.'}let started=false,first=false,life=5,rescued=0,win=false,invuln=0,flash=0,camMode=(mobile?0:4),yaw=0,pitch=.18,move={x:0,z:0},jump=false,act=false,keys={},drag=null,stickPointer=null,stick={x:0,y:0};$('camera').textContent=`📷 Вид ${camMode+1}/8`;
 const __autoParams=new URLSearchParams(location.search),__autoTest=__autoParams.get('autotest')==='1';
@@ -540,26 +540,47 @@ function runCollisionAudit(){
  for(const m of treeSolidMeshes){if(!m?.parent||m.parent.visible===false)continue;m.updateWorldMatrix(true,false);const b=new THREE.Box3().setFromObject(m),c=new THREE.Vector3();b.getCenter(c);if(!circleHitsTreeGeometry(c.x,c.z,PLAYER_RADIUS))issues.push(`branch-not-solid:${c.x.toFixed(1)},${c.z.toFixed(1)}`)}
  return {ok:issues.length===0,issues,obstacles:solidCircles().length,preciseRockFootprints:rockPositions.filter(([, , ,m])=>m?.visible!==false).length,treeSolids:treeSolidMeshes.filter(m=>m?.parent&&m.parent.visible!==false).length,level}
 }
-// v80: robot collision test. It drives the real player collision solver around generated scenery.
+// v82: geometry-aware robot collision test. It tests real penetration and escape without
+// treating a neighbouring obstacle or a deliberately walkable low rock as a collision bug.
 function runRobotCollisionTest(){
  const issues=[],samples=[];const ox=boy.position.x,oz=boy.position.z,opy=py,ovy=vy;
- const testMove=(label,sx,sz,mx,mz,expectBlocked)=>{
-  boy.position.x=sx;boy.position.z=sz;py=0;vy=0;const bx=boy.position.x,bz=boy.position.z;
+ const probe=(label,sx,sz,mx,mz,expectBlocked)=>{
+  boy.position.x=sx;boy.position.z=sz;py=0;vy=0;boy.position.y=0;
+  const bx=boy.position.x,bz=boy.position.z,want=Math.hypot(mx,mz);
   movePlayerCollision(mx,mz);const moved=Math.hypot(boy.position.x-bx,boy.position.z-bz);
-  const blocked=moved<Math.hypot(mx,mz)*.35;
-  samples.push({label,moved:+moved.toFixed(3),blocked});
+  const blocked=moved<want*.35;samples.push({label,moved:+moved.toFixed(3),blocked});
   if(expectBlocked&&!blocked)issues.push(`robot-pass-through:${label}`);
   if(!expectBlocked&&blocked)issues.push(`robot-stuck:${label}`);
+  return blocked;
  };
- // Trees: approach real trunk/branch geometry from four directions and verify that retreat is always possible.
- let ti=0;for(const m of treeSolidMeshes){if(ti>=24)break;if(!m?.parent||m.parent.visible===false)continue;m.updateWorldMatrix(true,false);const b=new THREE.Box3().setFromObject(m),c=new THREE.Vector3();b.getCenter(c);const ex=(b.max.x-b.min.x)/2+PLAYER_RADIUS+.12,ez=(b.max.z-b.min.z)/2+PLAYER_RADIUS+.12;
-  for(const [name,sx,sz,mx,mz] of [['E',c.x+ex,c.z,.42,0],['W',c.x-ex,c.z,-.42,0],['S',c.x,c.z+ez,0,.42],['N',c.x,c.z-ez,0,-.42]])testMove(`tree${ti}-${name}`,sx,sz,mx,mz,false);ti++}
- // Rocks: walk into the exact footprint (must stop), walk away (must escape), then jump high enough to clear it.
- let ri=0;for(const [, , ,m] of rockPositions){if(ri>=20)break;if(!m||m.visible===false)continue;m.updateWorldMatrix(true,false);const b=new THREE.Box3().setFromObject(m),c=new THREE.Vector3();b.getCenter(c);const ex=(b.max.x-b.min.x)/2+PLAYER_RADIUS+.10;
-  testMove(`rock${ri}-into`,c.x+ex,c.z,-.55,0,true);testMove(`rock${ri}-away`,c.x+ex,c.z,.42,0,false);
-  boy.position.set(c.x+ex,0,c.z);py=b.max.y+.18;boy.position.y=py;const before=boy.position.x;movePlayerCollision(-.65,0);const jumpMoved=Math.abs(boy.position.x-before);samples.push({label:`rock${ri}-jump`,moved:+jumpMoved.toFixed(3),blocked:jumpMoved<.35});if(jumpMoved<.35)issues.push(`robot-jump-blocked:rock${ri}`);ri++}
+ // Trees/branches: only probe a side when the start point itself is free. First move INTO
+ // the real Box3 (must be blocked), then move OUT from the same free point (must be possible).
+ let ti=0;for(const m of treeSolidMeshes){if(ti>=24)break;if(!m?.parent||m.parent.visible===false)continue;
+  m.updateWorldMatrix(true,false);const b=new THREE.Box3().setFromObject(m),c=new THREE.Vector3();b.getCenter(c);
+  const ex=(b.max.x-b.min.x)/2+PLAYER_RADIUS+.10,ez=(b.max.z-b.min.z)/2+PLAYER_RADIUS+.10;
+  const dirs=[['E',c.x+ex,c.z,-.42,0,.42,0],['W',c.x-ex,c.z,.42,0,-.42,0],['S',c.x,c.z+ez,0,-.42,0,.42],['N',c.x,c.z-ez,0,.42,0,-.42]];
+  for(const [name,sx,sz,inx,inz,outx,outz] of dirs){
+   if(playerWorldBlocked(sx,sz)){samples.push({label:`tree${ti}-${name}-crowded`,moved:0,blocked:true,skipped:true});continue}
+   probe(`tree${ti}-${name}-into`,sx,sz,inx,inz,true);
+   probe(`tree${ti}-${name}-away`,sx,sz,outx,outz,false);
+  }
+  ti++
+ }
+ // Rocks: low rocks whose top is already below Timur's feet are intentionally walkable.
+ // For solid-height rocks test walk-in + escape; every rock is also tested while jumping above its top.
+ let ri=0;for(const [, , ,m] of rockPositions){if(ri>=20)break;if(!m||m.visible===false)continue;
+  m.updateWorldMatrix(true,false);const b=new THREE.Box3().setFromObject(m),c=new THREE.Vector3();b.getCenter(c),ex=(b.max.x-b.min.x)/2+PLAYER_RADIUS+.10;
+  const sx=c.x+ex,sz=c.z,walkSolid=!(0>b.max.y+.04);
+  if(!playerWorldBlocked(sx,sz)){
+   if(walkSolid){probe(`rock${ri}-into`,sx,sz,-.55,0,true);probe(`rock${ri}-away`,sx,sz,.42,0,false)}
+   else samples.push({label:`rock${ri}-low-walkable`,moved:0,blocked:false,skipped:true});
+  }else samples.push({label:`rock${ri}-crowded`,moved:0,blocked:true,skipped:true});
+  boy.position.set(sx,0,sz);py=b.max.y+.18;boy.position.y=py;vy=0;
+  const before=boy.position.x;movePlayerCollision(-.65,0);const jumpMoved=Math.abs(boy.position.x-before),jumpBlocked=jumpMoved<.35;
+  samples.push({label:`rock${ri}-jump`,moved:+jumpMoved.toFixed(3),blocked:jumpBlocked});if(jumpBlocked)issues.push(`robot-jump-blocked:rock${ri}`);ri++
+ }
  boy.position.x=ox;boy.position.z=oz;py=opy;vy=ovy;boy.position.y=py;
- return {ok:issues.length===0,issues,samples: samples.slice(0,160),treesTested:ti,rocksTested:ri,level};
+ return {ok:issues.length===0,issues,samples:samples.slice(0,220),treesTested:ti,rocksTested:ri,level};
 }
 window.__KABANCHIKI_COLLISION_AUDIT__=runCollisionAudit;
 window.__KABANCHIKI_ROBOT_TEST__=runRobotCollisionTest;
