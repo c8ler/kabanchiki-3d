@@ -3,7 +3,7 @@ const html=fs.readFileSync('index.html','utf8');
 const game=fs.readFileSync('src/game.js','utf8');
 const levels=fs.readFileSync('levels/levels.js','utf8');
 const checks=[
- ['version v70',/GAME_VERSION='v70'/.test(game)],
+ ['version v71',/GAME_VERSION='v71'/.test(game)],
  ['external game module',/src="\.\/src\/game\.js"/.test(html)],
  ['no giant inline game module',!/<script type="module">[\s\S]{5000,}<\/script>/.test(html)],
  ['five level metadata entries',(levels.match(/id:/g)||[]).length===5],
@@ -17,6 +17,10 @@ const checks=[
  ['boar remaster',/g\.userData\.visualRemaster=true/.test(game)],
  ['boar tusks and ears',/tuskMat/.test(game)&&/ConeGeometry\(.19,.42,4\)/.test(game)],
  ['animated boar tail',/tailPivot\.rotation\.y/.test(game)],
+ ['lake remaster layer',/const lakeVisual=new THREE.Group/.test(game)],
+ ['animated lake ripples',/rippleA\.rotation\.z/.test(game)&&/waterRippleMatA\.opacity/.test(game)],
+ ['lake lilies and reeds',/lilyMat/.test(game)&&/reedTipMat/.test(game)],
+ ['lake sun glint',/const lakeGlint=new THREE.Mesh/.test(game)],
  ['game loop',/function loop\(now\)/.test(game)],
  ['friend portal persistence',/const carriedFriend=friend,carriedFriendHP=friendHP/.test(game)],
  ['difficulty system',/const DIFF_CONFIG=\[/.test(game)],
