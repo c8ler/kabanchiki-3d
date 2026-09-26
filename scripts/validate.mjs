@@ -3,7 +3,7 @@ const html=fs.readFileSync('index.html','utf8');
 const game=fs.readFileSync('src/game.js','utf8');
 const levels=fs.readFileSync('levels/levels.js','utf8');
 const checks=[
- ['version v80',/GAME_VERSION='v80'/.test(game)],
+ ['version v81',/GAME_VERSION='v81'/.test(game)],
  ['precise rock footprint',/function rockFootprintHit/.test(game)],
  ['jump clears low rocks',/py>b.max.y/.test(game)],
  ['page audio suspension',/visibilitychange/.test(game)&&/audio.suspend/.test(game)],
@@ -11,6 +11,7 @@ const checks=[
  ['tree apples',/function appleTreeSpot\(\)/.test(game)&&/py>\.58/.test(game)],
  ['unified collision solver',/function movePlayerCollision\(mx,mz\)/.test(game)&&/function depenetratePlayer\(\)/.test(game)],
  ['collision audit',/function runCollisionAudit\(\)/.test(game)&&/__KABANCHIKI_COLLISION_AUDIT__/.test(game)],
+ ['robot collision audit',/function runRobotCollisionTest\(\)/.test(game)&&/__KABANCHIKI_ROBOT_TEST__/.test(game)&&/robotAudit/.test(game)],
  ['branches use geometry collision',/circleHitsTreeGeometry/.test(game)&&/treeSolidMeshes/.test(game)],
  ['external game module',/src="\.\/src\/game\.js"/.test(html)],
  ['no giant inline game module',!/<script type="module">[\s\S]{5000,}<\/script>/.test(html)],
