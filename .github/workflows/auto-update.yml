@@ -1,42 +1,43 @@
 name: Kabanchiki Auto Update
 
 on:
-  issues:
-    types: [opened]
+  workflow_dispatch:
 
 permissions:
   contents: write
-  issues: write
 
 jobs:
   publish:
-    if: startsWith(github.event.issue.title, '[KABANCHIKI-UPDATE]')
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Decode update package
-        env:
-          ISSUE_BODY: ${{ github.event.issue.body }}
+      - name: Find update ZIP
         run: |
-          printf '%s' "$ISSUE_BODY" \
-            | sed -n '/KABANCHIKI_BASE64_BEGIN/,/KABANCHIKI_BASE64_END/p' \
-            | sed '1d;$d' \
-            | tr -d '\r\n ' \
-            | base64 --decode > /tmp/kabanchiki.zip
+          ZIP=$(find . -maxdepth 1 -type f -name 'Kabanchiki_3D_*.zip' | sort | tail -1)
 
-          unzip -t /tmp/kabanchiki.zip
+          if [ -z "$ZIP" ]; then
+            echo "ERROR: update ZIP not found"
+            exit 1
+          fi
 
+          echo "ZIP=$ZIP" >> "$GITHUB_ENV"
+          echo "Found update: $ZIP"
+
+      - name: Unpack update
+        run: |
           rm -rf /tmp/kabanchiki
           mkdir -p /tmp/kabanchiki
-          unzip -q /tmp/kabanchiki.zip -d /tmp/kabanchiki
+
+          unzip -t "$ZIP"
+          unzip -q "$ZIP" -d /tmp/kabanchiki
 
           GAME_INDEX=$(find /tmp/kabanchiki -name index.html -type f | head -1)
 
           if [ -z "$GAME_INDEX" ]; then
-            echo "ERROR: index.html not found"
+            echo "ERROR: index.html not found in ZIP"
             exit 1
           fi
 
@@ -48,6 +49,7 @@ jobs:
           find . -mindepth 1 -maxdepth 1 \
             ! -name '.git' \
             ! -name '.github' \
+            ! -name 'Kabanchiki_3D_*.zip' \
             -exec rm -rf {} +
 
           cp -a "$GAME_ROOT"/. .
@@ -64,7 +66,11 @@ jobs:
             node scripts/validate.mjs
           fi
 
-      - name: Commit and publish
+      - name: Remove update ZIP
+        run: |
+          rm -f ./Kabanchiki_3D_*.zip
+
+      - name: Commit v71
         run: |
           git config user.name "Kabanchiki Update Bot"
           git config user.email "actions@users.noreply.github.com"
@@ -72,17 +78,9 @@ jobs:
           git add -A
 
           if git diff --cached --quiet; then
-            echo "No game changes detected"
-          else
-            VERSION="${{ github.event.issue.title }}"
-            VERSION="${VERSION#'[KABANCHIKI-UPDATE] '}"
-            git commit -m "Publish ${VERSION}"
-            git push
+            echo "No changes detected"
+            exit 0
           fi
 
-      - name: Close update issue
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh issue close "${{ github.event.issue.number }}" \
-            --comment "✅ Kabanchiki update processed by GitHub Actions."
+          git commit -m "Publish Kabanchiki 3D v71 Lake Remaster"
+          git push
