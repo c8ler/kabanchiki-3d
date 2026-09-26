@@ -3,7 +3,8 @@ const html=fs.readFileSync('index.html','utf8');
 const game=fs.readFileSync('src/game.js','utf8');
 const levels=fs.readFileSync('levels/levels.js','utf8');
 const checks=[
- ['version v75',/GAME_VERSION='v75'/.test(game)],
+ ['version v76',/GAME_VERSION='v76'/.test(game)],
+ ['tree apples',/function appleTreeSpot\(\)/.test(game)&&/py>\.58/.test(game)],
  ['external game module',/src="\.\/src\/game\.js"/.test(html)],
  ['no giant inline game module',!/<script type="module">[\s\S]{5000,}<\/script>/.test(html)],
  ['five level metadata entries',(levels.match(/id:/g)||[]).length===5],
