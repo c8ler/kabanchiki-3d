@@ -13,17 +13,12 @@ jobs:
       - name: Get game
         uses: actions/checkout@v4
 
-      - name: Check required files
-        run: |
-          test -f index.html
-          test -f src/game.js
-          test -f levels/levels.js
-          echo "Required files OK"
+      - name: Static game checks
+        run: node scripts/validate.mjs
 
       - name: Check JavaScript syntax
         run: |
-          cp src/game.js /tmp/game.mjs
-          sed -i '/from.*three.*cdn/d' /tmp/game.mjs || true
+          sed '/from.*three.*cdn/d' src/game.js > /tmp/game.mjs
           node --check /tmp/game.mjs
 
       - name: Start local game server
@@ -31,212 +26,202 @@ jobs:
           python3 -m http.server 8080 > /tmp/kabanchiki-server.log 2>&1 &
           sleep 2
 
-      - name: Install Chromium
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y chromium-browser || sudo apt-get install -y chromium
-
-      - name: Test all 5 locations
-        continue-on-error: true
-        run: |
-          mkdir -p screenshots logs
-          CHROME=$(command -v chromium-browser || command -v chromium)
-
-          FAILED=0
-
-          for LEVEL in 1 2 3 4 5
-          do
-            echo ""
-            echo "===================================="
-            echo "Testing Kabanchiki location $LEVEL"
-            echo "===================================="
-
-            SUCCESS=0
-
-            for ATTEMPT in 1 2
-            do
-              echo "Location $LEVEL - attempt $ATTEMPT/2"
-
-              rm -f "screenshots/location-$LEVEL.png"
-
-              "$CHROME" \
-                --headless \
-                --no-sandbox \
-                --disable-dev-shm-usage \
-                --disable-gpu \
-                --disable-background-networking \
-                --disable-component-update \
-                --disable-sync \
-                --no-first-run \
-                --window-size=1280,720 \
-                --virtual-time-budget=10000 \
-                --run-all-compositor-stages-before-draw \
-                --screenshot="screenshots/location-$LEVEL.png" \
-                "http://127.0.0.1:8080/?autotest=1&level=$LEVEL" \
-                >"logs/location-$LEVEL-attempt-$ATTEMPT.log" 2>&1 &
-
-              PID=$!
-
-              for i in {1..30}
-              do
-                if [ -s "screenshots/location-$LEVEL.png" ]; then
-                  SUCCESS=1
-                  break
-                fi
-
-                if ! kill -0 "$PID" 2>/dev/null; then
-                  break
-                fi
-
-                sleep 1
-              done
-
-              kill "$PID" 2>/dev/null || true
-              wait "$PID" 2>/dev/null || true
-
-              if [ "$SUCCESS" -eq 1 ]; then
-                echo "PASS: Location $LEVEL rendered on attempt $ATTEMPT"
-                break
-              fi
-
-              echo "Attempt $ATTEMPT failed for location $LEVEL"
-            done
-
-            if [ "$SUCCESS" -ne 1 ]; then
-              echo "FAIL: Location $LEVEL failed twice"
-              echo "----- Last browser log -----"
-              cat "logs/location-$LEVEL-attempt-2.log" || true
-              echo "----------------------------"
-              FAILED=1
-            fi
-          done
-
-          echo ""
-          echo "========== FINAL RESULT =========="
-
-          if [ "$FAILED" -ne 0 ]; then
-            echo "AUTOTEST FAILED"
-            exit 1
-          fi
-
-          echo "ALL 5 LOCATIONS PASSED"
       - name: Install Playwright
         run: |
           npm init -y
           npm install playwright
-          npx playwright install chromium
+          npx playwright install --with-deps chromium
 
-      - name: Check JavaScript runtime
+      - name: Runtime + collision robot on all 5 locations
         run: |
+          mkdir -p screenshots logs
+
           cat > kabanchiki-runtime-test.mjs <<'EOF'
           import { chromium } from 'playwright';
+          import fs from 'node:fs';
 
-          const browser = await chromium.launch({
-            headless: true
-          });
-
+          const browser = await chromium.launch({headless:true});
           let failed = false;
+          const report = [];
 
-          for (let level = 1; level <= 5; level++) {
-            console.log(`\n=== JS TEST LOCATION ${level} ===`);
+          for(let level=1; level<=5; level++){
+            console.log(`\n========== LOCATION ${level} ==========`);
 
             const page = await browser.newPage({
-              viewport: { width: 1280, height: 720 }
+              viewport:{width:1280,height:720}
             });
 
             const errors = [];
 
-            page.on('pageerror', error => {
-              errors.push(`PAGE ERROR: ${error.message}`);
+            page.on('pageerror', e =>
+              errors.push(`PAGE ERROR: ${e.message}`)
+            );
+
+            page.on('console', m => {
+              if(m.type()==='error')
+                errors.push(`CONSOLE ERROR: ${m.text()}`);
             });
 
-            page.on('console', msg => {
-              if (msg.type() === 'error') {
-                errors.push(`CONSOLE ERROR: ${msg.text()}`);
-              }
-            });
+            let state = null;
 
             try {
               await page.goto(
                 `http://127.0.0.1:8080/?autotest=1&level=${level}`,
                 {
-                  waitUntil: 'domcontentloaded',
-                  timeout: 30000
+                  waitUntil:'domcontentloaded',
+                  timeout:30000
                 }
               );
 
               await page.waitForFunction(
                 () => window.__KABANCHIKI_TEST__?.ready === true,
                 null,
-                { timeout: 30000 }
+                {timeout:30000}
               );
 
-              // Даём игровому циклу поработать несколько секунд.
-              await page.waitForTimeout(5000);
+              await page.waitForTimeout(2500);
 
-              const state = await page.evaluate(() => ({
-                ready: window.__KABANCHIKI_TEST__?.ready,
-                level: window.__KABANCHIKI_TEST__?.level,
-                errors: window.__KABANCHIKI_TEST__?.errors || []
-              }));
+              state = await page.evaluate(() =>
+                structuredClone(window.__KABANCHIKI_TEST__)
+              );
 
-              console.log('Test state:', JSON.stringify(state));
+              const c = state.collisionAudit || {
+                ok:false,
+                issues:['missing-collision-audit']
+              };
 
-              if (state.ready !== true) {
-                errors.push('Game did not report ready=true');
+              const r = state.robotAudit || {
+                ok:false,
+                issues:['missing-robot-audit'],
+                samples:[]
+              };
+
+              console.log(
+                `VERSION: ${state.version} | READY: ${state.ready}`
+              );
+
+              console.log(
+                `COLLISION AUDIT: ${c.ok?'PASS':'FAIL'} | ` +
+                `obstacles=${c.obstacles??'?'} ` +
+                `rocks=${c.preciseRockFootprints??'?'} ` +
+                `treeSolids=${c.treeSolids??'?'}`
+              );
+
+              for(const x of c.issues || [])
+                console.log(`  COLLISION FAIL: ${x}`);
+
+              console.log(
+                `ROBOT AUDIT: ${r.ok?'PASS':'FAIL'} | ` +
+                `trees=${r.treesTested??'?'} ` +
+                `rocks=${r.rocksTested??'?'}`
+              );
+
+              for(const x of r.issues || [])
+                console.log(`  ROBOT FAIL: ${x}`);
+
+              const groups = {
+                tree:[],
+                rockInto:[],
+                rockAway:[],
+                rockJump:[]
+              };
+
+              for(const s of r.samples || []){
+                if(s.label.startsWith('tree'))
+                  groups.tree.push(s);
+                else if(s.label.includes('-into'))
+                  groups.rockInto.push(s);
+                else if(s.label.includes('-away'))
+                  groups.rockAway.push(s);
+                else if(s.label.includes('-jump'))
+                  groups.rockJump.push(s);
               }
 
-              if (Number(state.level) !== level) {
-                errors.push(
-                  `Wrong level: expected ${level}, got ${state.level}`
+              const line = (name,a) =>
+                console.log(
+                  `${name}: ${a.length} probes | ` +
+                  `blocked=${a.filter(x=>x.blocked).length} | ` +
+                  `free=${a.filter(x=>!x.blocked).length}`
                 );
-              }
 
-              if (state.errors.length) {
-                for (const error of state.errors) {
-                  errors.push(`GAME ERROR: ${error}`);
-                }
-              }
+              line('TREE ESCAPE', groups.tree);
+              line('ROCK WALK-IN', groups.rockInto);
+              line('ROCK ESCAPE', groups.rockAway);
+              line('ROCK JUMP', groups.rockJump);
+
+              if(state.ready !== true)
+                errors.push('ready=false');
+
+              if(Number(state.level) !== level)
+                errors.push(`wrong-level:${state.level}`);
+
+              if(!c.ok)
+                for(const x of c.issues || [])
+                  errors.push(`COLLISION:${x}`);
+
+              if(!r.ok)
+                for(const x of r.issues || [])
+                  errors.push(`ROBOT:${x}`);
+
+              for(const x of state.errors || [])
+                if(!errors.some(e => e.endsWith(x)))
+                  errors.push(`GAME:${x}`);
 
               await page.screenshot({
-                path: `screenshots/runtime-location-${level}.png`,
-                fullPage: false
+                path:`screenshots/runtime-location-${level}.png`
               });
 
-            } catch (error) {
-              errors.push(`TEST ERROR: ${error.message}`);
+            } catch(e) {
+              errors.push(`TEST:${e.message}`);
             }
 
-            if (errors.length) {
+            const ok = errors.length === 0;
+
+            if(!ok)
               failed = true;
-              console.log(`FAIL: Location ${level}`);
 
-              for (const error of errors) {
-                console.log(error);
-              }
-            } else {
-              console.log(`PASS: Location ${level} - no JS errors`);
-            }
+            console.log(`${ok?'PASS':'FAIL'} LOCATION ${level}`);
+
+            for(const e of errors)
+              console.log(`  ${e}`);
+
+            report.push({
+              level,
+              ok,
+              errors,
+              state
+            });
+
+            fs.writeFileSync(
+              `logs/location-${level}.json`,
+              JSON.stringify(report.at(-1),null,2)
+            );
 
             await page.close();
           }
 
+          fs.writeFileSync(
+            'logs/summary.json',
+            JSON.stringify(report,null,2)
+          );
+
           await browser.close();
 
-          if (failed) {
-            console.error('\nKABANCHIKI RUNTIME TEST FAILED');
-            process.exit(1);
-          }
+          console.log(
+            `\n========== FINAL: ${failed?'FAIL':'PASS'} ==========`
+          );
 
-          console.log('\nALL 5 LOCATIONS PASSED RUNTIME TEST');
+          if(failed)
+            process.exit(1);
           EOF
 
           node kabanchiki-runtime-test.mjs
 
-
-      - name: Save screenshots
+      - name: Save screenshots and audit logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: kabanchiki-test-screenshots
-          path: screenshots/
+          name: kabanchiki-v81-test-report
+          path: |
+            screenshots/
+            logs/
