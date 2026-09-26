@@ -1,6 +1,6 @@
 window.__gameLoadProgress?.(84);let __loadFinished=false;
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
-const GAME_VERSION='v84';
+const GAME_VERSION='v85';
 const SUPABASE_URL='https://usszaimdbepgexnigiau.supabase.co';
 const SUPABASE_KEY='sb_publishable_x3H1Px6JaDTwpyZy_ARyiA_OqEKLINZ'; const $=id=>document.getElementById(id), mobile=matchMedia('(pointer:coarse)').matches;if(mobile){$('message').textContent='🕹️ Джойстик — идти · проведи пальцем — камера · справа — Прыжок и Кормить';$('introControls').innerHTML='<b>На телефоне:</b> левый джойстик — движение, проведи пальцем по миру — поворот камеры, кнопки «Прыжок» и «Кормить» справа.';$('pauseControls').innerHTML='<b>Телефон:</b> левый джойстик — движение · проведи пальцем по миру — камера · кнопки «Прыжок» и «Кормить» справа.'}else{$('message').textContent='WASD — идти · ПРОБЕЛ — прыжок · E/F — кормить · ESC — меню · V — вид';$('introControls').innerHTML='<b>На ПК:</b> WASD/стрелки — идти, ПРОБЕЛ — прыжок, E или F — бросить еду, V — сменить вид, ESC — пауза. Мышь — горизонтальный поворот камеры.';$('pauseControls').innerHTML='<b>Управление ПК:</b> WASD/стрелки — движение · ПРОБЕЛ — прыжок · E/F — кормить · мышь — камера · V — вид · ESC — меню.'}let started=false,first=false,life=5,rescued=0,win=false,invuln=0,flash=0,camMode=(mobile?0:4),yaw=0,pitch=.18,move={x:0,z:0},jump=false,act=false,keys={},drag=null,stickPointer=null,stick={x:0,y:0};$('camera').textContent=`📷 Вид ${camMode+1}/8`;
 const __autoParams=new URLSearchParams(location.search),__autoTest=__autoParams.get('autotest')==='1';
@@ -540,7 +540,7 @@ function runCollisionAudit(){
  for(const m of treeSolidMeshes){if(!m?.parent||m.parent.visible===false)continue;m.updateWorldMatrix(true,false);const b=new THREE.Box3().setFromObject(m),c=new THREE.Vector3();b.getCenter(c);if(!circleHitsTreeGeometry(c.x,c.z,PLAYER_RADIUS))issues.push(`branch-not-solid:${c.x.toFixed(1)},${c.z.toFixed(1)}`)}
  return {ok:issues.length===0,issues,obstacles:solidCircles().length,preciseRockFootprints:rockPositions.filter(([, , ,m])=>m?.visible!==false).length,treeSolids:treeSolidMeshes.filter(m=>m?.parent&&m.parent.visible!==false).length,level}
 }
-// v82: geometry-aware robot collision test. It tests real penetration and escape without
+// v85: geometry-aware robot collision test with destination-clear escape probes. It tests real penetration and escape without
 // treating a neighbouring obstacle or a deliberately walkable low rock as a collision bug.
 function runRobotCollisionTest(){
  const issues=[],samples=[];const ox=boy.position.x,oz=boy.position.z,opy=py,ovy=vy;
@@ -562,7 +562,10 @@ function runRobotCollisionTest(){
   for(const [name,sx,sz,inx,inz,outx,outz] of dirs){
    if(playerWorldBlocked(sx,sz)){samples.push({label:`tree${ti}-${name}-crowded`,moved:0,blocked:true,skipped:true});continue}
    probe(`tree${ti}-${name}-into`,sx,sz,inx,inz,true);
-   probe(`tree${ti}-${name}-away`,sx,sz,outx,outz,false);
+   // An escape probe is meaningful only if its destination is itself free.
+   // Otherwise a neighbouring tree/rock would be blamed on the tree under test.
+   if(!playerWorldBlocked(sx+outx,sz+outz))probe(`tree${ti}-${name}-away`,sx,sz,outx,outz,false);
+   else samples.push({label:`tree${ti}-${name}-away-crowded`,moved:0,blocked:true,skipped:true});
   }
   ti++
  }
@@ -572,7 +575,11 @@ function runRobotCollisionTest(){
   m.updateWorldMatrix(true,false);const b=new THREE.Box3().setFromObject(m),c=new THREE.Vector3();b.getCenter(c);const ex=(b.max.x-b.min.x)/2+PLAYER_RADIUS+.10;
   const sx=c.x+ex,sz=c.z,walkSolid=!(0>b.max.y+.04);
   if(!playerWorldBlocked(sx,sz)){
-   if(walkSolid){probe(`rock${ri}-into`,sx,sz,-.55,0,true);probe(`rock${ri}-away`,sx,sz,.42,0,false)}
+   if(walkSolid){
+    probe(`rock${ri}-into`,sx,sz,-.55,0,true);
+    if(!playerWorldBlocked(sx+.42,sz))probe(`rock${ri}-away`,sx,sz,.42,0,false);
+    else samples.push({label:`rock${ri}-away-crowded`,moved:0,blocked:true,skipped:true});
+   }
    else samples.push({label:`rock${ri}-low-walkable`,moved:0,blocked:false,skipped:true});
   }else samples.push({label:`rock${ri}-crowded`,moved:0,blocked:true,skipped:true});
   boy.position.set(sx,0,sz);py=b.max.y+.18;boy.position.y=py;vy=0;
