@@ -50,3 +50,7 @@ Visual Remaster #1: новый лес — освещение, тени, раст
 - Яблоки больше не появляются на земле.
 - Яблоки растут на доступных деревьях на высоте и требуют прыжка для сбора.
 - Грибы, капуста и ягоды остаются наземными.
+
+
+## v77 Collision Lab
+Unified solid collision for trees/branches, rocks, mountains and lair obstacles; automatic depenetration and sliding; runtime collision audit exposed as `window.__KABANCHIKI_COLLISION_AUDIT__()`.

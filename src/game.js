@@ -1,6 +1,6 @@
 window.__gameLoadProgress?.(84);let __loadFinished=false;
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
-const GAME_VERSION='v76';
+const GAME_VERSION='v77';
 const SUPABASE_URL='https://usszaimdbepgexnigiau.supabase.co';
 const SUPABASE_KEY='sb_publishable_x3H1Px6JaDTwpyZy_ARyiA_OqEKLINZ'; const $=id=>document.getElementById(id), mobile=matchMedia('(pointer:coarse)').matches;if(mobile){$('message').textContent='🕹️ Джойстик — идти · проведи пальцем — камера · справа — Прыжок и Кормить';$('introControls').innerHTML='<b>На телефоне:</b> левый джойстик — движение, проведи пальцем по миру — поворот камеры, кнопки «Прыжок» и «Кормить» справа.';$('pauseControls').innerHTML='<b>Телефон:</b> левый джойстик — движение · проведи пальцем по миру — камера · кнопки «Прыжок» и «Кормить» справа.'}else{$('message').textContent='WASD — идти · ПРОБЕЛ — прыжок · E/F — кормить · ESC — меню · V — вид';$('introControls').innerHTML='<b>На ПК:</b> WASD/стрелки — идти, ПРОБЕЛ — прыжок, E или F — бросить еду, V — сменить вид, ESC — пауза. Мышь — горизонтальный поворот камеры.';$('pauseControls').innerHTML='<b>Управление ПК:</b> WASD/стрелки — движение · ПРОБЕЛ — прыжок · E/F — кормить · мышь — камера · V — вид · ESC — меню.'}let started=false,first=false,life=5,rescued=0,win=false,invuln=0,flash=0,camMode=(mobile?0:4),yaw=0,pitch=.18,move={x:0,z:0},jump=false,act=false,keys={},drag=null,stickPointer=null,stick={x:0,y:0};$('camera').textContent=`📷 Вид ${camMode+1}/8`;
 const __autoParams=new URLSearchParams(location.search),__autoTest=__autoParams.get('autotest')==='1';
@@ -292,7 +292,7 @@ const enemyCounts=[3,4,5,6,1];const enemyCount=n===5?1:Math.max(1,Math.min(8,Mat
 seedForage();
 const familyCounts=[0,1,1,2,0];levelFamilyTotal=familyCounts[n-1];const familyPos=[[11,-29],[-14,-33]];
 for(let i=0;i<levelFamilyTotal;i++){if(n===3&&i===0)makeFamily(8.55,-30.35);else makeFamily(familyPos[i][0],familyPos[i][1])}
-boy.position.set(0,0,4);if(portalObj)portalObj.g.visible=false;insideFamilyHouse=false;for(const h of houseObjects){setHouseTransparent(h,false);h.visible=(n===3)}hideDoor.visible=(n===3);hideDoorGlow.visible=(n===3);for(const o of biomeObjects)o.visible=(o.userData.biomeLevel===n);moon.visible=(n===5);moonLight.intensity=n===5?.24:0;forestVisual.visible=(n===1);forestGround.visible=(n===1);sunDisc.visible=(n===1);lakeVisual.visible=(n===2);syncWorldGeneration(n);const skies=[0x86cfff,0x8fc9e8,0xf0a66f,0x34385e,0x080611];scene.background=new THREE.Color(skies[n-1]);scene.fog.color.copy(scene.background);scene.fog.near=n===1?32:(n>=4?9:28);scene.fog.far=n===1?88:(n>=4?38:78);sun.color.set(n===1?0xffffff:n===2?0xffe1b0:n===3?0xffa65a:0x7680aa);sun.intensity=[2.65,2.35,1.55,.28,.015][n-1];hemi.intensity=[2.25,2.7,2.15,.75,.075][n-1];renderer.toneMappingExposure=n===1?1.18:1.08;ground.material.color.set(n===1?0xffffff:n===2?0xd9f0cf:n===3?0xffead0:n===4?0xaeb3b6:0x76636b);torch.intensity=(n>=4&&hasFlashlight)?42:0;if(n===5&&!hasFlashlight)notice('🌙 Фонарика нет. Лунный свет очень слабый. Разозли босса — его глаза и огонь немного осветят логово.');if(flashlightObj){scene.remove(flashlightObj);flashlightObj=null}if((n===4||n===5)&&!hasFlashlight){const fx=n===4?8:-12,fz=n===4?-18:10;flashlightObj=group(fx,fz);block(flashlightObj,mats.gold,0,.45,0,.35,.35,.8);block(flashlightObj,mats.white,0,.45,.55,.28,.28,.28);sphere(flashlightObj,mats.gold,0,1.25,0,.18);if(n===5)notice('🔦 В логове где-то лежит запасной фонарик. В темноте ищи слабый золотистый отблеск.')}notice(`⚠️ ${n===5?'Ночь. Если нет фонарика — будет очень темно. Подружи миньона: только кабанчик-друг может ранить босса. Корми босса, чтобы успокоить и замедлить!':'Покорми кабанчика яблоком, грибом или капустой 🍎🍄🥬 — иначе он разозлится и нападёт!'}`);if(n===3)setTimeout(()=>notice('🏠 Кто-то из семьи спрятался внутри дома. Ищи дверь с тёплым светом — в неё можно войти.'),700);hud()}
+boy.position.set(0,0,4);if(portalObj)portalObj.g.visible=false;insideFamilyHouse=false;for(const h of houseObjects){setHouseTransparent(h,false);h.visible=(n===3)}hideDoor.visible=(n===3);hideDoorGlow.visible=(n===3);for(const o of biomeObjects)o.visible=(o.userData.biomeLevel===n);moon.visible=(n===5);moonLight.intensity=n===5?.24:0;forestVisual.visible=(n===1);forestGround.visible=(n===1);sunDisc.visible=(n===1);lakeVisual.visible=(n===2);syncWorldGeneration(n);const skies=[0x86cfff,0x8fc9e8,0xf0a66f,0x34385e,0x080611];scene.background=new THREE.Color(skies[n-1]);scene.fog.color.copy(scene.background);scene.fog.near=n===1?32:(n>=4?9:28);scene.fog.far=n===1?88:(n>=4?38:78);sun.color.set(n===1?0xffffff:n===2?0xffe1b0:n===3?0xffa65a:0x7680aa);sun.intensity=[2.65,2.35,1.55,.28,.015][n-1];hemi.intensity=[2.25,2.7,2.15,.75,.075][n-1];renderer.toneMappingExposure=n===1?1.18:1.08;ground.material.color.set(n===1?0xffffff:n===2?0xd9f0cf:n===3?0xffead0:n===4?0xaeb3b6:0x76636b);torch.intensity=(n>=4&&hasFlashlight)?42:0;if(n===5&&!hasFlashlight)notice('🌙 Фонарика нет. Лунный свет очень слабый. Разозли босса — его глаза и огонь немного осветят логово.');if(flashlightObj){scene.remove(flashlightObj);flashlightObj=null}if((n===4||n===5)&&!hasFlashlight){const fx=n===4?8:-12,fz=n===4?-18:10;flashlightObj=group(fx,fz);block(flashlightObj,mats.gold,0,.45,0,.35,.35,.8);block(flashlightObj,mats.white,0,.45,.55,.28,.28,.28);sphere(flashlightObj,mats.gold,0,1.25,0,.18);if(n===5)notice('🔦 В логове где-то лежит запасной фонарик. В темноте ищи слабый золотистый отблеск.')}notice(`⚠️ ${n===5?'Ночь. Если нет фонарика — будет очень темно. Подружи миньона: только кабанчик-друг может ранить босса. Корми босса, чтобы успокоить и замедлить!':'Покорми кабанчика яблоком, грибом или капустой 🍎🍄🥬 — иначе он разозлится и нападёт!'}`);if(n===3)setTimeout(()=>notice('🏠 Кто-то из семьи спрятался внутри дома. Ищи дверь с тёплым светом — в неё можно войти.'),700);const __audit=runCollisionAudit();window.__KABANCHIKI_TEST__.collisionAudit=__audit;if(__autoTest&&!__audit.ok)window.__KABANCHIKI_TEST__.errors.push(...__audit.issues);hud()}
 function makeFoodModel(type,parent,x,y,z){const g=new THREE.Group();g.position.set(x,y,z);parent.add(g);if(type==='apple'){const red=new THREE.MeshLambertMaterial({color:0xd83a32}),darkRed=new THREE.MeshLambertMaterial({color:0xb92522}),green=new THREE.MeshLambertMaterial({color:0x4f9a3f});sphere(g,red,-.12,0,0,.25);sphere(g,red,.12,0,0,.25);sphere(g,darkRed,0,-.08,0,.23);block(g,mats.wood,0,.31,0,.055,.20,.055);const leaf=block(g,green,.13,.35,0,.22,.055,.13);leaf.rotation.z=-.35}else if(type==='mushroom'){const cap=new THREE.MeshLambertMaterial({color:0xd92f2f}),spot=new THREE.MeshLambertMaterial({color:0xfff6dc});block(g,mats.white,0,.02,0,.18,.38,.18);const capMesh=new THREE.Mesh(new THREE.SphereGeometry(.34,12,8,0,Math.PI*2,0,Math.PI/2),cap);capMesh.position.y=.18;capMesh.scale.y=.62;g.add(capMesh);for(const [sx,sz,ss] of [[-.13,.05,.055],[.11,.08,.045],[.02,-.12,.05],[-.05,.16,.04]])sphere(g,spot,sx,.34,sz,ss)}else{const green=new THREE.MeshLambertMaterial({color:0x65a94f});sphere(g,green,0,0,0,.34);for(const [a,b] of [[.2,0],[-.2,0],[0,.2],[0,-.2]])sphere(g,green,a,.03,b,.23)}g.userData.foodType=type;return g}
 function foodLabel(type){return type==='apple'?'яблоко 🍎':type==='mushroom'?'гриб 🍄':'капусту 🥬'}
 function feed(){if(!started||paused||win||life<=0||throwCooldown>0)return;if(food<=0){notice('🍎 Еда закончилась! Яблоки растут на деревьях — подпрыгни, чтобы сорвать. Грибы и капуста растут на земле.');sound(170,.2);return}food--;throwCooldown=.6;const start=boy.position.clone().add(new THREE.Vector3(0,1,0));const dir=new THREE.Vector3(Math.sin(yaw),0,Math.cos(yaw));const target=start.clone().addScaledVector(dir,10);const near=foes.filter(f=>f.g.position.distanceTo(target)<4.5||f.g.position.distanceTo(boy.position)<9).sort((a,b)=>a.g.position.distanceTo(target)-b.g.position.distanceTo(target))[0];if(near)target.copy(near.g.position).add(new THREE.Vector3(0,.8,0));const types=['apple','mushroom','cabbage'],type=types[Math.floor(Math.random()*types.length)],foodObj=makeFoodModel(type,scene,start.x,start.y,start.z);shots.push({g:foodObj,start,target,t:0,foe:near,type});boy.children[5].rotation.x=-1.1;sound(650,.12,'triangle');notice(near?`Тимур бросил ${foodLabel(type)}!`:`${foodLabel(type)} летит вперёд — целься в кабана!`);hud()}
@@ -460,6 +460,56 @@ function worldObstacleAt(x,z,pad=.38){
  if(houseBlockAt(x,z,pad))return true;
  return false;
 }
+// v77: one collision model for player, generation audit and automated tests.
+const PLAYER_RADIUS=.58;
+function solidCircles(){
+ const out=[];
+ for(let i=0;i<treePositions.length;i++){const t=treeObjects[i];if(t?.visible!==false){const [x,z]=treePositions[i];out.push({x,z,r:1.62,type:'tree'})}}
+ for(const [x,z,r,m] of rockPositions)if(m?.visible!==false)out.push({x,z,r:r+.48,type:'rock'});
+ if(level===4)for(const [x,z,r] of mountainObstacles)out.push({x,z,r:r+.58,type:'mountain'});
+ if(level===5)for(const [x,z,r,g] of lairObstacles)if(g?.visible!==false)out.push({x,z,r:r+.52,type:'lair'});
+ return out
+}
+function playerWorldBlocked(x,z,pad=0){
+ if(x<-43.15||x>43.15||z<-43.15||z>43.15)return true;
+ const rr=PLAYER_RADIUS+pad;
+ if(solidCircles().some(o=>Math.hypot(x-o.x,z-o.z)<o.r+rr))return true;
+ if(houseBlockAt(x,z,rr))return true;
+ return false
+}
+function depenetratePlayer(){
+ // Never leave Timur trapped inside a rock/tree after a level change, jump or knockback.
+ for(let pass=0;pass<6;pass++){
+  let changed=false;
+  for(const o of solidCircles()){
+   let dx=boy.position.x-o.x,dz=boy.position.z-o.z,d=Math.hypot(dx,dz),need=o.r+PLAYER_RADIUS+.035;
+   if(d<need){if(d<.001){dx=1;dz=0;d=1}boy.position.x=o.x+dx/d*need;boy.position.z=o.z+dz/d*need;changed=true}
+  }
+  boy.position.x=Math.max(-43.1,Math.min(43.1,boy.position.x));boy.position.z=Math.max(-43.1,Math.min(43.1,boy.position.z));
+  if(!changed)break
+ }
+}
+function movePlayerCollision(mx,mz){
+ depenetratePlayer();
+ if(Math.hypot(mx,mz)<.00001)return;
+ const px=boy.position.x,pz=boy.position.z,tx=px+mx,tz=pz+mz;
+ if(!playerWorldBlocked(tx,tz)){boy.position.x=tx;boy.position.z=tz;return}
+ // Axis-separated sliding means a rock stops forward motion but never locks every direction.
+ const xFirst=Math.abs(mx)>=Math.abs(mz),attempts=xFirst?[[px+mx,pz],[px,pz+mz]]:[[px,pz+mz],[px+mx,pz]];
+ for(const [x,z] of attempts)if(!playerWorldBlocked(x,z)){boy.position.x=x;boy.position.z=z;return}
+ // Final tangent escape around the nearest circular obstacle.
+ let nearest=null,nd=Infinity;for(const o of solidCircles()){const d=Math.hypot(tx-o.x,tz-o.z)-(o.r+PLAYER_RADIUS);if(d<nd){nd=d;nearest=o}}
+ if(nearest){const rx=px-nearest.x,rz=pz-nearest.z,rl=Math.hypot(rx,rz)||1,txv=-rz/rl,tzv=rx/rl,sgn=(mx*txv+mz*tzv)>=0?1:-1,mag=Math.hypot(mx,mz);const sx=px+txv*sgn*mag,sz=pz+tzv*sgn*mag;if(!playerWorldBlocked(sx,sz)){boy.position.x=sx;boy.position.z=sz}}
+}
+function runCollisionAudit(){
+ const issues=[];
+ // Every ordinary family member must be clear of solid scenery. Father is intentionally inside the enterable house.
+ for(const f of familyMembers){if(level===3&&f.role===1)continue;if(worldObstacleAt(f.x,f.z,.55))issues.push(`family-in-obstacle:${f.role}`)}
+ // Check that all circle obstacles have at least four collision-tested escape points around them.
+ for(const o of solidCircles()){let free=0;const d=o.r+PLAYER_RADIUS+.18;for(const [ax,az] of [[1,0],[-1,0],[0,1],[0,-1]])if(!playerWorldBlocked(o.x+ax*d,o.z+az*d))free++;if(free===0)issues.push(`sealed-${o.type}:${o.x.toFixed(1)},${o.z.toFixed(1)}`)}
+ return {ok:issues.length===0,issues,obstacles:solidCircles().length,level}
+}
+window.__KABANCHIKI_COLLISION_AUDIT__=runCollisionAudit;
 function validFamilySpot(f){
  if(worldObstacleAt(f.x,f.z,.15))return false;
  if(Math.abs(f.x)<3.6)return false; // keep family off the road
@@ -525,36 +575,22 @@ if(__autoTest){
   setTimeout(()=>{window.__KABANCHIKI_TEST__.ready=true;document.documentElement.dataset.kabanchikiReady='1'},900);
  }catch(e){window.__KABANCHIKI_TEST__.errors.push(String(e));document.documentElement.dataset.kabanchikiError=String(e)}
 }
-let last=performance.now(),fpsFrames=0,fpsLast=last,fpsValue=0;hud();function loop(now){requestAnimationFrame(loop);fpsFrames++;if(now-fpsLast>=500){fpsValue=Math.round(fpsFrames*1000/(now-fpsLast));fpsFrames=0;fpsLast=now;const pe=$('perf');if(pe)pe.textContent=`${GAME_VERSION} · FPS ${fpsValue} · ⏱ ${formatTime(totalTime)}`;}const dt=Math.min(.05,(now-last)/1000);last=now;if(started&&life>0&&!win&&!paused){levelTime+=dt;totalTime+=dt;for(const __b of [...friends,...foes]){if(__b?.g?.userData?.tailPivot)__b.g.userData.tailPivot.rotation.y=Math.sin(now*.006+__b.phase)*.42}if(level===1){forestVisual.rotation.z=Math.sin(now*.00045)*.0018;}if(level===2){rippleA.rotation.z=now*.000035;rippleB.rotation.z=-now*.000025;waterRippleMatA.opacity=.17+Math.sin(now*.0012)*.045;waterRippleMatB.opacity=.13+Math.sin(now*.00105+1.4)*.035;lakeGlint.scale.x=2.35+Math.sin(now*.0008)*.32;lakeGlint.material.opacity=.18+Math.sin(now*.0011)*.055;}throwCooldown=Math.max(0,throwCooldown-dt);friendAttack=Math.max(0,friendAttack-dt);forageTimer-=dt;if(forageTimer<=0){const activeFood=apples.filter(a=>!a.done&&a.type!=='berry').length,activeBerries=apples.filter(a=>!a.done&&a.type==='berry').length;if(activeFood<4){spawnForage();notice('🌱 Появилась новая еда! 🍎 Яблоки ищи на деревьях — до них нужно допрыгнуть.')}else if(activeBerries<1&&life<diffCfg().playerHP){spawnForage('berry');notice('🫐 Где-то появились лечебные ягоды!')}forageTimer=rand(14,22)}if(flashlightObj&&!hasFlashlight&&Math.hypot(flashlightObj.position.x-boy.position.x,flashlightObj.position.z-boy.position.z)<1.8){hasFlashlight=true;scene.remove(flashlightObj);flashlightObj=null;torch.intensity=42;sound(900,.25);notice('🔦 Фонарик найден! Теперь можно идти в ночное логово.')} boy.children[5].rotation.x*=Math.max(0,1-dt*7);for(let i=shots.length-1;i>=0;i--){const sh=shots[i];sh.t+=dt*2.8;const t=Math.min(1,sh.t);sh.g.position.lerpVectors(sh.start,sh.target,t);sh.g.position.y+=Math.sin(Math.PI*t)*1.7;sh.g.rotation.y+=dt*9;if(t>=1){resolveMeat(sh);shots.splice(i,1)}}for(const f of familyMembers){if(!f.done)f.person.rotation.y=Math.sin(now*.002+f.x)*.25}const forward=(keys.KeyW||keys.ArrowUp?1:0)-(keys.KeyS||keys.ArrowDown?1:0)-stick.y,side=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0)+stick.x;const len=Math.max(1,Math.hypot(forward,side));let dx=(Math.sin(yaw)*forward-Math.cos(yaw)*side)/len,dz=(Math.cos(yaw)*forward+Math.sin(yaw)*side)/len;const moveSpeed=mountedFriend?8.6:6;let nx=boy.position.x+dx*dt*moveSpeed,nz=boy.position.z+dz*dt*moveSpeed;nx=Math.max(-43.2,Math.min(43.2,nx));nz=Math.max(-43.2,Math.min(43.2,nz));let hitTree=treePositions.some(([x,z],i)=>treeObjects[i]?.visible!==false&&Math.hypot(nx-x,nz-z)<1.28),hitRock=py<.72&&rockPositions.some(([x,z,r,m])=>m?.visible!==false&&Math.hypot(nx-x,nz-z)<r+.42),hitMountain=level===4&&py<.72&&mountainObstacles.some(([x,z,r])=>Math.hypot(nx-x,nz-z)<r+.42),hitLair=level===5&&py<.72&&lairObstacles.some(([x,z,r,g])=>g.visible&&Math.hypot(nx-x,nz-z)<r+.42),hitHouse=houseBlockAt(nx,nz,.34);
-let friendTouch=!mountedFriend&&friend?.g&&!friend.flee&&Math.hypot(nx-friend.g.position.x,nz-friend.g.position.z)<2.05;
+let last=performance.now(),fpsFrames=0,fpsLast=last,fpsValue=0;hud();function loop(now){requestAnimationFrame(loop);fpsFrames++;if(now-fpsLast>=500){fpsValue=Math.round(fpsFrames*1000/(now-fpsLast));fpsFrames=0;fpsLast=now;const pe=$('perf');if(pe)pe.textContent=`${GAME_VERSION} · FPS ${fpsValue} · ⏱ ${formatTime(totalTime)}`;}const dt=Math.min(.05,(now-last)/1000);last=now;if(started&&life>0&&!win&&!paused){levelTime+=dt;totalTime+=dt;for(const __b of [...friends,...foes]){if(__b?.g?.userData?.tailPivot)__b.g.userData.tailPivot.rotation.y=Math.sin(now*.006+__b.phase)*.42}if(level===1){forestVisual.rotation.z=Math.sin(now*.00045)*.0018;}if(level===2){rippleA.rotation.z=now*.000035;rippleB.rotation.z=-now*.000025;waterRippleMatA.opacity=.17+Math.sin(now*.0012)*.045;waterRippleMatB.opacity=.13+Math.sin(now*.00105+1.4)*.035;lakeGlint.scale.x=2.35+Math.sin(now*.0008)*.32;lakeGlint.material.opacity=.18+Math.sin(now*.0011)*.055;}throwCooldown=Math.max(0,throwCooldown-dt);friendAttack=Math.max(0,friendAttack-dt);forageTimer-=dt;if(forageTimer<=0){const activeFood=apples.filter(a=>!a.done&&a.type!=='berry').length,activeBerries=apples.filter(a=>!a.done&&a.type==='berry').length;if(activeFood<4){spawnForage();notice('🌱 Появилась новая еда! 🍎 Яблоки ищи на деревьях — до них нужно допрыгнуть.')}else if(activeBerries<1&&life<diffCfg().playerHP){spawnForage('berry');notice('🫐 Где-то появились лечебные ягоды!')}forageTimer=rand(14,22)}if(flashlightObj&&!hasFlashlight&&Math.hypot(flashlightObj.position.x-boy.position.x,flashlightObj.position.z-boy.position.z)<1.8){hasFlashlight=true;scene.remove(flashlightObj);flashlightObj=null;torch.intensity=42;sound(900,.25);notice('🔦 Фонарик найден! Теперь можно идти в ночное логово.')} boy.children[5].rotation.x*=Math.max(0,1-dt*7);for(let i=shots.length-1;i>=0;i--){const sh=shots[i];sh.t+=dt*2.8;const t=Math.min(1,sh.t);sh.g.position.lerpVectors(sh.start,sh.target,t);sh.g.position.y+=Math.sin(Math.PI*t)*1.7;sh.g.rotation.y+=dt*9;if(t>=1){resolveMeat(sh);shots.splice(i,1)}}for(const f of familyMembers){if(!f.done)f.person.rotation.y=Math.sin(now*.002+f.x)*.25}const forward=(keys.KeyW||keys.ArrowUp?1:0)-(keys.KeyS||keys.ArrowDown?1:0)-stick.y,side=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0)+stick.x;const len=Math.max(1,Math.hypot(forward,side));let dx=(Math.sin(yaw)*forward-Math.cos(yaw)*side)/len,dz=(Math.cos(yaw)*forward+Math.sin(yaw)*side)/len;const moveSpeed=mountedFriend?8.6:6;let mx=dx*dt*moveSpeed,mz=dz*dt*moveSpeed;
+// v77 collision solver: trees (including branches), rocks, mountains and lair props use the same solid model.
+let friendTouch=!mountedFriend&&friend?.g&&!friend.flee&&Math.hypot(boy.position.x+mx-friend.g.position.x,boy.position.z+mz-friend.g.position.z)<2.05;
 if(friendTouch&&Math.hypot(dx,dz)>.05){
-  const push=.055,fx=friend.g.position.x+dx*push,fz=friend.g.position.z+dz*push;
-  const fTree=treePositions.some(([x,z],i)=>treeObjects[i]?.visible!==false&&Math.hypot(fx-x,fz-z)<.82),fRock=rockPositions.some(([x,z,r,m])=>m?.visible!==false&&Math.hypot(fx-x,fz-z)<r+.52),fLair=level===5&&lairObstacles.some(([x,z,r,g])=>g.visible&&Math.hypot(fx-x,fz-z)<r+.82);
-  if(!fTree&&!fRock&&!fLair&&!houseBlockAt(fx,fz,.7)&&!blockedByBoar(fx,fz,friend,.78)){friend.g.position.x=fx;friend.g.position.z=fz}
-  friendTouch=Math.hypot(nx-friend.g.position.x,nz-friend.g.position.z)<2.05;
-  if(friendTouch){
-    const rx=boy.position.x-friend.g.position.x,rz=boy.position.z-friend.g.position.z,rl=Math.max(.001,Math.hypot(rx,rz));
-    const tx=-rz/rl,tz=rx/rl,sign=(dx*tx+dz*tz)>=0?1:-1,slide=.78;
-    const sx=boy.position.x+tx*sign*dt*6*slide,sz=boy.position.z+tz*sign*dt*6*slide;
-    const sTree=treePositions.some(([x,z],i)=>treeObjects[i]?.visible!==false&&Math.hypot(sx-x,sz-z)<.7),sRock=py<.72&&rockPositions.some(([x,z,r,m])=>m?.visible!==false&&Math.hypot(sx-x,sz-z)<r+.38),sLair=level===5&&lairObstacles.some(([x,z,r,g])=>g.visible&&Math.hypot(sx-x,sz-z)<r+.42);
-    if(!sTree&&!sRock&&!sLair&&!houseBlockAt(sx,sz,.7)&&!blockedByBoar(sx,sz,friend,1.03)&&Math.hypot(sx-friend.g.position.x,sz-friend.g.position.z)>=1.96){nx=sx;nz=sz;friendTouch=false}
-  }
+ const push=.055,fx=friend.g.position.x+dx*push,fz=friend.g.position.z+dz*push;
+ if(!worldObstacleAt(fx,fz,.55)&&!blockedByBoar(fx,fz,friend,.78)){friend.g.position.x=fx;friend.g.position.z=fz}
+ friendTouch=Math.hypot(boy.position.x+mx-friend.g.position.x,boy.position.z+mz-friend.g.position.z)<2.05;
 }
-const blockingBoar=boarBodies().find(b=>b!==friend&&Math.hypot(nx-b.g.position.x,nz-b.g.position.z)<boarRadius(b)+.62);
-const hitOtherBoar=!!blockingBoar;
-if(!hitTree&&!hitRock&&!hitMountain&&!hitLair&&!hitHouse&&!friendTouch&&!hitOtherBoar){boy.position.x=nx;boy.position.z=nz}
-else if(hitTree&&!hitRock&&!hitMountain&&!hitLair&&!hitHouse&&!friendTouch&&!hitOtherBoar){const sl=slideAroundTree(boy.position.x,boy.position.z,nx,nz);if(sl){boy.position.x=sl.x;boy.position.z=sl.z}}
-else if(hitOtherBoar&&!hitTree&&!hitRock&&!hitMountain&&!hitLair&&!hitHouse&&!friendTouch&&blockingBoar){
+const blockingBoar=boarBodies().find(b=>b!==friend&&Math.hypot(boy.position.x+mx-b.g.position.x,boy.position.z+mz-b.g.position.z)<boarRadius(b)+.62);
+if(!friendTouch&&!blockingBoar)movePlayerCollision(mx,mz);
+else if(blockingBoar){
  const rx=boy.position.x-blockingBoar.g.position.x,rz=boy.position.z-blockingBoar.g.position.z,rl=Math.max(.001,Math.hypot(rx,rz));
- const tx=-rz/rl,tz=rx/rl,sign=(dx*tx+dz*tz)>=0?1:-1;
- const sx=boy.position.x+tx*sign*dt*6*.62,sz=boy.position.z+tz*sign*dt*6*.62;
- const safe=boarRadius(blockingBoar)+.62;
- if(Math.hypot(sx-blockingBoar.g.position.x,sz-blockingBoar.g.position.z)>=safe-.03&&!houseBlockAt(sx,sz,.34)
- &&!treePositions.some(([x,z],i)=>treeObjects[i]?.visible!==false&&Math.hypot(sx-x,sz-z)<.82)
- &&!rockPositions.some(([x,z,r,m])=>m?.visible!==false&&Math.hypot(sx-x,sz-z)<r+.38)){
-   boy.position.x=sx;boy.position.z=sz;
- }
-}if(Math.hypot(dx,dz)>.05){boy.rotation.y=Math.atan2(dx,dz);boy.children[0].rotation.x=Math.sin(now*.014)*.24;boy.children[1].rotation.x=-boy.children[0].rotation.x}else{boy.children[0].rotation.x=boy.children[1].rotation.x=0}
+ const tx=-rz/rl,tz=rx/rl,sign=(dx*tx+dz*tz)>=0?1:-1,mag=Math.hypot(mx,mz)*.68;
+ const sx=tx*sign*mag,sz=tz*sign*mag;if(!playerWorldBlocked(boy.position.x+sx,boy.position.z+sz))movePlayerCollision(sx,sz)
+}
+if(Math.hypot(dx,dz)>.05){boy.rotation.y=Math.atan2(dx,dz);boy.children[0].rotation.x=Math.sin(now*.014)*.24;boy.children[1].rotation.x=-boy.children[0].rotation.x}else{boy.children[0].rotation.x=boy.children[1].rotation.x=0}
 if(mountedFriend&&(!friend||friend.flee)){mountedFriend=false;py=0;vy=0}
 if(mountedFriend){
  if(jump){mountedFriend=false;jump=false;py=1.48;vy=6.2;const a=boy.rotation.y;boy.position.x+=Math.sin(a)*1.15;boy.position.z+=Math.cos(a)*1.15;notice('🐗 Тимур спрыгнул с кабанчика!')}
