@@ -3,7 +3,7 @@ const html=fs.readFileSync('index.html','utf8');
 const game=fs.readFileSync('src/game.js','utf8');
 const levels=fs.readFileSync('levels/levels.js','utf8');
 const checks=[
- ['version v82',/GAME_VERSION='v82'/.test(game)],
+ ['version v83',/GAME_VERSION='v83'/.test(game)],
  ['precise rock footprint',/function rockFootprintHit/.test(game)],
  ['jump clears low rocks',/py>b.max.y/.test(game)],
  ['page audio suspension',/visibilitychange/.test(game)&&/audio.suspend/.test(game)],
