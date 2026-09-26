@@ -3,10 +3,10 @@ const html=fs.readFileSync('index.html','utf8');
 const game=fs.readFileSync('src/game.js','utf8');
 const levels=fs.readFileSync('levels/levels.js','utf8');
 const checks=[
- ['version v89',/GAME_VERSION='v89'/.test(game)],
+ ['version v93',/GAME_VERSION='v93'/.test(game)],
  ['mounted defense',/function mountedFriendDefense/.test(game)&&/mountedFriendDefense\(\)/.test(game)&&/Друг отогнал/.test(game)],
  ['spawn guard',/function repairAndAuditSpawns\(\)/.test(game)&&/__KABANCHIKI_SPAWN_AUDIT__/.test(game)],
- ['loading version',/loadingVersion/.test(html)&&/>v89</.test(html)],
+ ['loading version',/loadingVersion/.test(html)&&/>v93</.test(html)],
  ['precise rock footprint',/function rockFootprintHit/.test(game)],
  ['jump clears low rocks',/py>b.max.y/.test(game)],
  ['page audio suspension',/visibilitychange/.test(game)&&/audio.suspend/.test(game)],
@@ -39,6 +39,8 @@ const checks=[
  ['automation hook',/__KABANCHIKI_TEST__/.test(game)],
  ['audio toggles',/toggleMusic/.test(html)&&/toggleSfx/.test(html)&&/musicEnabled/.test(game)&&/sfxEnabled/.test(game)],
  ['lake evening restored',/0xe59a78/.test(game)],
+ ['boss knockback',game.includes('отбрасывает его')&&game.includes('target.stagger=Math.max')],
+ ['result dedup',game.includes('resultGlobalSaved')&&game.includes('resultLocalSaved')&&game.includes('resultSaving')],
  ['global leaderboard config',game.includes('SUPABASE_URL')&&game.includes('submitGlobalResult')&&game.includes('globalStatsHtml')]
 ];
 let bad=0;for(const [n,ok] of checks){console.log(`${ok?'✓':'✗'} ${n}`);if(!ok)bad++}
