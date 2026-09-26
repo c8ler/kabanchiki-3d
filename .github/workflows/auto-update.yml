@@ -5,11 +5,11 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 jobs:
   publish:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -17,79 +17,49 @@ jobs:
       - name: Find update ZIP
         run: |
           ZIP=$(find . -maxdepth 1 -type f -name 'Kabanchiki_3D_*.zip' | sort | tail -1)
-
-          if [ -z "$ZIP" ]; then
-            echo "ERROR: update ZIP not found"
-            exit 1
-          fi
-
+          test -n "$ZIP" || { echo "ERROR: update ZIP not found"; exit 1; }
           echo "ZIP=$ZIP" >> "$GITHUB_ENV"
-          echo "Found update: $ZIP"
 
       - name: Unpack update
         run: |
-          rm -rf /tmp/kabanchiki
-          mkdir -p /tmp/kabanchiki
-
+          rm -rf /tmp/kabanchiki /tmp/newgame
+          mkdir -p /tmp/kabanchiki /tmp/newgame
           unzip -t "$ZIP"
           unzip -q "$ZIP" -d /tmp/kabanchiki
-
           GAME_INDEX=$(find /tmp/kabanchiki -name index.html -type f | head -1)
-
-          if [ -z "$GAME_INDEX" ]; then
-            echo "ERROR: index.html not found in ZIP"
-            exit 1
-          fi
-
-          GAME_ROOT=$(dirname "$GAME_INDEX")
-          echo "GAME_ROOT=$GAME_ROOT" >> "$GITHUB_ENV"
+          test -n "$GAME_INDEX" || { echo "ERROR: index.html not found"; exit 1; }
+          echo "GAME_ROOT=$(dirname "$GAME_INDEX")" >> "$GITHUB_ENV"
 
       - name: Install update
         run: |
-          find . -mindepth 1 -maxdepth 1 \
-            ! -name '.git' \
-            ! -name '.github' \
-            ! -name 'Kabanchiki_3D_*.zip' \
-            -exec rm -rf {} +
-
+          find . -mindepth 1 -maxdepth 1 ! -name '.git' ! -name '.github' ! -name 'Kabanchiki_3D_*.zip' -exec rm -rf {} +
           cp -a "$GAME_ROOT"/. /tmp/newgame/
-
           rm -rf /tmp/newgame/.github
-          rm -f /tmp/newgame/Kabanchiki_3D_*.zip
-
+          rm -f /tmp/newgame/Kabanchiki_3D_*.zip /tmp/newgame/auto-update-v81.yml
           cp -a /tmp/newgame/. .
-
-          find scripts src tests -type f \
-            \( -name '1' -o -name '2' -o -name '3' \) \
-            -delete 2>/dev/null || true
 
       - name: Verify game
         run: |
-          test -f index.html
-          test -f src/game.js
-
+          test -f index.html && test -f src/game.js
           sed '/^import .*three.*;/d' src/game.js > /tmp/game.mjs
           node --check /tmp/game.mjs
+          node scripts/validate.mjs
 
-          if [ -f scripts/validate.mjs ]; then
-            node scripts/validate.mjs
-          fi
-
-      - name: Remove update ZIP
+      - name: Remove update ZIP and commit
         run: |
           rm -f ./Kabanchiki_3D_*.zip
-
-      - name: Commit v71
-        run: |
           git config user.name "Kabanchiki Update Bot"
           git config user.email "actions@users.noreply.github.com"
-
           git add -A
-
           if git diff --cached --quiet; then
             echo "No changes detected"
-            exit 0
+          else
+            VERSION=$(grep -o "GAME_VERSION='v[0-9]*'" src/game.js | head -1 | cut -d"'" -f2)
+            git commit -m "Publish Kabanchiki 3D ${VERSION}"
+            git push
           fi
 
-          git commit -m "Publish Kabanchiki 3D v71 Lake Remaster"
-          git push
+      - name: Run autotest on published commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run web-check.yml --ref main
