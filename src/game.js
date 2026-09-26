@@ -1,6 +1,6 @@
 window.__gameLoadProgress?.(84);let __loadFinished=false;
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
-const GAME_VERSION='v83';
+const GAME_VERSION='v84';
 const SUPABASE_URL='https://usszaimdbepgexnigiau.supabase.co';
 const SUPABASE_KEY='sb_publishable_x3H1Px6JaDTwpyZy_ARyiA_OqEKLINZ'; const $=id=>document.getElementById(id), mobile=matchMedia('(pointer:coarse)').matches;if(mobile){$('message').textContent='🕹️ Джойстик — идти · проведи пальцем — камера · справа — Прыжок и Кормить';$('introControls').innerHTML='<b>На телефоне:</b> левый джойстик — движение, проведи пальцем по миру — поворот камеры, кнопки «Прыжок» и «Кормить» справа.';$('pauseControls').innerHTML='<b>Телефон:</b> левый джойстик — движение · проведи пальцем по миру — камера · кнопки «Прыжок» и «Кормить» справа.'}else{$('message').textContent='WASD — идти · ПРОБЕЛ — прыжок · E/F — кормить · ESC — меню · V — вид';$('introControls').innerHTML='<b>На ПК:</b> WASD/стрелки — идти, ПРОБЕЛ — прыжок, E или F — бросить еду, V — сменить вид, ESC — пауза. Мышь — горизонтальный поворот камеры.';$('pauseControls').innerHTML='<b>Управление ПК:</b> WASD/стрелки — движение · ПРОБЕЛ — прыжок · E/F — кормить · мышь — камера · V — вид · ESC — меню.'}let started=false,first=false,life=5,rescued=0,win=false,invuln=0,flash=0,camMode=(mobile?0:4),yaw=0,pitch=.18,move={x:0,z:0},jump=false,act=false,keys={},drag=null,stickPointer=null,stick={x:0,y:0};$('camera').textContent=`📷 Вид ${camMode+1}/8`;
 const __autoParams=new URLSearchParams(location.search),__autoTest=__autoParams.get('autotest')==='1';
@@ -569,7 +569,7 @@ function runRobotCollisionTest(){
  // Rocks: low rocks whose top is already below Timur's feet are intentionally walkable.
  // For solid-height rocks test walk-in + escape; every rock is also tested while jumping above its top.
  let ri=0;for(const [, , ,m] of rockPositions){if(ri>=20)break;if(!m||m.visible===false)continue;
-  m.updateWorldMatrix(true,false);const b=new THREE.Box3().setFromObject(m),c=new THREE.Vector3();b.getCenter(c),ex=(b.max.x-b.min.x)/2+PLAYER_RADIUS+.10;
+  m.updateWorldMatrix(true,false);const b=new THREE.Box3().setFromObject(m),c=new THREE.Vector3();b.getCenter(c);const ex=(b.max.x-b.min.x)/2+PLAYER_RADIUS+.10;
   const sx=c.x+ex,sz=c.z,walkSolid=!(0>b.max.y+.04);
   if(!playerWorldBlocked(sx,sz)){
    if(walkSolid){probe(`rock${ri}-into`,sx,sz,-.55,0,true);probe(`rock${ri}-away`,sx,sz,.42,0,false)}
