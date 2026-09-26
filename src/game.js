@@ -1,6 +1,6 @@
 window.__gameLoadProgress?.(84);let __loadFinished=false;
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
-const GAME_VERSION='v78';
+const GAME_VERSION='v79';
 const SUPABASE_URL='https://usszaimdbepgexnigiau.supabase.co';
 const SUPABASE_KEY='sb_publishable_x3H1Px6JaDTwpyZy_ARyiA_OqEKLINZ'; const $=id=>document.getElementById(id), mobile=matchMedia('(pointer:coarse)').matches;if(mobile){$('message').textContent='🕹️ Джойстик — идти · проведи пальцем — камера · справа — Прыжок и Кормить';$('introControls').innerHTML='<b>На телефоне:</b> левый джойстик — движение, проведи пальцем по миру — поворот камеры, кнопки «Прыжок» и «Кормить» справа.';$('pauseControls').innerHTML='<b>Телефон:</b> левый джойстик — движение · проведи пальцем по миру — камера · кнопки «Прыжок» и «Кормить» справа.'}else{$('message').textContent='WASD — идти · ПРОБЕЛ — прыжок · E/F — кормить · ESC — меню · V — вид';$('introControls').innerHTML='<b>На ПК:</b> WASD/стрелки — идти, ПРОБЕЛ — прыжок, E или F — бросить еду, V — сменить вид, ESC — пауза. Мышь — горизонтальный поворот камеры.';$('pauseControls').innerHTML='<b>Управление ПК:</b> WASD/стрелки — движение · ПРОБЕЛ — прыжок · E/F — кормить · мышь — камера · V — вид · ESC — меню.'}let started=false,first=false,life=5,rescued=0,win=false,invuln=0,flash=0,camMode=(mobile?0:4),yaw=0,pitch=.18,move={x:0,z:0},jump=false,act=false,keys={},drag=null,stickPointer=null,stick={x:0,y:0};$('camera').textContent=`📷 Вид ${camMode+1}/8`;
 const __autoParams=new URLSearchParams(location.search),__autoTest=__autoParams.get('autotest')==='1';
@@ -205,6 +205,10 @@ function musicTone(freq,duration=.32,type='triangle',gain=.018){
 function musicStep(){if(!started||paused||win)return;const t=MUSIC_THEMES[level-1],i=musicNote++;musicTone(t.lead[i%t.lead.length],t.tempo/1000*.82,t.wave,level===5?.014:.017);if(i%2===0)musicTone(t.bass[(i/2)%t.bass.length],t.tempo/1000*1.55,'sine',.010);if(i%8===0&&level<5){const root=t.bass[(i/2)%t.bass.length];musicTone(root?root*2:0,t.tempo/1000*2.2,'sine',.006)}}
 function startMusic(){if(!musicEnabled||musicTimer)return;musicNote=0;musicStep();const schedule=()=>{if(musicTimer)clearTimeout(musicTimer);const t=MUSIC_THEMES[Math.max(0,Math.min(4,level-1))];musicTimer=setTimeout(()=>{musicTimer=null;musicStep();schedule()},t.tempo)};schedule()}
 function stopMusic(){if(musicTimer){clearTimeout(musicTimer);musicTimer=null}}
+// v79: browser/app backgrounding must immediately release audio. On Android this also cooperates with phone-call audio focus.
+let audioSuspendedByPage=false;async function suspendPageAudio(){audioSuspendedByPage=true;stopMusic();stopCinematicMusic();try{if(audio&&audio.state==='running')await audio.suspend()}catch{}}
+async function resumePageAudio(){if(!audioSuspendedByPage||document.hidden)return;audioSuspendedByPage=false;try{if(audio&&audio.state==='suspended')await audio.resume()}catch{}if(started&&!paused&&!win&&musicEnabled&&!cinematicRunning)startMusic()}
+document.addEventListener('visibilitychange',()=>document.hidden?suspendPageAudio():resumePageAudio());window.addEventListener('pagehide',suspendPageAudio);window.addEventListener('blur',suspendPageAudio);window.addEventListener('focus',()=>{if(!document.hidden)resumePageAudio()});
 let cinematicMusicTimer=null,cinematicMusicStep=0,cinematicMusicKind='';
 const INTRO_CINE_NOTES=[262,330,392,440,392,330,294,349,440,494,440,349,330,392,523,494];
 const HAPPY_CINE_NOTES=[523,659,784,659,698,784,880,784,659,784,1047,988,880,784,659,523];
@@ -458,10 +462,24 @@ function circleHitsTreeGeometry(x,z,r){
  for(const m of treeSolidMeshes){if(!m?.parent||m.parent.visible===false)continue;m.updateWorldMatrix(true,false);const b=new THREE.Box3().setFromObject(m);const cx=Math.max(b.min.x,Math.min(x,b.max.x)),cz=Math.max(b.min.z,Math.min(z,b.max.z));if(Math.hypot(x-cx,z-cz)<r)return true}
  return false
 }
+function rockFootprintHit(mesh,x,z,pad=.58,allowJump=true){
+ if(!mesh||mesh.visible===false)return false;
+ mesh.updateWorldMatrix(true,false);const b=new THREE.Box3().setFromObject(mesh);
+ // A jump clears a rock only when Timur's feet are above its actual top.
+ if(allowJump&&py>b.max.y+.04)return false;
+ const cx=Math.max(b.min.x,Math.min(x,b.max.x)),cz=Math.max(b.min.z,Math.min(z,b.max.z));
+ return Math.hypot(x-cx,z-cz)<pad;
+}
+function pushOutOfRock(mesh){
+ if(!mesh||mesh.visible===false||!rockFootprintHit(mesh,boy.position.x,boy.position.z,PLAYER_RADIUS+.02,true))return false;
+ mesh.updateWorldMatrix(true,false);const b=new THREE.Box3().setFromObject(mesh),x=boy.position.x,z=boy.position.z,r=PLAYER_RADIUS+.035;
+ const dl=Math.abs(x-(b.min.x-r)),dr=Math.abs((b.max.x+r)-x),db=Math.abs(z-(b.min.z-r)),dt=Math.abs((b.max.z+r)-z),m=Math.min(dl,dr,db,dt);
+ if(m===dl)boy.position.x=b.min.x-r;else if(m===dr)boy.position.x=b.max.x+r;else if(m===db)boy.position.z=b.min.z-r;else boy.position.z=b.max.z+r;return true;
+}
 function worldObstacleAt(x,z,pad=.38){
  // Trees include low branches/crowns, not only the trunk.
  if(circleHitsTreeGeometry(x,z,PLAYER_RADIUS+pad))return true;
- if(rockPositions.some(([rx,rz,r,m])=>m?.visible!==false&&Math.hypot(x-rx,z-rz)<r+pad))return true;
+ if(rockPositions.some(([, , ,m])=>m?.visible!==false&&rockFootprintHit(m,x,z,pad,false)))return true;
  if(level===4&&mountainObstacles.some(([mx,mz,r])=>Math.hypot(x-mx,z-mz)<r+pad))return true;
  if(level===5&&lairObstacles.some(([lx,lz,r,g])=>g.visible&&Math.hypot(x-lx,z-lz)<r+pad))return true;
  if(houseBlockAt(x,z,pad))return true;
@@ -481,7 +499,8 @@ function playerWorldBlocked(x,z,pad=0){
  if(x<-43.15||x>43.15||z<-43.15||z>43.15)return true;
  const rr=PLAYER_RADIUS+pad;
  if(circleHitsTreeGeometry(x,z,rr))return true;
- if(solidCircles().some(o=>o.type!=='tree'&&Math.hypot(x-o.x,z-o.z)<o.r+rr))return true;
+ if(rockPositions.some(([, , ,m])=>rockFootprintHit(m,x,z,rr,true)))return true;
+ if(solidCircles().some(o=>o.type!=='tree'&&o.type!=='rock'&&Math.hypot(x-o.x,z-o.z)<o.r+rr))return true;
  if(houseBlockAt(x,z,rr))return true;
  return false
 }
@@ -489,7 +508,8 @@ function depenetratePlayer(){
  // Never leave Timur trapped inside a rock/tree after a level change, jump or knockback.
  for(let pass=0;pass<6;pass++){
   let changed=false;
-  for(const o of solidCircles().filter(o=>o.type!=='tree')){
+  for(const [, , ,m] of rockPositions)if(pushOutOfRock(m))changed=true;
+  for(const o of solidCircles().filter(o=>o.type!=='tree'&&o.type!=='rock')){
    let dx=boy.position.x-o.x,dz=boy.position.z-o.z,d=Math.hypot(dx,dz),need=o.r+PLAYER_RADIUS+.035;
    if(d<need){if(d<.001){dx=1;dz=0;d=1}boy.position.x=o.x+dx/d*need;boy.position.z=o.z+dz/d*need;changed=true}
   }
@@ -506,7 +526,7 @@ function movePlayerCollision(mx,mz){
  const xFirst=Math.abs(mx)>=Math.abs(mz),attempts=xFirst?[[px+mx,pz],[px,pz+mz]]:[[px,pz+mz],[px+mx,pz]];
  for(const [x,z] of attempts)if(!playerWorldBlocked(x,z)){boy.position.x=x;boy.position.z=z;return}
  // Final tangent escape around the nearest circular obstacle.
- let nearest=null,nd=Infinity;for(const o of solidCircles()){const d=Math.hypot(tx-o.x,tz-o.z)-(o.r+PLAYER_RADIUS);if(d<nd){nd=d;nearest=o}}
+ let nearest=null,nd=Infinity;for(const o of solidCircles().filter(o=>o.type!=='rock')){const d=Math.hypot(tx-o.x,tz-o.z)-(o.r+PLAYER_RADIUS);if(d<nd){nd=d;nearest=o}}
  if(nearest){const rx=px-nearest.x,rz=pz-nearest.z,rl=Math.hypot(rx,rz)||1,txv=-rz/rl,tzv=rx/rl,sgn=(mx*txv+mz*tzv)>=0?1:-1,mag=Math.hypot(mx,mz);const sx=px+txv*sgn*mag,sz=pz+tzv*sgn*mag;if(!playerWorldBlocked(sx,sz)){boy.position.x=sx;boy.position.z=sz}}
 }
 function runCollisionAudit(){
@@ -517,7 +537,7 @@ function runCollisionAudit(){
  for(const o of solidCircles()){let free=0;const d=o.r+PLAYER_RADIUS+.18;for(const [ax,az] of [[1,0],[-1,0],[0,1],[0,-1]])if(!playerWorldBlocked(o.x+ax*d,o.z+az*d))free++;if(free===0)issues.push(`sealed-${o.type}:${o.x.toFixed(1)},${o.z.toFixed(1)}`)}
  // Probe every visible trunk/branch: a player-sized circle at its projected box center must be blocked.
  for(const m of treeSolidMeshes){if(!m?.parent||m.parent.visible===false)continue;m.updateWorldMatrix(true,false);const b=new THREE.Box3().setFromObject(m),c=new THREE.Vector3();b.getCenter(c);if(!circleHitsTreeGeometry(c.x,c.z,PLAYER_RADIUS))issues.push(`branch-not-solid:${c.x.toFixed(1)},${c.z.toFixed(1)}`)}
- return {ok:issues.length===0,issues,obstacles:solidCircles().length,treeSolids:treeSolidMeshes.filter(m=>m?.parent&&m.parent.visible!==false).length,level}
+ return {ok:issues.length===0,issues,obstacles:solidCircles().length,preciseRockFootprints:rockPositions.filter(([, , ,m])=>m?.visible!==false).length,treeSolids:treeSolidMeshes.filter(m=>m?.parent&&m.parent.visible!==false).length,level}
 }
 window.__KABANCHIKI_COLLISION_AUDIT__=runCollisionAudit;
 function validFamilySpot(f){
@@ -600,7 +620,7 @@ else if(blockingBoar){
  const tx=-rz/rl,tz=rx/rl,sign=(dx*tx+dz*tz)>=0?1:-1,mag=Math.hypot(mx,mz)*.68;
  const sx=tx*sign*mag,sz=tz*sign*mag;if(!playerWorldBlocked(boy.position.x+sx,boy.position.z+sz))movePlayerCollision(sx,sz)
 }
-if(Math.hypot(dx,dz)>.05){boy.rotation.y=Math.atan2(dx,dz);boy.children[0].rotation.x=Math.sin(now*.014)*.24;boy.children[1].rotation.x=-boy.children[0].rotation.x}else{boy.children[0].rotation.x=boy.children[1].rotation.x=0}
+if(Math.hypot(dx,dz)>.05){boy.rotation.y=Math.atan2(dx,dz);const walk=Math.sin(now*.014);boy.children[0].rotation.x=walk*.24;boy.children[1].rotation.x=-walk*.24;if(throwCooldown<=.18)boy.children[5].rotation.x=-walk*.16;boy.children[6].rotation.x=walk*.16}else{boy.children[0].rotation.x=boy.children[1].rotation.x=0;if(throwCooldown<=.18){boy.children[5].rotation.x*=Math.max(0,1-dt*9);boy.children[6].rotation.x*=Math.max(0,1-dt*9)}}
 if(mountedFriend&&(!friend||friend.flee)){mountedFriend=false;py=0;vy=0}
 if(mountedFriend){
  if(jump){mountedFriend=false;jump=false;py=1.48;vy=6.2;const a=boy.rotation.y;boy.position.x+=Math.sin(a)*1.15;boy.position.z+=Math.cos(a)*1.15;notice('🐗 Тимур спрыгнул с кабанчика!')}
