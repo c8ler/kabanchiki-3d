@@ -3,11 +3,11 @@ const html=fs.readFileSync('index.html','utf8');
 const game=fs.readFileSync('src/game.js','utf8');
 const levels=fs.readFileSync('levels/levels.js','utf8');
 const checks=[
- ['version v77',/GAME_VERSION='v77'/.test(game)],
+ ['version v78',/GAME_VERSION='v78'/.test(game)],
  ['tree apples',/function appleTreeSpot\(\)/.test(game)&&/py>\.58/.test(game)],
  ['unified collision solver',/function movePlayerCollision\(mx,mz\)/.test(game)&&/function depenetratePlayer\(\)/.test(game)],
  ['collision audit',/function runCollisionAudit\(\)/.test(game)&&/__KABANCHIKI_COLLISION_AUDIT__/.test(game)],
- ['branches included in tree radius',/r:1\.62,type:'tree'/.test(game)],
+ ['branches use geometry collision',/circleHitsTreeGeometry/.test(game)&&/treeSolidMeshes/.test(game)],
  ['external game module',/src="\.\/src\/game\.js"/.test(html)],
  ['no giant inline game module',!/<script type="module">[\s\S]{5000,}<\/script>/.test(html)],
  ['five level metadata entries',(levels.match(/id:/g)||[]).length===5],
@@ -29,6 +29,8 @@ const checks=[
  ['friend portal persistence',/const carriedFriend=friend,carriedFriendHP=friendHP/.test(game)],
  ['difficulty system',/const DIFF_CONFIG=\[/.test(game)],
  ['automation hook',/__KABANCHIKI_TEST__/.test(game)],
+ ['audio toggles',/toggleMusic/.test(html)&&/toggleSfx/.test(html)&&/musicEnabled/.test(game)&&/sfxEnabled/.test(game)],
+ ['lake evening restored',/0xe59a78/.test(game)],
  ['global leaderboard config',game.includes('SUPABASE_URL')&&game.includes('submitGlobalResult')&&game.includes('globalStatsHtml')]
 ];
 let bad=0;for(const [n,ok] of checks){console.log(`${ok?'✓':'✗'} ${n}`);if(!ok)bad++}
