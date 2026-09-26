@@ -16,5 +16,5 @@
 - Руки Тимура слегка качаются в противофазе при ходьбе.
 - WebAudio при visibilitychange/pagehide/blur немедленно suspend; при возврате корректно resume. Это убирает звук игры при сворачивании и помогает Android отдавать аудиофокус телефонному звонку.
 
-## v85 autotest pipeline
-v85 adds explicit collisionAudit + robotAudit reporting. Important: the repository's Auto Update workflow must dispatch web-check.yml *after* it publishes the ZIP, otherwise GitHub tests the pre-update commit. Files `auto-update-v85.yml` and `.github/workflows/web-check.yml` contain the corrected workflows.
+## v86 autotest pipeline
+v86 adds explicit collisionAudit + robotAudit reporting. Important: the repository's Auto Update workflow must dispatch web-check.yml *after* it publishes the ZIP, otherwise GitHub tests the pre-update commit. Files `auto-update-v86.yml` and `.github/workflows/web-check.yml` contain the corrected workflows.
