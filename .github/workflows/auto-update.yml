@@ -52,7 +52,16 @@ jobs:
             ! -name 'Kabanchiki_3D_*.zip' \
             -exec rm -rf {} +
 
-          cp -a "$GAME_ROOT"/. .
+          cp -a "$GAME_ROOT"/. /tmp/newgame/
+
+          rm -rf /tmp/newgame/.github
+          rm -f /tmp/newgame/Kabanchiki_3D_*.zip
+
+          cp -a /tmp/newgame/. .
+
+          find scripts src tests -type f \
+            \( -name '1' -o -name '2' -o -name '3' \) \
+            -delete 2>/dev/null || true
 
       - name: Verify game
         run: |
