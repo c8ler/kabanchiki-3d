@@ -1,6 +1,6 @@
 window.__gameLoadProgress?.(84);let __loadFinished=false;
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
-const GAME_VERSION='v101';
+const GAME_VERSION='v102';
 const SUPABASE_URL='https://usszaimdbepgexnigiau.supabase.co';
 const SUPABASE_KEY='sb_publishable_x3H1Px6JaDTwpyZy_ARyiA_OqEKLINZ'; const $=id=>document.getElementById(id), mobile=matchMedia('(pointer:coarse)').matches;if(mobile){$('message').textContent='🕹️ Джойстик — идти · проведи пальцем — камера · справа — Прыжок и Кормить';$('introControls').innerHTML='<b>На телефоне:</b> левый джойстик — движение, проведи пальцем по миру — поворот камеры, кнопки «Прыжок» и «Кормить» справа.';$('pauseControls').innerHTML='<b>Телефон:</b> левый джойстик — движение · проведи пальцем по миру — камера · кнопки «Прыжок» и «Кормить» справа.'}else{$('message').textContent='WASD — идти · ПРОБЕЛ — прыжок · E/F — кормить · ESC — меню · V — вид';$('introControls').innerHTML='<b>На ПК:</b> WASD/стрелки — идти, ПРОБЕЛ — прыжок, E или F — бросить еду, V — сменить вид, ESC — пауза. Мышь — горизонтальный поворот камеры.';$('pauseControls').innerHTML='<b>Управление ПК:</b> WASD/стрелки — движение · ПРОБЕЛ — прыжок · E/F — кормить · мышь — камера · V — вид · ESC — меню.'}let started=false,first=false,life=5,rescued=0,win=false,invuln=0,flash=0,camMode=(mobile?0:4),yaw=0,pitch=.18,move={x:0,z:0},jump=false,act=false,keys={},drag=null,stickPointer=null,stick={x:0,y:0};$('camera').textContent=`📷 Вид ${camMode+1}/8`;
 const __autoParams=new URLSearchParams(location.search),__autoTest=__autoParams.get('autotest')==='1';
@@ -48,7 +48,7 @@ for(let i=0;i<(mobile?24:46);i++){let x=rand(-40,40),z=rand(-40,40);if(Math.abs(
  block(g,grassBladeMat,0,.18,0,.05,.36,.05);sphere(g,flowerMats[i%flowerMats.length],0,.43,0,.11);forestVisual.add(g)}
 const fernMat=new THREE.MeshLambertMaterial({color:0x397b3d});
 for(let i=0;i<(mobile?22:44);i++){const g=new THREE.Group();g.position.set(rand(-40,40),.02,rand(-40,40));for(let j=0;j<4;j++){const b=block(g,fernMat,0,.18,0,.08,.35,.55);b.rotation.y=j*Math.PI/2;b.rotation.z=.55}forestVisual.add(g)}
-for(let i=0;i<9;i++){const g=new THREE.Group();g.position.set(rand(-38,38),.12,rand(-38,34));const log=block(g,mats.wood,0,.28,0,rand(1.0,1.8),.42,.42);log.rotation.y=rand(0,6.28);forestVisual.add(g)}
+const logObstacles=[];for(let i=0;i<9;i++){const g=new THREE.Group();g.position.set(rand(-38,38),.12,rand(-38,34));const len=rand(1.0,1.8),log=block(g,mats.wood,0,.28,0,len,.42,.42);log.rotation.y=rand(0,6.28);log.userData.naturalLog=true;forestVisual.add(g);logObstacles.push({g,mesh:log,x:g.position.x,z:g.position.z,len,r:.21,yaw:log.rotation.y,top:g.position.y+.28+.21})}
 const sunDisc=new THREE.Mesh(new THREE.SphereGeometry(2.3,16,12),new THREE.MeshBasicMaterial({color:0xfff2b0}));sunDisc.position.set(-28,24,-42);scene.add(sunDisc);
 const treePositions=[],treeObjects=[],treeSolidMeshes=[];
 const trunkGeo=new THREE.CylinderGeometry(.46,.68,1,7),branchGeo=new THREE.CylinderGeometry(.13,.20,1,6),crownGeo=new THREE.DodecahedronGeometry(1,0);
@@ -516,9 +516,33 @@ function pushOutOfRock(mesh){
  lx/=n;lz/=n;const c=Math.cos(e.q.yaw),sn=Math.sin(e.q.yaw);
  boy.position.x=e.q.cx+lx*c+lz*sn;boy.position.z=e.q.cz-lx*sn+lz*c;return true;
 }
+// v102: fallen logs use a capsule footprint: a thin segment with round ends, matching the visible trunk.
+function logDistance(o,x,z){
+ const dx=x-o.x,dz=z-o.z,c=Math.cos(o.yaw),sn=Math.sin(o.yaw),along=dx*c+dz*sn,side=-dx*sn+dz*c;
+ const half=Math.max(.08,o.len*.5-o.r),clamped=Math.max(-half,Math.min(half,along));
+ return {distance:Math.hypot(along-clamped,side),along,side,clamped,half};
+}
+function logFootprintHit(o,x,z,pad=PLAYER_RADIUS,allowJump=true){
+ if(level!==1||!forestVisual.visible||!o?.g?.visible)return false;
+ if(allowJump){
+  if(py>o.top+.035)return false;
+  const remainingRise=vy>0?(vy*vy)/(2*18):0;
+  if(vy>0&&py>.04&&o.top<=py+remainingRise+.06)return false;
+  if(vy<=0&&py>=o.top-.04)return false;
+ }
+ return logDistance(o,x,z).distance<o.r+pad;
+}
+function pushOutOfLog(o){
+ if(!logFootprintHit(o,boy.position.x,boy.position.z,PLAYER_RADIUS+.015,true))return false;
+ const d=logDistance(o,boy.position.x,boy.position.z),need=o.r+PLAYER_RADIUS+.025,c=Math.cos(o.yaw),sn=Math.sin(o.yaw);
+ let vx=d.along-d.clamped,vz=d.side,n=Math.hypot(vx,vz);if(n<.0001){vx=0;vz=1;n=1}
+ const a=d.clamped+vx/n*need,b=vz/n*need;
+ boy.position.x=o.x+a*c-b*sn;boy.position.z=o.z+a*sn+b*c;return true;
+}
 function worldObstacleAt(x,z,pad=.38){
  // Trees include low branches/crowns, not only the trunk.
  if(circleHitsTreeGeometry(x,z,PLAYER_RADIUS+pad))return true;
+ if(logObstacles.some(o=>logFootprintHit(o,x,z,PLAYER_RADIUS+pad,false)))return true;
  if(rockPositions.some(([, , ,m])=>m?.visible!==false&&rockFootprintHit(m,x,z,pad,false)))return true;
  if(level===4&&mountainObstacles.some(([mx,mz,r])=>Math.hypot(x-mx,z-mz)<r+pad))return true;
  if(level===5&&lairObstacles.some(([lx,lz,r,g])=>g.visible&&Math.hypot(x-lx,z-lz)<r+pad))return true;
@@ -539,6 +563,7 @@ function playerWorldBlocked(x,z,pad=0){
  if(x<-43.15||x>43.15||z<-43.15||z>43.15)return true;
  const rr=PLAYER_RADIUS+pad;
  if(circleHitsTreeGeometry(x,z,rr))return true;
+ if(logObstacles.some(o=>logFootprintHit(o,x,z,rr,true)))return true;
  if(rockPositions.some(([, , ,m])=>rockFootprintHit(m,x,z,ROCK_PLAYER_RADIUS+pad,true)))return true;
  if(solidCircles().some(o=>o.type!=='tree'&&o.type!=='rock'&&Math.hypot(x-o.x,z-o.z)<o.r+rr))return true;
  if(houseBlockAt(x,z,rr,true))return true;
@@ -554,6 +579,8 @@ function playerSupportHeightAtNoRock(x,z){
 }
 function playerSupportHeightAt(x,z){
  let top=0;
+ // Low logs can be landed on naturally; their capsule footprint has no invisible corner area.
+ if(level===1)for(const o of logObstacles)if(logDistance(o,x,z).distance<o.r+PLAYER_RADIUS*.10)top=Math.max(top,o.top);
  // Rock tops are real platforms: land on them instead of being pushed back to the ground.
  for(const [, , ,m] of rockPositions){
   if(!m||m.visible===false)continue;const e=rockEllipse(m,x,z,PLAYER_RADIUS*.12);
@@ -570,6 +597,7 @@ function depenetratePlayer(){
  // Never leave Timur trapped inside a rock/tree after a level change, jump or knockback.
  for(let pass=0;pass<6;pass++){
   let changed=false;
+  for(const o of logObstacles)if(pushOutOfLog(o))changed=true;
   for(const [, , ,m] of rockPositions)if(pushOutOfRock(m))changed=true;
   for(const o of solidCircles().filter(o=>o.type!=='tree'&&o.type!=='rock')){
    let dx=boy.position.x-o.x,dz=boy.position.z-o.z,d=Math.hypot(dx,dz),need=o.r+PLAYER_RADIUS+.035;
@@ -763,6 +791,25 @@ function runRockEdgeAudit(){
 }
 window.__KABANCHIKI_ROCK_EDGE_AUDIT__=runRockEdgeAudit;
 // Deterministic corridor math check: a visibly player-wide gap must remain wider than two collision pads.
+function runLogPhysicsAudit(){
+ const issues=[],samples=[];if(level!==1)return {ok:true,issues,tested:0,samples,level};
+ const save={x:boy.position.x,z:boy.position.z,py,vy};let tested=0;
+ for(let i=0;i<Math.min(9,logObstacles.length);i++){
+  const o=logObstacles[i],c=Math.cos(o.yaw),sn=Math.sin(o.yaw),clear=o.r+PLAYER_RADIUS+.10;
+  // Both rounded ends and both side lanes must be usable immediately outside the visible capsule.
+  const pts=[[o.x+c*(o.len/2+PLAYER_RADIUS+.08),o.z+sn*(o.len/2+PLAYER_RADIUS+.08)],
+             [o.x-c*(o.len/2+PLAYER_RADIUS+.08),o.z-sn*(o.len/2+PLAYER_RADIUS+.08)],
+             [o.x-sn*clear,o.z+c*clear],[o.x+sn*clear,o.z-c*clear]];
+  const free=pts.every(([x,z])=>!logFootprintHit(o,x,z,0,false));
+  // A normal jump from beside the log must clear its low top without teleport/step-up.
+  py=0;vy=7;let cleared=false,maxY=0;for(let f=0;f<70;f++){vy-=18/60;py+=vy/60;maxY=Math.max(maxY,py);if(py>o.top+.04&&!logFootprintHit(o,o.x,o.z,PLAYER_RADIUS,true))cleared=true;if(py<=0&&vy<0){py=0;break}}
+  samples.push({log:i,freeEndsAndSides:free,jumpClears:cleared,top:+o.top.toFixed(2),maxY:+maxY.toFixed(2)});tested++;
+  if(!free)issues.push(`log-clearance-failed:${i}`);if(!cleared)issues.push(`log-jump-failed:${i}`);
+ }
+ boy.position.set(save.x,save.py,save.z);py=save.py;vy=save.vy;
+ return {ok:issues.length===0,issues,tested,samples,level};
+}
+window.__KABANCHIKI_LOG_PHYSICS_AUDIT__=runLogPhysicsAudit;
 function runRockCorridorAudit(){
  const required=ROCK_PLAYER_RADIUS*2+.10;const syntheticGap=1.10;
  const issues=[];if(syntheticGap<=required)issues.push(`rock-corridor-radius-too-wide:${required.toFixed(2)}`);
@@ -860,7 +907,7 @@ if(__autoTest){
   window.__KABANCHIKI_TEST__.level=__lv;
   // v83: readiness must not wait for the expensive robot sweep. GitHub can now distinguish startup from collision-test work.
   window.__KABANCHIKI_TEST__.ready=true;document.documentElement.dataset.kabanchikiReady='1';
-  setTimeout(()=>{try{const __robot=runRobotCollisionTest();window.__KABANCHIKI_TEST__.robotAudit=__robot;if(!__robot.ok)window.__KABANCHIKI_TEST__.errors.push(...__robot.issues);const __climb=runRockClimbAudit();window.__KABANCHIKI_TEST__.rockClimbAudit=__climb;if(!__climb.ok)window.__KABANCHIKI_TEST__.errors.push(...__climb.issues);const __edge=runRockEdgeAudit();window.__KABANCHIKI_TEST__.rockEdgeAudit=__edge;if(!__edge.ok)window.__KABANCHIKI_TEST__.errors.push(...__edge.issues);const __corr=runRockCorridorAudit();window.__KABANCHIKI_TEST__.rockCorridorAudit=__corr;if(!__corr.ok)window.__KABANCHIKI_TEST__.errors.push(...__corr.issues);const __mountedApple=runMountedAppleAudit();window.__KABANCHIKI_TEST__.mountedAppleAudit=__mountedApple;if(!__mountedApple.ok)window.__KABANCHIKI_TEST__.errors.push(...__mountedApple.issues)}catch(e){const msg='robot-exception:'+String(e);window.__KABANCHIKI_TEST__.robotAudit={ok:false,pending:false,issues:[msg],samples:[],treesTested:0,rocksTested:0,level:__lv};window.__KABANCHIKI_TEST__.errors.push(msg)}},50);
+  setTimeout(()=>{try{const __robot=runRobotCollisionTest();window.__KABANCHIKI_TEST__.robotAudit=__robot;if(!__robot.ok)window.__KABANCHIKI_TEST__.errors.push(...__robot.issues);const __climb=runRockClimbAudit();window.__KABANCHIKI_TEST__.rockClimbAudit=__climb;if(!__climb.ok)window.__KABANCHIKI_TEST__.errors.push(...__climb.issues);const __edge=runRockEdgeAudit();window.__KABANCHIKI_TEST__.rockEdgeAudit=__edge;if(!__edge.ok)window.__KABANCHIKI_TEST__.errors.push(...__edge.issues);const __log=runLogPhysicsAudit();window.__KABANCHIKI_TEST__.logPhysicsAudit=__log;if(!__log.ok)window.__KABANCHIKI_TEST__.errors.push(...__log.issues);const __corr=runRockCorridorAudit();window.__KABANCHIKI_TEST__.rockCorridorAudit=__corr;if(!__corr.ok)window.__KABANCHIKI_TEST__.errors.push(...__corr.issues);const __mountedApple=runMountedAppleAudit();window.__KABANCHIKI_TEST__.mountedAppleAudit=__mountedApple;if(!__mountedApple.ok)window.__KABANCHIKI_TEST__.errors.push(...__mountedApple.issues)}catch(e){const msg='robot-exception:'+String(e);window.__KABANCHIKI_TEST__.robotAudit={ok:false,pending:false,issues:[msg],samples:[],treesTested:0,rocksTested:0,level:__lv};window.__KABANCHIKI_TEST__.errors.push(msg)}},50);
  }catch(e){window.__KABANCHIKI_TEST__.errors.push(String(e));document.documentElement.dataset.kabanchikiError=String(e)}
 }
 let last=performance.now(),fpsFrames=0,fpsLast=last,fpsValue=0;hud();function loop(now){requestAnimationFrame(loop);fpsFrames++;if(now-fpsLast>=500){fpsValue=Math.round(fpsFrames*1000/(now-fpsLast));fpsFrames=0;fpsLast=now;const pe=$('perf');if(pe)pe.textContent=`${GAME_VERSION} · FPS ${fpsValue} · ⏱ ${formatTime(totalTime)}`;}const dt=Math.min(.05,(now-last)/1000);last=now;if(started&&life>0&&!win&&!paused){levelTime+=dt;totalTime+=dt;for(const __b of [...friends,...foes]){if(__b?.g?.userData?.tailPivot)__b.g.userData.tailPivot.rotation.y=Math.sin(now*.006+__b.phase)*.42}if(level===1){forestVisual.rotation.z=Math.sin(now*.00045)*.0018;}if(level===2){rippleA.rotation.z=now*.000035;rippleB.rotation.z=-now*.000025;waterRippleMatA.opacity=.17+Math.sin(now*.0012)*.045;waterRippleMatB.opacity=.13+Math.sin(now*.00105+1.4)*.035;lakeGlint.scale.x=2.35+Math.sin(now*.0008)*.32;lakeGlint.material.opacity=.18+Math.sin(now*.0011)*.055;}throwCooldown=Math.max(0,throwCooldown-dt);friendAttack=Math.max(0,friendAttack-dt);forageTimer-=dt;if(forageTimer<=0){const activeFood=apples.filter(a=>!a.done&&a.type!=='berry').length,activeBerries=apples.filter(a=>!a.done&&a.type==='berry').length;if(activeFood<4){spawnForage();notice('🌱 Появилась новая еда! 🍎 Яблоки ищи на деревьях — до них нужно допрыгнуть.')}else if(activeBerries<1&&life<diffCfg().playerHP){spawnForage('berry');notice('🫐 Где-то появились лечебные ягоды!')}forageTimer=rand(14,22)}if(flashlightObj&&!hasFlashlight&&Math.hypot(flashlightObj.position.x-boy.position.x,flashlightObj.position.z-boy.position.z)<1.8){hasFlashlight=true;scene.remove(flashlightObj);flashlightObj=null;torch.intensity=42;sound(900,.25);notice('🔦 Фонарик найден! Теперь можно идти в ночное логово.')} boy.children[5].rotation.x*=Math.max(0,1-dt*7);for(let i=shots.length-1;i>=0;i--){const sh=shots[i];sh.t+=dt*2.8;const t=Math.min(1,sh.t);sh.g.position.lerpVectors(sh.start,sh.target,t);sh.g.position.y+=Math.sin(Math.PI*t)*1.7;sh.g.rotation.y+=dt*9;if(t>=1){resolveMeat(sh);shots.splice(i,1)}}for(const f of familyMembers){if(!f.done)f.person.rotation.y=Math.sin(now*.002+f.x)*.25}const forward=(keys.KeyW||keys.ArrowUp?1:0)-(keys.KeyS||keys.ArrowDown?1:0)-stick.y,side=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0)+stick.x;const len=Math.max(1,Math.hypot(forward,side));let dx=(Math.sin(yaw)*forward-Math.cos(yaw)*side)/len,dz=(Math.cos(yaw)*forward+Math.sin(yaw)*side)/len;// v87: pressing jump close to a friendly boar mounts it directly; no tree/wall pinning is needed.
