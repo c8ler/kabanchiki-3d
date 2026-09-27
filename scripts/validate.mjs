@@ -3,14 +3,15 @@ const html=fs.readFileSync('index.html','utf8');
 const game=fs.readFileSync('src/game.js','utf8');
 const levels=fs.readFileSync('levels/levels.js','utf8');
 const checks=[
- ['version v97',/GAME_VERSION='v97'/.test(game)],
+ ['version v99',/GAME_VERSION='v99'/.test(game)],
  ['world integrity audit',/runWorldIntegrityAudit/.test(game)&&/worldAudit/.test(game)],
  ['tree apple anchoring',/repairTreeApples/.test(game)&&/apple-floating/.test(game)],
  ['rock passage radius',/ROCK_PLAYER_RADIUS=\.34/.test(game)],
  ['family house transparency audit',/family-house-not-transparent/.test(game)],
  ['mounted defense',/function mountedFriendDefense/.test(game)&&/mountedFriendDefense\(\)/.test(game)&&/Друг отогнал/.test(game)],
+ ['mounted apple collection',/function canCollectForage\(a\)/.test(game)&&/mountedFriend\|\|/.test(game)&&/function runMountedAppleAudit\(\)/.test(game)&&/__KABANCHIKI_MOUNTED_APPLE_AUDIT__/.test(game)&&/mountedAppleAudit/.test(game)&&/mounted-apple-food/.test(game)],
  ['spawn guard',/function repairAndAuditSpawns\(\)/.test(game)&&/__KABANCHIKI_SPAWN_AUDIT__/.test(game)],
- ['loading version',/loadingVersion/.test(html)&&/>v97</.test(html)],
+ ['loading version',/loadingVersion/.test(html)&&/>v99</.test(html)],
  ['precise rock footprint',/function rockFootprintHit/.test(game)],
  ['jump clears low rocks',/py>b.max.y/.test(game)],
  ['page audio suspension',/visibilitychange/.test(game)&&/audio.suspend/.test(game)],
@@ -19,6 +20,9 @@ const checks=[
  ['unified collision solver',/function movePlayerCollision\(mx,mz\)/.test(game)&&/function depenetratePlayer\(\)/.test(game)],
  ['collision audit',/function runCollisionAudit\(\)/.test(game)&&/__KABANCHIKI_COLLISION_AUDIT__/.test(game)],
  ['robot collision audit',/function runRobotCollisionTest\(\)/.test(game)&&/__KABANCHIKI_ROBOT_TEST__/.test(game)&&/robotAudit/.test(game)],
+ ['real rock climb audit',/function runRockClimbAudit\(\)/.test(game)&&/__KABANCHIKI_ROCK_CLIMB_AUDIT__/.test(game)&&/rockClimbAudit/.test(game)&&/rock-climb-failed/.test(game)],
+ ['deterministic rock corridor audit',/function runRockCorridorAudit\(\)/.test(game)&&/__KABANCHIKI_ROCK_CORRIDOR_AUDIT__/.test(game)&&/rockCorridorAudit/.test(game)],
+ ['ballistic rock entry',/remainingRise=vy>0\?\(vy\*vy\)\/\(2\*18\)/.test(game)],
  ['branches use geometry collision',/circleHitsTreeGeometry/.test(game)&&/treeSolidMeshes/.test(game)],
  ['external game module',/src="\.\/src\/game\.js"/.test(html)],
  ['no giant inline game module',!/<script type="module">[\s\S]{5000,}<\/script>/.test(html)],
