@@ -1,6 +1,6 @@
 window.__gameLoadProgress?.(84);let __loadFinished=false;
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
-const GAME_VERSION='v94';
+const GAME_VERSION='v95';
 const SUPABASE_URL='https://usszaimdbepgexnigiau.supabase.co';
 const SUPABASE_KEY='sb_publishable_x3H1Px6JaDTwpyZy_ARyiA_OqEKLINZ'; const $=id=>document.getElementById(id), mobile=matchMedia('(pointer:coarse)').matches;if(mobile){$('message').textContent='🕹️ Джойстик — идти · проведи пальцем — камера · справа — Прыжок и Кормить';$('introControls').innerHTML='<b>На телефоне:</b> левый джойстик — движение, проведи пальцем по миру — поворот камеры, кнопки «Прыжок» и «Кормить» справа.';$('pauseControls').innerHTML='<b>Телефон:</b> левый джойстик — движение · проведи пальцем по миру — камера · кнопки «Прыжок» и «Кормить» справа.'}else{$('message').textContent='WASD — идти · ПРОБЕЛ — прыжок · E/F — кормить · ESC — меню · V — вид';$('introControls').innerHTML='<b>На ПК:</b> WASD/стрелки — идти, ПРОБЕЛ — прыжок, E или F — бросить еду, V — сменить вид, ESC — пауза. Мышь — горизонтальный поворот камеры.';$('pauseControls').innerHTML='<b>Управление ПК:</b> WASD/стрелки — движение · ПРОБЕЛ — прыжок · E/F — кормить · мышь — камера · V — вид · ESC — меню.'}let started=false,first=false,life=5,rescued=0,win=false,invuln=0,flash=0,camMode=(mobile?0:4),yaw=0,pitch=.18,move={x:0,z:0},jump=false,act=false,keys={},drag=null,stickPointer=null,stick={x:0,y:0};$('camera').textContent=`📷 Вид ${camMode+1}/8`;
 const __autoParams=new URLSearchParams(location.search),__autoTest=__autoParams.get('autotest')==='1';
@@ -480,8 +480,15 @@ function circleHitsTreeGeometry(x,z,r){
 function rockFootprintHit(mesh,x,z,pad=.58,allowJump=true){
  if(!mesh||mesh.visible===false)return false;
  mesh.updateWorldMatrix(true,false);const b=new THREE.Box3().setFromObject(mesh);
- // A jump clears a rock only when Timur's feet are above its actual top.
- if(allowJump&&py>b.max.y+.04)return false;
+ // A jump must be allowed to ENTER the rock footprint while rising; otherwise the side
+ // collision prevents Timur from ever getting above the top to land on it.
+ // Only climb rocks whose top is reachable by a normal jump from the current support.
+ if(allowJump){
+  if(py>b.max.y+.04)return false;
+  const base=playerSupportHeightAtNoRock?playerSupportHeightAtNoRock(boy.position.x,boy.position.z):0;
+  const jumpReach=base+1.42;
+  if(vy>0&&py>.18&&b.max.y<=jumpReach)return false;
+ }
  const cx=Math.max(b.min.x,Math.min(x,b.max.x)),cz=Math.max(b.min.z,Math.min(z,b.max.z));
  return Math.hypot(x-cx,z-cz)<pad;
 }
@@ -518,6 +525,14 @@ function playerWorldBlocked(x,z,pad=0){
  if(solidCircles().some(o=>o.type!=='tree'&&o.type!=='rock'&&Math.hypot(x-o.x,z-o.z)<o.r+rr))return true;
  if(houseBlockAt(x,z,rr,true))return true;
  return false
+}
+function playerSupportHeightAtNoRock(x,z){
+ let top=0;
+ if(level===3)for(const h of houseObjects){
+  if(!h.visible)continue;h.updateWorldMatrix(true,true);const b=new THREE.Box3().setFromObject(h);
+  if(x>b.min.x+PLAYER_RADIUS*.20&&x<b.max.x-PLAYER_RADIUS*.20&&z>b.min.z+PLAYER_RADIUS*.20&&z<b.max.z-PLAYER_RADIUS*.20)top=Math.max(top,b.max.y);
+ }
+ return top;
 }
 function playerSupportHeightAt(x,z){
  let top=0;
