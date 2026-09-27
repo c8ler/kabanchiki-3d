@@ -3,7 +3,7 @@ const html=fs.readFileSync('index.html','utf8');
 const game=fs.readFileSync('src/game.js','utf8');
 const levels=fs.readFileSync('levels/levels.js','utf8');
 const checks=[
- ['version v105',/GAME_VERSION='v105'/.test(game)],
+ ['version v106',/GAME_VERSION='v106'/.test(game)],
  ['world integrity audit',/runWorldIntegrityAudit/.test(game)&&/worldAudit/.test(game)],
  ['tree apple anchoring',/repairTreeApples/.test(game)&&/apple-off-branch/.test(game)],
  ['rock passage radius',/ROCK_PLAYER_RADIUS=\.34/.test(game)],
@@ -12,7 +12,11 @@ const checks=[
  ['mounted apple collection',/function canCollectForage\(a\)/.test(game)&&/mountedFriend\|\|/.test(game)&&/function runMountedAppleAudit\(\)/.test(game)&&/__KABANCHIKI_MOUNTED_APPLE_AUDIT__/.test(game)&&/mountedAppleAudit/.test(game)&&/mounted-apple-food/.test(game)],
  ['spawn guard',/function repairAndAuditSpawns\(\)/.test(game)&&/__KABANCHIKI_SPAWN_AUDIT__/.test(game)],
  ['single-source version sync',/loadingVersion/.test(html)&&/window.__KABANCHIKI_VERSION__=GAME_VERSION/.test(game)&&/el.textContent=GAME_VERSION/.test(game)],
- ['cache-busted game module',/src="\.\/src\/game\.js\?v=104"/.test(html)],
+ ['cache-busted game module',/src="\.\/src\/game\.js\?v=106"/.test(html)],
+ ['html build marker v106',/__KABANCHIKI_BUILD__='v106'/.test(html)],
+ ['no-cache document meta',/no-cache, no-store, must-revalidate/.test(html)],
+ ['cylindrical tree collision',/function treeTrunkShape/.test(game)&&/function treeTrunkHit/.test(game)],
+ ['apple own twig registered',/treeBranchMeshes\.push\(twig\)/.test(game)],
  ['branch-sized tree geometry',/branchGeo=new THREE.CylinderGeometry\(\.09,\.14,1,6\)/.test(game)&&/len=rand\(\.68,1\.08\)/.test(game)],
  ['apples anchored on branches',/function branchApplePoint/.test(game)&&/function appleOnBranch/.test(game)&&/runBranchAppleAudit/.test(game)&&/apple-off-branch/.test(game)],
  ['mounted rock glide and log step',/const ridePad=mountedFriend\?\.20:0/.test(game)&&/rideBump/.test(game)&&/if\(mountedFriend\)return e\.n<1/.test(game)&&/runMountedTerrainAudit/.test(game)],
