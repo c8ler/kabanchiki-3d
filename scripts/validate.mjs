@@ -3,7 +3,10 @@ const html=fs.readFileSync('index.html','utf8');
 const game=fs.readFileSync('src/game.js','utf8');
 const levels=fs.readFileSync('levels/levels.js','utf8');
 const checks=[
- ['version v111',/GAME_VERSION='v111'/.test(game)],
+ ['version v112',/GAME_VERSION='v112'/.test(game)],
+ ['level visibility before apple spawn',/syncWorldGeneration\(n\);\nseedForage\(\)/.test(game)],
+ ['hidden-tree apple rejected',/tree\.visible===false/.test(game)&&/apple-hidden-tree/.test(game)&&/br\.parent!==tree/.test(game)],
+ ['apple repair keeps new twig',/a\.branch=p\[3\]/.test(game)&&/a\.tree=p\[4\]/.test(game)],
  ['world integrity audit',/runWorldIntegrityAudit/.test(game)&&/worldAudit/.test(game)],
  ['tree apple anchoring',/repairTreeApples/.test(game)&&/apple-off-branch/.test(game)],
  ['rock passage radius',/ROCK_PLAYER_RADIUS=\.31/.test(game)],
@@ -13,7 +16,7 @@ const checks=[
  ['spawn guard',/function repairAndAuditSpawns\(\)/.test(game)&&/__KABANCHIKI_SPAWN_AUDIT__/.test(game)],
  ['single-source version sync',/loadingVersion/.test(html)&&/window.__KABANCHIKI_VERSION__=GAME_VERSION/.test(game)&&/el.textContent=GAME_VERSION/.test(game)],
  ['cache-busted game module',/src="\.\/src\/game\.js\?v=111"/.test(html)],
- ['html build marker v111',/__KABANCHIKI_BUILD__='v111'/.test(html)],
+ ['html build marker v112',/__KABANCHIKI_BUILD__='v112'/.test(html)],
  ['no-cache document meta',/no-cache, no-store, must-revalidate/.test(html)],
  ['cylindrical tree collision',/function treeTrunkShape/.test(game)&&/function treeTrunkHit/.test(game)],
  ['apple own twig registered',/treeBranchMeshes\.push\(twig\)/.test(game)],
