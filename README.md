@@ -32,5 +32,5 @@ Cache/version sync hardened; trunk collision uses cylindrical footprint; apple t
 Mounted boar now uses a dedicated visible-body rock radius; real-rock audit rejects penetration while allowing legitimate sliding around rounded stones.
 
 
-## v109
+## v110
 Robot rock probes now use the same rotated rounded ellipse as gameplay instead of a world Box3. Walk-in, escape and above-rock probes are aligned to the real collision normal; mounted penetration checks remain unchanged.

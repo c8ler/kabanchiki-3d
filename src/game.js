@@ -1,6 +1,6 @@
 window.__gameLoadProgress?.(84);let __loadFinished=false;
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
-const GAME_VERSION='v109';
+const GAME_VERSION='v110';
 // v103: GAME_VERSION is the single runtime source of truth for every visible version label.
 window.__KABANCHIKI_VERSION__=GAME_VERSION;
 for(const id of ['loadingVersion']){const el=document.getElementById(id);if(el)el.textContent=GAME_VERSION;}
@@ -717,51 +717,54 @@ function runCollisionAudit(){
 // v85: geometry-aware robot collision test with destination-clear escape probes. It tests real penetration and escape without
 // treating a neighbouring obstacle or a deliberately walkable low rock as a collision bug.
 function runRobotCollisionTest(){
- const issues=[],samples=[];const ox=boy.position.x,oz=boy.position.z,opy=py,ovy=vy;
- const probe=(label,sx,sz,mx,mz,expectBlocked)=>{
-  boy.position.x=sx;boy.position.z=sz;py=0;vy=0;boy.position.y=0;
-  const bx=boy.position.x,bz=boy.position.z,want=Math.hypot(mx,mz);
-  movePlayerCollision(mx,mz);const moved=Math.hypot(boy.position.x-bx,boy.position.z-bz);
-  const blocked=moved<want*.35;samples.push({label,moved:+moved.toFixed(3),blocked});
-  if(expectBlocked&&!blocked)issues.push(`robot-pass-through:${label}`);
-  if(!expectBlocked&&blocked)issues.push(`robot-stuck:${label}`);
+ const issues=[],samples=[];const ox=boy.position.x,oz=boy.position.z,opy=py,ovy=vy,oy=boy.position.y;
+ // v110: judge collision by the actual obstacle geometry after movement, not by total distance moved.
+ // The solver is allowed to slide tangentially around a rounded obstacle, so "moved almost the full
+ // requested distance" is NOT pass-through. A failure means the player penetrated or crossed to the
+ // far side of the same obstacle. This uses the same trunk circle / rotated rock ellipse as gameplay.
+ const run=(label,sx,sz,mx,mz,insideFn,crossFn,expectBlocked)=>{
+  boy.position.set(sx,0,sz);py=0;vy=0;
+  const bx=sx,bz=sz;movePlayerCollision(mx,mz);
+  const fx=boy.position.x,fz=boy.position.z,moved=Math.hypot(fx-bx,fz-bz);
+  const penetrated=insideFn(fx,fz),crossed=crossFn?crossFn(fx,fz):false,blocked=!penetrated&&!crossed;
+  samples.push({label,moved:+moved.toFixed(3),blocked,penetrated,crossed});
+  if(expectBlocked&&(penetrated||crossed))issues.push(`robot-pass-through:${label}`);
+  if(!expectBlocked&&moved<Math.hypot(mx,mz)*.55)issues.push(`robot-stuck:${label}`);
   return blocked;
  };
- // Trees/branches: only probe a side when the start point itself is free. First move INTO
- // the real Box3 (must be blocked), then move OUT from the same free point (must be possible).
  let ti=0;for(const m of treeSolidMeshes){if(ti>=24)break;if(!m?.parent||m.parent.visible===false)continue;
-  m.updateWorldMatrix(true,false);const b=new THREE.Box3().setFromObject(m),c=new THREE.Vector3();b.getCenter(c);
-  const ex=(b.max.x-b.min.x)/2+PLAYER_RADIUS+.10,ez=(b.max.z-b.min.z)/2+PLAYER_RADIUS+.10;
-  const dirs=[['E',c.x+ex,c.z,-.42,0,.42,0],['W',c.x-ex,c.z,.42,0,-.42,0],['S',c.x,c.z+ez,0,-.42,0,.42],['N',c.x,c.z-ez,0,.42,0,-.42]];
-  for(const [name,sx,sz,inx,inz,outx,outz] of dirs){
+  const t=treeTrunkShape(m),edge=t.r+PLAYER_RADIUS+.10;
+  const dirs=[['E',1,0],['W',-1,0],['S',0,1],['N',0,-1]];
+  for(const [name,ux,uz] of dirs){
+   const sx=t.x+ux*edge,sz=t.z+uz*edge;
    if(playerWorldBlocked(sx,sz)){samples.push({label:`tree${ti}-${name}-crowded`,moved:0,blocked:true,skipped:true});continue}
-   probe(`tree${ti}-${name}-into`,sx,sz,inx,inz,true);
-   // An escape probe is meaningful only if its destination is itself free.
-   // Otherwise a neighbouring tree/rock would be blamed on the tree under test.
-   if(!playerWorldBlocked(sx+outx,sz+outz))probe(`tree${ti}-${name}-away`,sx,sz,outx,outz,false);
+   const inside=(x,z)=>treeTrunkHit(m,x,z,PLAYER_RADIUS-.01);
+   const crossed=(x,z)=>(x-t.x)*ux+(z-t.z)*uz<-(t.r+PLAYER_RADIUS*.35);
+   run(`tree${ti}-${name}-into`,sx,sz,-ux*(edge*2+.20),-uz*(edge*2+.20),inside,crossed,true);
+   const ax=sx+ux*.42,az=sz+uz*.42;
+   if(!playerWorldBlocked(ax,az))run(`tree${ti}-${name}-away`,sx,sz,ux*.42,uz*.42,inside,null,false);
    else samples.push({label:`tree${ti}-${name}-away-crowded`,moved:0,blocked:true,skipped:true});
   }
   ti++
  }
- // v109: rock probes use the same rotated ellipse as gameplay. The old robot used the
- // world Box3 edge, so on rotated rounded rocks it started too far away and reported every
- // walk-in as free even though gameplay collision was correct. Probe along the rock's local X
- // normal, just outside the real player-padded ellipse, then move through that boundary.
  let ri=0;for(const [, , ,m] of rockPositions){if(ri>=20)break;if(!m||m.visible===false)continue;
-  const q=rockShape(m),c=Math.cos(q.yaw),sn=Math.sin(q.yaw),edge=q.ax+ROCK_PLAYER_RADIUS;
-  const sx=q.cx+(edge+.10)*c,sz=q.cz-(edge+.10)*sn,inx=-.55*c,inz=.55*sn,outx=.42*c,outz=-.42*sn;
+  const q=rockShape(m),c=Math.cos(q.yaw),sn=Math.sin(q.yaw),edge=q.ax+ROCK_PLAYER_RADIUS+.10;
+  const ux=c,uz=-sn,sx=q.cx+ux*edge,sz=q.cz+uz*edge;
+  const inside=(x,z)=>rockEllipse(m,x,z,ROCK_PLAYER_RADIUS).n<.985;
+  const crossed=(x,z)=>{const e=rockEllipse(m,x,z,ROCK_PLAYER_RADIUS);return e.lx<-(e.ax*.35)};
   if(!playerWorldBlocked(sx,sz)){
-   probe(`rock${ri}-into`,sx,sz,inx,inz,true);
-   if(!playerWorldBlocked(sx+outx,sz+outz))probe(`rock${ri}-away`,sx,sz,outx,outz,false);
+   run(`rock${ri}-into`,sx,sz,-ux*(edge*2+.20),-uz*(edge*2+.20),inside,crossed,true);
+   const ax=sx+ux*.42,az=sz+uz*.42;
+   if(!playerWorldBlocked(ax,az))run(`rock${ri}-away`,sx,sz,ux*.42,uz*.42,inside,null,false);
    else samples.push({label:`rock${ri}-away-crowded`,moved:0,blocked:true,skipped:true});
   }else samples.push({label:`rock${ri}-crowded`,moved:0,blocked:true,skipped:true});
-  // Above the actual rock top, the same inward trajectory must remain traversable.
-  boy.position.set(sx,0,sz);py=q.top+.18;boy.position.y=py;vy=0;
-  const bx=boy.position.x,bz=boy.position.z,want=Math.hypot(inx,inz);movePlayerCollision(inx,inz);
+  // Above the real top, crossing the footprint is intentionally allowed.
+  boy.position.set(sx,q.top+.18,sz);py=q.top+.18;vy=0;
+  const bx=boy.position.x,bz=boy.position.z,want=edge*2+.20;movePlayerCollision(-ux*want,-uz*want);
   const jumpMoved=Math.hypot(boy.position.x-bx,boy.position.z-bz),jumpBlocked=jumpMoved<want*.65;
   samples.push({label:`rock${ri}-jump`,moved:+jumpMoved.toFixed(3),blocked:jumpBlocked});if(jumpBlocked)issues.push(`robot-jump-blocked:rock${ri}`);ri++
  }
- boy.position.x=ox;boy.position.z=oz;py=opy;vy=ovy;boy.position.y=py;
+ boy.position.set(ox,oy,oz);py=opy;vy=ovy;
  return {ok:issues.length===0,issues,samples:samples.slice(0,220),treesTested:ti,rocksTested:ri,level};
 }
 // v98: real-trajectory rock climb audit. Unlike the old robot "jump" probe, this starts on the ground,

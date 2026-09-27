@@ -3,7 +3,7 @@ const html=fs.readFileSync('index.html','utf8');
 const game=fs.readFileSync('src/game.js','utf8');
 const levels=fs.readFileSync('levels/levels.js','utf8');
 const checks=[
- ['version v109',/GAME_VERSION='v109'/.test(game)],
+ ['version v110',/GAME_VERSION='v110'/.test(game)],
  ['world integrity audit',/runWorldIntegrityAudit/.test(game)&&/worldAudit/.test(game)],
  ['tree apple anchoring',/repairTreeApples/.test(game)&&/apple-off-branch/.test(game)],
  ['rock passage radius',/ROCK_PLAYER_RADIUS=\.31/.test(game)],
@@ -13,7 +13,7 @@ const checks=[
  ['spawn guard',/function repairAndAuditSpawns\(\)/.test(game)&&/__KABANCHIKI_SPAWN_AUDIT__/.test(game)],
  ['single-source version sync',/loadingVersion/.test(html)&&/window.__KABANCHIKI_VERSION__=GAME_VERSION/.test(game)&&/el.textContent=GAME_VERSION/.test(game)],
  ['cache-busted game module',/src="\.\/src\/game\.js\?v=108"/.test(html)],
- ['html build marker v109',/__KABANCHIKI_BUILD__='v109'/.test(html)],
+ ['html build marker v110',/__KABANCHIKI_BUILD__='v110'/.test(html)],
  ['no-cache document meta',/no-cache, no-store, must-revalidate/.test(html)],
  ['cylindrical tree collision',/function treeTrunkShape/.test(game)&&/function treeTrunkHit/.test(game)],
  ['apple own twig registered',/treeBranchMeshes\.push\(twig\)/.test(game)],
@@ -30,7 +30,8 @@ const checks=[
  ['unified collision solver',/function movePlayerCollision\(mx,mz\)/.test(game)&&/function depenetratePlayer\(\)/.test(game)],
  ['collision audit',/function runCollisionAudit\(\)/.test(game)&&/__KABANCHIKI_COLLISION_AUDIT__/.test(game)],
  ['robot collision audit',/function runRobotCollisionTest\(\)/.test(game)&&/__KABANCHIKI_ROBOT_TEST__/.test(game)&&/robotAudit/.test(game)],
- ['robot uses rounded rock geometry',/v109: rock probes use the same rotated ellipse/.test(game)&&/edge=q\.ax\+ROCK_PLAYER_RADIUS/.test(game)&&/inx=-\.55\*c/.test(game)],
+ ['robot collision truth geometry',/judge collision by the actual obstacle geometry/.test(game)&&/penetrated=insideFn/.test(game)&&/crossed=crossFn/.test(game)&&/treeTrunkHit\(m,x,z,PLAYER_RADIUS/.test(game)&&/rockEllipse\(m,x,z,ROCK_PLAYER_RADIUS\)/.test(game)],
+ ['robot uses rounded rock geometry',/const q=rockShape\(m\)/.test(game)&&/edge=q\.ax\+ROCK_PLAYER_RADIUS/.test(game)&&/rockEllipse\(m,x,z,ROCK_PLAYER_RADIUS\)/.test(game)],
  ['natural log capsule collision',/function logDistance/.test(game)&&/function logFootprintHit/.test(game)&&/function pushOutOfLog/.test(game)&&/CylinderGeometry\(r\*\.78,r,1,7\)/.test(game)],
  ['log physics audit',/function runLogPhysicsAudit/.test(game)&&/__KABANCHIKI_LOG_PHYSICS_AUDIT__/.test(game)&&/logPhysicsAudit/.test(game)&&/log-jump-failed/.test(game)],
  ['rounded rock footprint',/function rockEllipse/.test(game)&&/ax:sx\*\.92/.test(game)],
