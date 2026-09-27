@@ -16,9 +16,9 @@
 - Руки Тимура слегка качаются в противофазе при ходьбе.
 - WebAudio при visibilitychange/pagehide/blur немедленно suspend; при возврате корректно resume. Это убирает звук игры при сворачивании и помогает Android отдавать аудиофокус телефонному звонку.
 
-## v99 autotest pipeline
-v99 adds explicit collisionAudit + robotAudit reporting. Important: the repository's Auto Update workflow must dispatch web-check.yml *after* it publishes the ZIP, otherwise GitHub tests the pre-update commit. Files `auto-update-v99.yml` and `.github/workflows/web-check.yml` contain the corrected workflows.
+## v100 autotest pipeline
+v100 adds explicit collisionAudit + robotAudit reporting. Important: the repository's Auto Update workflow must dispatch web-check.yml *after* it publishes the ZIP, otherwise GitHub tests the pre-update commit. Files `auto-update-v100.yml` and `.github/workflows/web-check.yml` contain the corrected workflows.
 
 
-## v99
+## v100
 Spawn Guard repairs and audits boar, friend, ground forage and family start positions after level geometry visibility is finalized. Loading screen shows the game version in small text.

@@ -3,7 +3,7 @@ const html=fs.readFileSync('index.html','utf8');
 const game=fs.readFileSync('src/game.js','utf8');
 const levels=fs.readFileSync('levels/levels.js','utf8');
 const checks=[
- ['version v99',/GAME_VERSION='v99'/.test(game)],
+ ['version v100',/GAME_VERSION='v100'/.test(game)],
  ['world integrity audit',/runWorldIntegrityAudit/.test(game)&&/worldAudit/.test(game)],
  ['tree apple anchoring',/repairTreeApples/.test(game)&&/apple-floating/.test(game)],
  ['rock passage radius',/ROCK_PLAYER_RADIUS=\.34/.test(game)],
@@ -11,7 +11,7 @@ const checks=[
  ['mounted defense',/function mountedFriendDefense/.test(game)&&/mountedFriendDefense\(\)/.test(game)&&/Друг отогнал/.test(game)],
  ['mounted apple collection',/function canCollectForage\(a\)/.test(game)&&/mountedFriend\|\|/.test(game)&&/function runMountedAppleAudit\(\)/.test(game)&&/__KABANCHIKI_MOUNTED_APPLE_AUDIT__/.test(game)&&/mountedAppleAudit/.test(game)&&/mounted-apple-food/.test(game)],
  ['spawn guard',/function repairAndAuditSpawns\(\)/.test(game)&&/__KABANCHIKI_SPAWN_AUDIT__/.test(game)],
- ['loading version',/loadingVersion/.test(html)&&/>v99</.test(html)],
+ ['loading version',/loadingVersion/.test(html)&&/>v100</.test(html)],
  ['precise rock footprint',/function rockFootprintHit/.test(game)],
  ['jump clears low rocks',/py>b.max.y/.test(game)],
  ['page audio suspension',/visibilitychange/.test(game)&&/audio.suspend/.test(game)],

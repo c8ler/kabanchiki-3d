@@ -1,6 +1,6 @@
 window.__gameLoadProgress?.(84);let __loadFinished=false;
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
-const GAME_VERSION='v99';
+const GAME_VERSION='v100';
 const SUPABASE_URL='https://usszaimdbepgexnigiau.supabase.co';
 const SUPABASE_KEY='sb_publishable_x3H1Px6JaDTwpyZy_ARyiA_OqEKLINZ'; const $=id=>document.getElementById(id), mobile=matchMedia('(pointer:coarse)').matches;if(mobile){$('message').textContent='🕹️ Джойстик — идти · проведи пальцем — камера · справа — Прыжок и Кормить';$('introControls').innerHTML='<b>На телефоне:</b> левый джойстик — движение, проведи пальцем по миру — поворот камеры, кнопки «Прыжок» и «Кормить» справа.';$('pauseControls').innerHTML='<b>Телефон:</b> левый джойстик — движение · проведи пальцем по миру — камера · кнопки «Прыжок» и «Кормить» справа.'}else{$('message').textContent='WASD — идти · ПРОБЕЛ — прыжок · E/F — кормить · ESC — меню · V — вид';$('introControls').innerHTML='<b>На ПК:</b> WASD/стрелки — идти, ПРОБЕЛ — прыжок, E или F — бросить еду, V — сменить вид, ESC — пауза. Мышь — горизонтальный поворот камеры.';$('pauseControls').innerHTML='<b>Управление ПК:</b> WASD/стрелки — движение · ПРОБЕЛ — прыжок · E/F — кормить · мышь — камера · V — вид · ESC — меню.'}let started=false,first=false,life=5,rescued=0,win=false,invuln=0,flash=0,camMode=(mobile?0:4),yaw=0,pitch=.18,move={x:0,z:0},jump=false,act=false,keys={},drag=null,stickPointer=null,stick={x:0,y:0};$('camera').textContent=`📷 Вид ${camMode+1}/8`;
 const __autoParams=new URLSearchParams(location.search),__autoTest=__autoParams.get('autotest')==='1';
@@ -485,6 +485,10 @@ function rockFootprintHit(mesh,x,z,pad=.58,allowJump=true){
  // Only climb rocks whose top is reachable by a normal jump from the current support.
  if(allowJump){
   if(py>b.max.y+.04)return false;
+  // v100: while descending onto a reachable top, keep the footprint non-blocking long enough
+  // for the vertical solver to land on it. Previously depenetration pushed Timur sideways
+  // during the last few centimetres of the fall, so he could never settle on the rock.
+  if(vy<=0&&py>=b.max.y-.10)return false;
   // v98: use the *remaining ballistic jump height*, not a fixed guessed threshold.
   // This lets Timur enter a reachable rock footprint while rising, then land on its top.
   // Ground walking still collides with the rock side.
@@ -710,8 +714,10 @@ function runRockClimbAudit(){
   if(!chosen)continue;tested++;const [ux,uz,sx,sz]=chosen;
   boy.position.set(sx,0,sz);py=0;vy=7;boy.position.y=0;let landed=false,maxY=0;
   for(let frame=0;frame<100;frame++){
-   // move toward the centre while the exact gameplay collision code is active
-   movePlayerCollision(-ux*.075,-uz*.075);
+   // Move toward the rock until Timur is actually over its support footprint, then stop
+   // horizontal input and let the normal vertical solver complete the landing.
+   const supportBefore=playerSupportHeightAt(boy.position.x,boy.position.z);
+   if(supportBefore<.12)movePlayerCollision(-ux*.075,-uz*.075);
    const prev=py;vy-=18/60;let next=py+vy/60;const support=playerSupportHeightAt(boy.position.x,boy.position.z);
    if(vy<=0&&prev>=support-.04&&next<=support){py=support;vy=0}else{py=Math.max(0,next);if(py===0)vy=0}
    boy.position.y=py;maxY=Math.max(maxY,py);
