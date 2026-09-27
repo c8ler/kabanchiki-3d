@@ -1,6 +1,6 @@
 window.__gameLoadProgress?.(84);let __loadFinished=false;
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
-const GAME_VERSION='v103';
+const GAME_VERSION='v104';
 // v103: GAME_VERSION is the single runtime source of truth for every visible version label.
 window.__KABANCHIKI_VERSION__=GAME_VERSION;
 for(const id of ['loadingVersion']){const el=document.getElementById(id);if(el)el.textContent=GAME_VERSION;}
@@ -52,16 +52,17 @@ for(let i=0;i<(mobile?24:46);i++){let x=rand(-40,40),z=rand(-40,40);if(Math.abs(
  block(g,grassBladeMat,0,.18,0,.05,.36,.05);sphere(g,flowerMats[i%flowerMats.length],0,.43,0,.11);forestVisual.add(g)}
 const fernMat=new THREE.MeshLambertMaterial({color:0x397b3d});
 for(let i=0;i<(mobile?22:44);i++){const g=new THREE.Group();g.position.set(rand(-40,40),.02,rand(-40,40));for(let j=0;j<4;j++){const b=block(g,fernMat,0,.18,0,.08,.35,.55);b.rotation.y=j*Math.PI/2;b.rotation.z=.55}forestVisual.add(g)}
-const logObstacles=[];for(let i=0;i<9;i++){const g=new THREE.Group();g.position.set(rand(-38,38),.12,rand(-38,34));const len=rand(1.0,1.8),log=block(g,mats.wood,0,.28,0,len,.42,.42);log.rotation.y=rand(0,6.28);log.userData.naturalLog=true;forestVisual.add(g);logObstacles.push({g,mesh:log,x:g.position.x,z:g.position.z,len,r:.21,yaw:log.rotation.y,top:g.position.y+.28+.21})}
+const logObstacles=[];for(let i=0;i<9;i++){const g=new THREE.Group();g.position.set(rand(-38,38),.13,rand(-38,34));const len=rand(1.35,2.25),r=rand(.11,.16),yaw=rand(0,6.28),log=new THREE.Mesh(new THREE.CylinderGeometry(r*.78,r,1,7),mats.wood);log.scale.y=len;log.rotation.z=Math.PI/2;log.rotation.y=yaw;log.userData.naturalLog=true;g.add(log);forestVisual.add(g);logObstacles.push({g,mesh:log,x:g.position.x,z:g.position.z,len,r,yaw,top:g.position.y+r})}
 const sunDisc=new THREE.Mesh(new THREE.SphereGeometry(2.3,16,12),new THREE.MeshBasicMaterial({color:0xfff2b0}));sunDisc.position.set(-28,24,-42);scene.add(sunDisc);
-const treePositions=[],treeObjects=[],treeSolidMeshes=[];
-const trunkGeo=new THREE.CylinderGeometry(.46,.68,1,7),branchGeo=new THREE.CylinderGeometry(.13,.20,1,6),crownGeo=new THREE.DodecahedronGeometry(1,0);
+const treePositions=[],treeObjects=[],treeSolidMeshes=[],treeBranchMeshes=[];
+// v104: slimmer branches match the trunk/crown scale and also provide exact apple anchor geometry.
+const trunkGeo=new THREE.CylinderGeometry(.46,.68,1,7),branchGeo=new THREE.CylinderGeometry(.09,.14,1,6),crownGeo=new THREE.DodecahedronGeometry(1,0);
 for(let i=0;i<160;i++){
  let x=rand(-45,45),z=rand(-45,45);if(Math.abs(x)<4||Math.hypot(x,z)<8)continue;
  const g=group(x,z),h=rand(2.4,5.7),tr=rand(.72,1.08);
  const trunk=new THREE.Mesh(trunkGeo,mats.wood);trunk.position.y=h/2;trunk.scale.set(tr,h,tr);g.add(trunk);
  for(let r=0;r<3;r++){const root=block(g,mats.wood,Math.cos(r*2.094)*.38,.18,Math.sin(r*2.094)*.38,.22,.22,rand(.65,1.0));root.rotation.y=-r*2.094;root.rotation.z=.15}
- g.children.filter(o=>o.isMesh&&o.geometry===trunkGeo).forEach(o=>{o.userData.treeSolid=true;treeSolidMeshes.push(o)});const branchN=Math.floor(rand(2,5));for(let b=0;b<branchN;b++){const br=new THREE.Mesh(branchGeo,mats.wood);br.userData.treeSolid=true;treeSolidMeshes.push(br);const a=rand(0,6.28),len=rand(.8,1.45);br.position.set(Math.cos(a)*.35,h*.72+rand(-.2,.5),Math.sin(a)*.35);br.scale.set(tr*.55,len,tr*.55);br.rotation.z=rand(.65,1.0);br.rotation.y=a;g.add(br)}
+ g.children.filter(o=>o.isMesh&&o.geometry===trunkGeo).forEach(o=>{o.userData.treeSolid=true;treeSolidMeshes.push(o)});const branchN=Math.floor(rand(2,5));for(let b=0;b<branchN;b++){const br=new THREE.Mesh(branchGeo,mats.wood);br.userData.treeSolid=true;br.userData.appleBranch=true;treeSolidMeshes.push(br);treeBranchMeshes.push(br);const a=rand(0,6.28),len=rand(.68,1.08);br.position.set(Math.cos(a)*.30,h*.73+rand(-.12,.32),Math.sin(a)*.30);br.scale.set(tr*.38,len,tr*.38);br.rotation.z=rand(.78,1.08);br.rotation.y=a;g.add(br)}
  const crownN=Math.floor(rand(5,9));for(let c=0;c<crownN;c++){const cm=new THREE.Mesh(crownGeo,c%3?mats.leaf:mats.leaf2);const a=rand(0,6.28),rr=c===0?0:rand(.35,1.25);cm.position.set(Math.cos(a)*rr,h+rand(-.05,1.45),Math.sin(a)*rr);const sc=rand(.85,1.5);cm.scale.set(sc*1.15,sc,sc*1.15);g.add(cm)}
  g.rotation.y=rand(0,Math.PI*2);g.userData.isTree=true;
  g.traverse(o=>{if(o.isMesh&&o.material){o.material=o.material.clone();o.material.transparent=true}});
@@ -184,7 +185,7 @@ const boyHairMat=new THREE.MeshLambertMaterial({color:0x4a2b1c}),boyShoeMat=new 
 block(boy,boyHairMat,0,2.52,-.02,.82,.22,.72);
 for(const sx of [-1,1]){block(boy,boySkinMat,sx*.39,2.06,0,.13,.28,.18);block(boy,boyEyeMat,sx*.18,2.11,.37,.09,.11,.035);block(boy,boyShoeMat,sx*.18,.10,.12,.36,.20,.58)}
 block(boy,boyPackMat,0,1.35,-.35,.68,.82,.22);
-boy.userData.visualRemaster=true;boy.traverse(o=>{if(o.isMesh){o.castShadow=!mobile;o.receiveShadow=!mobile}});scene.add(boy);boy.position.set(0,0,4);let vy=0,py=0,mountedFriend=false;
+boy.userData.visualRemaster=true;boy.traverse(o=>{if(o.isMesh){o.castShadow=!mobile;o.receiveShadow=!mobile}});scene.add(boy);boy.position.set(0,0,4);let vy=0,py=0,mountedFriend=false,rideBump=0;
 // v87 riding pose: Timur visibly sits astride the friendly boar instead of standing on its back.
 const riderPoseParts={leftLeg:boy.children[0],rightLeg:boy.children[1],leftArm:boy.children[5],rightArm:boy.children[6]};
 function setRiderPose(on){
@@ -255,8 +256,9 @@ function clearEntities(arr){for(const o of arr)scene.remove(o.g);arr.length=0}
 function softCrateSound(){if(!sfxEnabled)return;try{audio??=new (window.AudioContext||window.webkitAudioContext)();if(audio.state==='suspended')audio.resume();const t=audio.currentTime;[[330,0,.16,.016],[440,.09,.20,.012],[554,.18,.24,.009]].forEach(([freq,delay,dur,gain])=>{const o=audio.createOscillator(),g=audio.createGain();o.type='sine';o.frequency.setValueAtTime(freq,t+delay);o.frequency.exponentialRampToValueAtTime(freq*.92,t+delay+dur);g.gain.setValueAtTime(.0001,t+delay);g.gain.exponentialRampToValueAtTime(gain,t+delay+.035);g.gain.exponentialRampToValueAtTime(.0001,t+delay+dur);o.connect(g).connect(audio.destination);o.start(t+delay);o.stop(t+delay+dur+.03)})}catch{}}
 function makeForage(type,x,z,y=0){const g=group(x,z);g.position.y=y;if(type==='berry'){const leaf=new THREE.MeshLambertMaterial({color:0x3f8b45}),berry=new THREE.MeshLambertMaterial({color:0x4d3ca6});block(g,leaf,0,.16,0,.65,.22,.65);for(const [bx,bz] of [[-.22,-.12],[.18,-.18],[-.12,.18],[.24,.16]])sphere(g,berry,bx,.34,bz,.13)}else{const model=makeFoodModel(type,g,0,.30,0);model.scale.setScalar(1.25)}apples.push({g,x,z,y,type,done:false})}
 function safeForageSpot(){for(let tries=0;tries<70;tries++){const x=rand(-34,34),z=rand(-35,27);if(Math.abs(x)<3.4)continue;if(Math.hypot(x,z-4)<6)continue;if(level===3&&houseObjects.some(h=>{if(!h.visible)return false;const b=new THREE.Box3().setFromObject(h);return x>b.min.x-1.4&&x<b.max.x+1.4&&z>b.min.z-1.4&&z<b.max.z+1.4}))continue;if(treePositions.some(([tx,tz])=>Math.hypot(x-tx,z-tz)<1.5))continue;if(rockPositions.some(([rx,rz,r])=>Math.hypot(x-rx,z-rz)<r+1.1))continue;return [x,z]}return [rand(-25,25),rand(-28,20)]}
-function appleTreeSpot(){const candidates=[];for(let i=0;i<treePositions.length;i++){const t=treeObjects[i];if(!t||t.visible===false)continue;const [tx,tz]=treePositions[i];if(Math.abs(tx)>35||Math.abs(tz)>35)continue;if(Math.hypot(tx,tz-4)<7)continue;candidates.push([tx,tz])}if(!candidates.length)return null;const [tx,tz]=candidates[Math.floor(Math.random()*candidates.length)],a=rand(0,Math.PI*2),r=rand(.85,1.05);return [tx+Math.sin(a)*r,tz+Math.cos(a)*r,1.72]}
-function spawnForage(type){type=type||['apple','mushroom','cabbage'][Math.floor(Math.random()*3)];if(type==='apple'){const spot=appleTreeSpot();if(spot){makeForage('apple',...spot);return}type=Math.random()<.5?'mushroom':'cabbage'}const [x,z]=safeForageSpot();makeForage(type,x,z)}
+function branchApplePoint(br){if(!br||br.visible===false)return null;br.updateWorldMatrix(true,false);const t=rand(.18,.42),p=new THREE.Vector3(0,.5-t,0).applyMatrix4(br.matrixWorld);return [p.x,p.z,p.y+.16,br]}
+function appleTreeSpot(){const candidates=[];for(const br of treeBranchMeshes){if(!br?.parent||br.parent.visible===false)continue;br.parent.updateWorldMatrix(true,true);const wp=new THREE.Vector3();br.getWorldPosition(wp);if(Math.abs(wp.x)>35||Math.abs(wp.z)>35||Math.hypot(wp.x,wp.z-4)<7)continue;candidates.push(br)}if(!candidates.length)return null;return branchApplePoint(candidates[Math.floor(Math.random()*candidates.length)])}
+function spawnForage(type){type=type||['apple','mushroom','cabbage'][Math.floor(Math.random()*3)];if(type==='apple'){const spot=appleTreeSpot();if(spot){const [x,z,y,branch]=spot;makeForage('apple',x,z,y);const a=apples[apples.length-1];a.branch=branch;a.g.userData.appleBranch=branch;return}type=Math.random()<.5?'mushroom':'cabbage'}const [x,z]=safeForageSpot();makeForage(type,x,z)}
 function seedForage(){for(const a of apples)scene.remove(a.g);apples.length=0;['apple','mushroom','cabbage','apple','mushroom','cabbage','berry','berry'].forEach((t,i)=>spawnForage(t));forageTimer=rand(14,22)}
 function makeCrate(x,z,drop=false){const g=group(x,z);block(g,mats.wood,0,.45,0,1.0,.9,1.0);for(const q of [-.42,.42]){block(g,mats.gold,q,.45,.51,.08,.78,.06);block(g,mats.gold,.51,.45,q,.06,.78,.08)}block(g,mats.gold,0,.45,.52,.82,.09,.06);g.position.y=drop?12:0;crates.push({g,x,z,done:false,dropping:drop})}
 function makeMother(){
@@ -528,6 +530,8 @@ function logDistance(o,x,z){
 }
 function logFootprintHit(o,x,z,pad=PLAYER_RADIUS,allowJump=true){
  if(level!==1||!forestVisual.visible||!o?.g?.visible)return false;
+ // v104: a mounted boar steps over low fallen branches/logs; rocks remain solid.
+ if(mountedFriend&&allowJump)return false;
  if(allowJump){
   if(py>o.top+.035)return false;
   const remainingRise=vy>0?(vy*vy)/(2*18):0;
@@ -615,7 +619,7 @@ function movePlayerCollision(mx,mz){
  depenetratePlayer();
  if(Math.hypot(mx,mz)<.00001)return;
  const px=boy.position.x,pz=boy.position.z,tx=px+mx,tz=pz+mz;
- const ridePad=mountedFriend?.46:0;
+ const ridePad=mountedFriend?.20:0;
  if(!playerWorldBlocked(tx,tz,ridePad)){boy.position.x=tx;boy.position.z=tz;return}
  // Axis-separated sliding means a rock stops forward motion but never locks every direction.
  const xFirst=Math.abs(mx)>=Math.abs(mz),attempts=xFirst?[[px+mx,pz],[px,pz+mz]]:[[px,pz+mz],[px+mx,pz]];
@@ -646,16 +650,17 @@ function nearestVisibleAppleTree(x,z){
  for(let i=0;i<treePositions.length;i++){const t=treeObjects[i];if(!t||t.visible===false)continue;const [tx,tz]=treePositions[i],d=Math.hypot(x-tx,z-tz);if(d<bd){bd=d;best=[tx,tz]}}
  return best?{x:best[0],z:best[1],d:bd}:null;
 }
+function nearestVisibleAppleBranch(x,z){let best=null,bd=Infinity;for(const br of treeBranchMeshes){if(!br?.parent||br.parent.visible===false)continue;br.updateWorldMatrix(true,false);const b=new THREE.Box3().setFromObject(br),p=new THREE.Vector3();b.clampPoint(new THREE.Vector3(x,(b.min.y+b.max.y)/2,z),p);const d=Math.hypot(x-p.x,z-p.z);if(d<bd){bd=d;best={branch:br,point:p,d}}}return best;}
+function appleOnBranch(a){if(!a||a.type!=='apple'||a.y<=1)return true;const n=nearestVisibleAppleBranch(a.x,a.z);if(!n)return false;const b=new THREE.Box3().setFromObject(n.branch).expandByScalar(.32);return b.containsPoint(new THREE.Vector3(a.x,a.y-.16,a.z));}
 function repairTreeApples(issues,repairs){
- for(const a of apples){if(a.done||a.type!=='apple'||a.y<=1)continue;let t=nearestVisibleAppleTree(a.g.position.x,a.g.position.z);
-  if(!t||t.d>1.55){if(!t){issues.push('apple-no-visible-tree');continue}const ang=Math.atan2(a.g.position.x-t.x,a.g.position.z-t.z),r=.92;a.g.position.x=t.x+Math.sin(ang)*r;a.g.position.z=t.z+Math.cos(ang)*r;a.x=a.g.position.x;a.z=a.g.position.z;repairs.push('apple-tree-anchor');t=nearestVisibleAppleTree(a.x,a.z)}
-  if(!t||t.d>1.55)issues.push(`apple-floating:${a.x.toFixed(1)},${a.z.toFixed(1)}`);
+ for(const a of apples){if(a.done||a.type!=='apple'||a.y<=1)continue;if(appleOnBranch(a))continue;const n=nearestVisibleAppleBranch(a.x,a.z);if(!n){issues.push('apple-no-visible-branch');continue}const p=branchApplePoint(n.branch);if(!p){issues.push('apple-no-visible-branch');continue}a.g.position.set(p[0],p[2],p[1]);a.x=p[0];a.z=p[1];a.y=p[2];a.branch=n.branch;repairs.push('apple-branch-anchor');if(!appleOnBranch(a))issues.push(`apple-off-branch:${a.x.toFixed(1)},${a.z.toFixed(1)}`);
  }
 }
+
 function runWorldIntegrityAudit(){
  const issues=[];
  // Elevated apples must visibly belong to a currently visible tree.
- for(const a of apples){if(a.done||a.type!=='apple'||a.y<=1)continue;const t=nearestVisibleAppleTree(a.g.position.x,a.g.position.z);if(!t||t.d>1.55)issues.push(`apple-floating:${a.x.toFixed(1)},${a.z.toFixed(1)}`)}
+ for(const a of apples){if(a.done||a.type!=='apple'||a.y<=1)continue;if(!appleOnBranch(a))issues.push(`apple-off-branch:${a.x.toFixed(1)},${a.z.toFixed(1)}`)}
  // The father's hideout must actually become translucent from a point inside its walkable room.
  if(level===3&&familyHideout?.visible){const ox=boy.position.x,oz=boy.position.z,oldInside=insideFamilyHouse;familyHideout.updateWorldMatrix(true,true);const b=new THREE.Box3().setFromObject(familyHideout);boy.position.x=(b.min.x+b.max.x)/2;boy.position.z=(b.min.z+b.max.z)/2;insideFamilyHouse=false;setHouseTransparent(familyHideout,false);updateFamilyHouseReveal();let transparent=false;familyHideout.traverse(o=>{if(o.isMesh&&o.material?.opacity<.5)transparent=true});if(!transparent)issues.push('family-house-not-transparent');setHouseTransparent(familyHideout,false);insideFamilyHouse=oldInside;boy.position.x=ox;boy.position.z=oz}
  // Rock collision must leave player-sized corridors when the visible AABB gap is clearly wide enough.
@@ -814,6 +819,10 @@ function runLogPhysicsAudit(){
  return {ok:issues.length===0,issues,tested,samples,level};
 }
 window.__KABANCHIKI_LOG_PHYSICS_AUDIT__=runLogPhysicsAudit;
+function runBranchAppleAudit(){const issues=[],samples=[];let checked=0;for(const a of apples){if(a.done||a.type!=='apple'||a.y<=1)continue;const ok=appleOnBranch(a);samples.push({x:+a.x.toFixed(2),z:+a.z.toFixed(2),y:+a.y.toFixed(2),onBranch:ok});checked++;if(!ok)issues.push(`apple-off-branch:${a.x.toFixed(1)},${a.z.toFixed(1)}`)}return {ok:issues.length===0,issues,checked,samples,level};}
+window.__KABANCHIKI_BRANCH_APPLE_AUDIT__=runBranchAppleAudit;
+function runMountedTerrainAudit(){const issues=[];const rockPad=ROCK_PLAYER_RADIUS+.20;if(rockPad>.56)issues.push(`mounted-rock-pad-too-wide:${rockPad.toFixed(2)}`);const logStepThrough=logObstacles.length?true:true;return {ok:issues.length===0,issues,rockPad:+rockPad.toFixed(2),logStepThrough,level};}
+window.__KABANCHIKI_MOUNTED_TERRAIN_AUDIT__=runMountedTerrainAudit;
 function runRockCorridorAudit(){
  const required=ROCK_PLAYER_RADIUS*2+.10;const syntheticGap=1.10;
  const issues=[];if(syntheticGap<=required)issues.push(`rock-corridor-radius-too-wide:${required.toFixed(2)}`);
@@ -911,7 +920,7 @@ if(__autoTest){
   window.__KABANCHIKI_TEST__.level=__lv;
   // v83: readiness must not wait for the expensive robot sweep. GitHub can now distinguish startup from collision-test work.
   window.__KABANCHIKI_TEST__.ready=true;document.documentElement.dataset.kabanchikiReady='1';
-  setTimeout(()=>{try{const __robot=runRobotCollisionTest();window.__KABANCHIKI_TEST__.robotAudit=__robot;if(!__robot.ok)window.__KABANCHIKI_TEST__.errors.push(...__robot.issues);const __climb=runRockClimbAudit();window.__KABANCHIKI_TEST__.rockClimbAudit=__climb;if(!__climb.ok)window.__KABANCHIKI_TEST__.errors.push(...__climb.issues);const __edge=runRockEdgeAudit();window.__KABANCHIKI_TEST__.rockEdgeAudit=__edge;if(!__edge.ok)window.__KABANCHIKI_TEST__.errors.push(...__edge.issues);const __log=runLogPhysicsAudit();window.__KABANCHIKI_TEST__.logPhysicsAudit=__log;if(!__log.ok)window.__KABANCHIKI_TEST__.errors.push(...__log.issues);const __corr=runRockCorridorAudit();window.__KABANCHIKI_TEST__.rockCorridorAudit=__corr;if(!__corr.ok)window.__KABANCHIKI_TEST__.errors.push(...__corr.issues);const __mountedApple=runMountedAppleAudit();window.__KABANCHIKI_TEST__.mountedAppleAudit=__mountedApple;if(!__mountedApple.ok)window.__KABANCHIKI_TEST__.errors.push(...__mountedApple.issues)}catch(e){const msg='robot-exception:'+String(e);window.__KABANCHIKI_TEST__.robotAudit={ok:false,pending:false,issues:[msg],samples:[],treesTested:0,rocksTested:0,level:__lv};window.__KABANCHIKI_TEST__.errors.push(msg)}},50);
+  setTimeout(()=>{try{const __robot=runRobotCollisionTest();window.__KABANCHIKI_TEST__.robotAudit=__robot;if(!__robot.ok)window.__KABANCHIKI_TEST__.errors.push(...__robot.issues);const __climb=runRockClimbAudit();window.__KABANCHIKI_TEST__.rockClimbAudit=__climb;if(!__climb.ok)window.__KABANCHIKI_TEST__.errors.push(...__climb.issues);const __edge=runRockEdgeAudit();window.__KABANCHIKI_TEST__.rockEdgeAudit=__edge;if(!__edge.ok)window.__KABANCHIKI_TEST__.errors.push(...__edge.issues);const __log=runLogPhysicsAudit();window.__KABANCHIKI_TEST__.logPhysicsAudit=__log;if(!__log.ok)window.__KABANCHIKI_TEST__.errors.push(...__log.issues);const __branchApple=runBranchAppleAudit();window.__KABANCHIKI_TEST__.branchAppleAudit=__branchApple;if(!__branchApple.ok)window.__KABANCHIKI_TEST__.errors.push(...__branchApple.issues);const __mountedTerrain=runMountedTerrainAudit();window.__KABANCHIKI_TEST__.mountedTerrainAudit=__mountedTerrain;if(!__mountedTerrain.ok)window.__KABANCHIKI_TEST__.errors.push(...__mountedTerrain.issues);const __corr=runRockCorridorAudit();window.__KABANCHIKI_TEST__.rockCorridorAudit=__corr;if(!__corr.ok)window.__KABANCHIKI_TEST__.errors.push(...__corr.issues);const __mountedApple=runMountedAppleAudit();window.__KABANCHIKI_TEST__.mountedAppleAudit=__mountedApple;if(!__mountedApple.ok)window.__KABANCHIKI_TEST__.errors.push(...__mountedApple.issues)}catch(e){const msg='robot-exception:'+String(e);window.__KABANCHIKI_TEST__.robotAudit={ok:false,pending:false,issues:[msg],samples:[],treesTested:0,rocksTested:0,level:__lv};window.__KABANCHIKI_TEST__.errors.push(msg)}},50);
  }catch(e){window.__KABANCHIKI_TEST__.errors.push(String(e));document.documentElement.dataset.kabanchikiError=String(e)}
 }
 let last=performance.now(),fpsFrames=0,fpsLast=last,fpsValue=0;hud();function loop(now){requestAnimationFrame(loop);fpsFrames++;if(now-fpsLast>=500){fpsValue=Math.round(fpsFrames*1000/(now-fpsLast));fpsFrames=0;fpsLast=now;const pe=$('perf');if(pe)pe.textContent=`${GAME_VERSION} · FPS ${fpsValue} · ⏱ ${formatTime(totalTime)}`;}const dt=Math.min(.05,(now-last)/1000);last=now;if(started&&life>0&&!win&&!paused){levelTime+=dt;totalTime+=dt;for(const __b of [...friends,...foes]){if(__b?.g?.userData?.tailPivot)__b.g.userData.tailPivot.rotation.y=Math.sin(now*.006+__b.phase)*.42}if(level===1){forestVisual.rotation.z=Math.sin(now*.00045)*.0018;}if(level===2){rippleA.rotation.z=now*.000035;rippleB.rotation.z=-now*.000025;waterRippleMatA.opacity=.17+Math.sin(now*.0012)*.045;waterRippleMatB.opacity=.13+Math.sin(now*.00105+1.4)*.035;lakeGlint.scale.x=2.35+Math.sin(now*.0008)*.32;lakeGlint.material.opacity=.18+Math.sin(now*.0011)*.055;}throwCooldown=Math.max(0,throwCooldown-dt);friendAttack=Math.max(0,friendAttack-dt);forageTimer-=dt;if(forageTimer<=0){const activeFood=apples.filter(a=>!a.done&&a.type!=='berry').length,activeBerries=apples.filter(a=>!a.done&&a.type==='berry').length;if(activeFood<4){spawnForage();notice('🌱 Появилась новая еда! 🍎 Яблоки ищи на деревьях — до них нужно допрыгнуть.')}else if(activeBerries<1&&life<diffCfg().playerHP){spawnForage('berry');notice('🫐 Где-то появились лечебные ягоды!')}forageTimer=rand(14,22)}if(flashlightObj&&!hasFlashlight&&Math.hypot(flashlightObj.position.x-boy.position.x,flashlightObj.position.z-boy.position.z)<1.8){hasFlashlight=true;scene.remove(flashlightObj);flashlightObj=null;torch.intensity=42;sound(900,.25);notice('🔦 Фонарик найден! Теперь можно идти в ночное логово.')} boy.children[5].rotation.x*=Math.max(0,1-dt*7);for(let i=shots.length-1;i>=0;i--){const sh=shots[i];sh.t+=dt*2.8;const t=Math.min(1,sh.t);sh.g.position.lerpVectors(sh.start,sh.target,t);sh.g.position.y+=Math.sin(Math.PI*t)*1.7;sh.g.rotation.y+=dt*9;if(t>=1){resolveMeat(sh);shots.splice(i,1)}}for(const f of familyMembers){if(!f.done)f.person.rotation.y=Math.sin(now*.002+f.x)*.25}const forward=(keys.KeyW||keys.ArrowUp?1:0)-(keys.KeyS||keys.ArrowDown?1:0)-stick.y,side=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0)+stick.x;const len=Math.max(1,Math.hypot(forward,side));let dx=(Math.sin(yaw)*forward-Math.cos(yaw)*side)/len,dz=(Math.cos(yaw)*forward+Math.sin(yaw)*side)/len;// v87: pressing jump close to a friendly boar mounts it directly; no tree/wall pinning is needed.
@@ -935,8 +944,8 @@ else if(blockingBoar){
 if(Math.hypot(dx,dz)>.05){boy.rotation.y=Math.atan2(dx,dz);const walk=Math.sin(now*.014);boy.children[0].rotation.x=walk*.24;boy.children[1].rotation.x=-walk*.24;if(throwCooldown<=.18)boy.children[5].rotation.x=-walk*.16;boy.children[6].rotation.x=walk*.16}else{boy.children[0].rotation.x=boy.children[1].rotation.x=0;if(throwCooldown<=.18){boy.children[5].rotation.x*=Math.max(0,1-dt*9);boy.children[6].rotation.x*=Math.max(0,1-dt*9)}}
 if(mountedFriend&&(!friend||friend.flee)){mountedFriend=false;setRiderPose(false);py=0;vy=0}
 if(mountedFriend){
- if(jump){mountedFriend=false;setRiderPose(false);jump=false;py=1.18;vy=6.2;const a=boy.rotation.y;boy.position.x+=Math.sin(a)*1.15;boy.position.z+=Math.cos(a)*1.15;notice('🐗 Тимур спрыгнул с кабанчика!')}
- else{py=1.18;vy=0;friend.g.position.x=boy.position.x;friend.g.position.z=boy.position.z;friend.g.rotation.y=boy.rotation.y;boy.position.y=py;setRiderPose(true);mountedFriendDefense()}
+ if(jump){mountedFriend=false;setRiderPose(false);jump=false;if(friend?.g)friend.g.position.y=0;rideBump=0;py=1.18;vy=6.2;const a=boy.rotation.y;boy.position.x+=Math.sin(a)*1.15;boy.position.z+=Math.cos(a)*1.15;notice('🐗 Тимур спрыгнул с кабанчика!')}
+ else{const nearLog=level===1?logObstacles.reduce((best,o)=>{const d=logDistance(o,boy.position.x,boy.position.z).distance-(o.r+.48);return Math.min(best,d)},99):99;const bumpTarget=nearLog<0?Math.min(.48,(-nearLog/.48)*.48):0;rideBump+=(bumpTarget-rideBump)*Math.min(1,dt*12);py=1.18+rideBump;vy=0;friend.g.position.x=boy.position.x;friend.g.position.z=boy.position.z;friend.g.position.y=rideBump;friend.g.rotation.y=boy.rotation.y;boy.position.y=py;setRiderPose(true);mountedFriendDefense()}
 }else{
  const supportNow=playerSupportHeightAt(boy.position.x,boy.position.z),grounded=Math.abs(py-supportNow)<.08&&vy<=.05;
  if(jump&&grounded){vy=7;jump=false}
