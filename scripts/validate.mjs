@@ -3,7 +3,7 @@ const html=fs.readFileSync('index.html','utf8');
 const game=fs.readFileSync('src/game.js','utf8');
 const levels=fs.readFileSync('levels/levels.js','utf8');
 const checks=[
- ['version v104',/GAME_VERSION='v104'/.test(game)],
+ ['version v105',/GAME_VERSION='v105'/.test(game)],
  ['world integrity audit',/runWorldIntegrityAudit/.test(game)&&/worldAudit/.test(game)],
  ['tree apple anchoring',/repairTreeApples/.test(game)&&/apple-off-branch/.test(game)],
  ['rock passage radius',/ROCK_PLAYER_RADIUS=\.34/.test(game)],
@@ -15,7 +15,7 @@ const checks=[
  ['cache-busted game module',/src="\.\/src\/game\.js\?v=104"/.test(html)],
  ['branch-sized tree geometry',/branchGeo=new THREE.CylinderGeometry\(\.09,\.14,1,6\)/.test(game)&&/len=rand\(\.68,1\.08\)/.test(game)],
  ['apples anchored on branches',/function branchApplePoint/.test(game)&&/function appleOnBranch/.test(game)&&/runBranchAppleAudit/.test(game)&&/apple-off-branch/.test(game)],
- ['mounted rock glide and log step',/const ridePad=mountedFriend\?\.20:0/.test(game)&&/rideBump/.test(game)&&/mountedFriend&&allowJump/.test(game)&&/runMountedTerrainAudit/.test(game)],
+ ['mounted rock glide and log step',/const ridePad=mountedFriend\?\.20:0/.test(game)&&/rideBump/.test(game)&&/if\(mountedFriend\)return e\.n<1/.test(game)&&/runMountedTerrainAudit/.test(game)],
  ['precise rock footprint',/function rockFootprintHit/.test(game)],
  ['jump clears low rocks',/remainingRise/.test(game)&&/top<=py\+remainingRise/.test(game)],
  ['page audio suspension',/visibilitychange/.test(game)&&/audio.suspend/.test(game)],
