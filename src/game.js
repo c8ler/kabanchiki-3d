@@ -1,6 +1,6 @@
 window.__gameLoadProgress?.(84);let __loadFinished=false;
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
-const GAME_VERSION='v106';
+const GAME_VERSION='v107';
 // v103: GAME_VERSION is the single runtime source of truth for every visible version label.
 window.__KABANCHIKI_VERSION__=GAME_VERSION;
 for(const id of ['loadingVersion']){const el=document.getElementById(id);if(el)el.textContent=GAME_VERSION;}
@@ -564,7 +564,7 @@ function worldObstacleAt(x,z,pad=.38){
  return false;
 }
 // v77: one collision model for player, generation audit and automated tests.
-const PLAYER_RADIUS=.58,ROCK_PLAYER_RADIUS=.34;
+const PLAYER_RADIUS=.43,ROCK_PLAYER_RADIUS=.31;
 function solidCircles(){
  const out=[];
  for(let i=0;i<treePositions.length;i++){const t=treeObjects[i];if(t?.visible!==false){const [x,z]=treePositions[i];out.push({x,z,r:1.62,type:'tree'})}}
@@ -621,22 +621,28 @@ function depenetratePlayer(){
   if(!changed)break
  }
 }
-function movePlayerCollision(mx,mz){
+function movePlayerCollisionStep(mx,mz){
  depenetratePlayer();
  if(Math.hypot(mx,mz)<.00001)return;
  const px=boy.position.x,pz=boy.position.z,tx=px+mx,tz=pz+mz;
- const ridePad=mountedFriend?.20:0;
+ // v107: riding has its own modest body allowance. Collision is evaluated for every
+ // sub-step, so touching one stone can never disable the next stone in the same ride.
+ const ridePad=mountedFriend?.13:0;
  if(!playerWorldBlocked(tx,tz,ridePad)){boy.position.x=tx;boy.position.z=tz;return}
- // Axis-separated sliding means a rock stops forward motion but never locks every direction.
  const xFirst=Math.abs(mx)>=Math.abs(mz),attempts=xFirst?[[px+mx,pz],[px,pz+mz]]:[[px,pz+mz],[px+mx,pz]];
  for(const [x,z] of attempts)if(!playerWorldBlocked(x,z,ridePad)){boy.position.x=x;boy.position.z=z;return}
- // Rounded-rock tangent slide: if the direct step enters a rock, try both tangent directions
- // around its visible ellipse. This makes walking behind/around a stone continuous instead of sticky.
  let hitRock=null,hitN=Infinity;for(const [, , ,m] of rockPositions){if(!m||m.visible===false)continue;const e=rockEllipse(m,tx,tz,ROCK_PLAYER_RADIUS+ridePad);if(e.n<hitN){hitN=e.n;hitRock=m}}
- if(hitRock&&hitN<1){const e=rockEllipse(hitRock,px,pz,ROCK_PLAYER_RADIUS+ridePad+.015),c=Math.cos(e.q.yaw),sn=Math.sin(e.q.yaw);let wx=e.lx/e.ax, wz=e.lz/e.az,wl=Math.hypot(wx,wz)||1;wx/=wl;wz/=wl;const txl=-wz,tzl=wx,mag=Math.hypot(mx,mz);for(const sg of [1,-1]){const llx=txl*e.ax*mag*sg,llz=tzl*e.az*mag*sg;const sx=px+llx*c+llz*sn,sz=pz-llx*sn+llz*c;if(!playerWorldBlocked(sx,sz,ridePad)){boy.position.x=sx;boy.position.z=sz;return}}}
- // Final tangent escape around the nearest circular non-rock obstacle.
- let nearest=null,nd=Infinity;for(const o of solidCircles().filter(o=>o.type!=='rock')){const d=Math.hypot(tx-o.x,tz-o.z)-(o.r+PLAYER_RADIUS);if(d<nd){nd=d;nearest=o}}
- if(nearest){const rx=px-nearest.x,rz=pz-nearest.z,rl=Math.hypot(rx,rz)||1,txv=-rz/rl,tzv=rx/rl,sgn=(mx*txv+mz*tzv)>=0?1:-1,mag=Math.hypot(mx,mz);const sx=px+txv*sgn*mag,sz=pz+tzv*sgn*mag;if(!playerWorldBlocked(sx,sz,ridePad)){boy.position.x=sx;boy.position.z=sz}}
+ if(hitRock&&hitN<1){const e=rockEllipse(hitRock,px,pz,ROCK_PLAYER_RADIUS+ridePad+.012),c=Math.cos(e.q.yaw),sn=Math.sin(e.q.yaw);let wx=e.lx/e.ax,wz=e.lz/e.az,wl=Math.hypot(wx,wz)||1;wx/=wl;wz/=wl;const txl=-wz,tzl=wx,mag=Math.hypot(mx,mz);for(const sg of [1,-1]){const llx=txl*e.ax*mag*sg,llz=tzl*e.az*mag*sg;const sx=px+llx*c+llz*sn,sz=pz-llx*sn+llz*c;if(!playerWorldBlocked(sx,sz,ridePad)){boy.position.x=sx;boy.position.z=sz;return}}}
+ // Trees use their real trunk circle here too; no legacy 1.62-radius tree halo is allowed.
+ let nearest=null,nd=Infinity;for(const m of treeSolidMeshes){if(!m?.parent||m.parent.visible===false)continue;const t=treeTrunkShape(m),d=Math.hypot(tx-t.x,tz-t.z)-(t.r+PLAYER_RADIUS+ridePad);if(d<nd){nd=d;nearest={x:t.x,z:t.z,r:t.r}}}
+ for(const o of solidCircles().filter(o=>o.type!=='rock'&&o.type!=='tree')){const d=Math.hypot(tx-o.x,tz-o.z)-(o.r+PLAYER_RADIUS+ridePad);if(d<nd){nd=d;nearest=o}}
+ if(nearest){const rx=px-nearest.x,rz=pz-nearest.z,rl=Math.hypot(rx,rz)||1,txv=-rz/rl,tzv=rx/rl,sgn=(mx*txv+mz*tzv)>=0?1:-1,mag=Math.hypot(mx,mz);const sx=px+txv*mag*sgn,sz=pz+tzv*mag*sgn;if(!playerWorldBlocked(sx,sz,ridePad)){boy.position.x=sx;boy.position.z=sz}}
+}
+function movePlayerCollision(mx,mz){
+ // v107 swept/sub-stepped motion prevents a fast mounted boar from tunnelling through
+ // a narrow rock between rendered frames. Every slice re-runs the full collision solver.
+ const dist=Math.hypot(mx,mz),step=.055,n=Math.max(1,Math.ceil(dist/step));
+ for(let i=0;i<n;i++)movePlayerCollisionStep(mx/n,mz/n);
 }
 function spawnPointBlocked(x,z,pad=.72,{allowRoad=false}={}){
  if(x<-41.5||x>41.5||z<-41.5||z>41.5)return true;
@@ -830,8 +836,30 @@ window.__KABANCHIKI_BRANCH_APPLE_AUDIT__=runBranchAppleAudit;
 function runTreeTrunkAudit(){const issues=[],samples=[];for(let i=0;i<Math.min(20,treeObjects.length);i++){const g=treeObjects[i];if(!g?.visible)continue;const trunk=g.children.find(o=>o.isMesh&&o.geometry===trunkGeo);if(!trunk)continue;const t=treeTrunkShape(trunk),near=t.r+PLAYER_RADIUS+.06;const blockedInside=treeTrunkHit(trunk,t.x+t.r*.5,t.z,PLAYER_RADIUS),freeX=!treeTrunkHit(trunk,t.x+near,t.z,PLAYER_RADIUS),freeZ=!treeTrunkHit(trunk,t.x,t.z+near,PLAYER_RADIUS);samples.push({radius:+t.r.toFixed(2),blockedInside,freeX,freeZ});if(!blockedInside)issues.push(`tree-trunk-not-solid:${i}`);if(!freeX||!freeZ)issues.push(`tree-halo:${i}`)}return {ok:issues.length===0,issues,samples,level};}
 function runReachableAppleTwigAudit(){const issues=[],samples=[];for(const a of apples){if(a.done||a.type!=='apple'||!a.branch)continue;const twig=a.branch,attached=!!twig.userData.appleTwig&&!!twig.parent;const reachable=(a.y||0)<=2.08;const on=appleOnBranch(a);samples.push({y:+(a.y||0).toFixed(2),attached,reachable,on});if(!attached)issues.push('apple-no-own-twig');if(!reachable)issues.push(`apple-too-high:${(a.y||0).toFixed(2)}`);if(!on)issues.push('apple-off-own-twig')}return {ok:issues.length===0,issues,samples,level};}
 function runBranchTraversalAudit(){const issues=[];const oldMounted=mountedFriend,oldPy=py;mountedFriend=false;py=0;for(const o of logObstacles.slice(0,12)){if(logFootprintHit(o,o.x,o.z,PLAYER_RADIUS,true))issues.push('foot-branch-blocked')}mountedFriend=true;py=1.18;for(const o of logObstacles.slice(0,12)){if(logFootprintHit(o,o.x,o.z,PLAYER_RADIUS,true))issues.push('mounted-branch-blocked')}mountedFriend=oldMounted;py=oldPy;return {ok:issues.length===0,issues,tested:Math.min(12,logObstacles.length),level};}
-function runMountedMultiRockAudit(){const issues=[],samples=[],oldMounted=mountedFriend,oldPy=py;mountedFriend=true;py=1.18;let tested=0;for(const [, , ,m] of rockPositions){if(!m?.visible)continue;const q=rockShape(m),blocked=rockFootprintHit(m,q.cx,q.cz,ROCK_PLAYER_RADIUS+.20,true);samples.push({top:+q.top.toFixed(2),blocked});tested++;if(!blocked)issues.push(`mounted-rock-pass-through:${tested-1}`);if(tested>=16)break}mountedFriend=oldMounted;py=oldPy;if(tested<2)issues.push('mounted-rock-too-few-samples');return {ok:issues.length===0,issues,tested,samples,level};}
-function runMountedTerrainAudit(){const issues=[];const rockPad=ROCK_PLAYER_RADIUS+.20;if(rockPad>.56)issues.push(`mounted-rock-pad-too-wide:${rockPad.toFixed(2)}`);const logStepThrough=logObstacles.length?true:true;return {ok:issues.length===0,issues,rockPad:+rockPad.toFixed(2),logStepThrough,level};}
+function runTreeRockPassageAudit(){
+ const issues=[],samples=[];let tested=0;
+ // Real generated tree/rock pairs: if the visible-edge gap is wider than Timur's body,
+ // sample the middle of that gap. It must not be rejected by either object's collision.
+ for(const tm of treeSolidMeshes){if(!tm?.parent||tm.parent.visible===false)continue;const t=treeTrunkShape(tm);
+  for(const [, , ,rm] of rockPositions){if(!rm?.visible)continue;const q=rockShape(rm),dx=q.cx-t.x,dz=q.cz-t.z,d=Math.hypot(dx,dz);if(d<.01)continue;const ux=dx/d,uz=dz/d;
+   const rockR=Math.sqrt((q.ax*ux)**2+(q.az*uz)**2),gap=d-t.r-rockR,need=PLAYER_RADIUS*2+.05;
+   if(gap<need||gap>need+.75)continue;const x=t.x+ux*(t.r+gap*.5),z=t.z+uz*(t.r+gap*.5),treeHit=treeTrunkHit(tm,x,z,PLAYER_RADIUS),rockHit=rockFootprintHit(rm,x,z,ROCK_PLAYER_RADIUS,true);
+   samples.push({gap:+gap.toFixed(2),need:+need.toFixed(2),free:!treeHit&&!rockHit});tested++;if(treeHit||rockHit)issues.push(`tree-rock-visible-gap-blocked:${gap.toFixed(2)}`);if(tested>=18)break;
+  }if(tested>=18)break;
+ }
+ return {ok:issues.length===0,issues,tested,samples,playerRadius:PLAYER_RADIUS,level};
+}
+function runMountedMultiRockAudit(){
+ const issues=[],samples=[],oldMounted=mountedFriend,oldPy=py,ox=boy.position.x,oz=boy.position.z,oy=boy.position.y;mountedFriend=true;py=1.18;let tested=0;
+ // Reproduce the phone bug: ride straight at many different REAL stones, one after another.
+ // Success means the rider cannot cross from one side of a stone to the opposite side.
+ for(const [, , ,m] of rockPositions){if(!m?.visible)continue;const q=rockShape(m),r=Math.max(q.ax,q.az)+ROCK_PLAYER_RADIUS+.13,dirx=Math.cos(q.yaw),dirz=Math.sin(q.yaw);boy.position.set(q.cx-dirx*(r+.65),1.18,q.cz-dirz*(r+.65));let crossed=false,minN=99;
+  for(let k=0;k<90;k++){movePlayerCollision(dirx*.055,dirz*.055);const e=rockEllipse(m,boy.position.x,boy.position.z,ROCK_PLAYER_RADIUS+.13);minN=Math.min(minN,e.n);const side=(boy.position.x-q.cx)*dirx+(boy.position.z-q.cz)*dirz;if(side>r*.35){crossed=true;break}}
+  samples.push({top:+q.top.toFixed(2),crossed,minN:+minN.toFixed(2)});tested++;if(crossed)issues.push(`mounted-rock-crossed:${tested-1}`);if(minN<.86)issues.push(`mounted-rock-penetrated:${tested-1}`);if(tested>=16)break;
+ }
+ boy.position.set(ox,oy,oz);mountedFriend=oldMounted;py=oldPy;if(tested<2)issues.push('mounted-rock-too-few-samples');return {ok:issues.length===0,issues,tested,samples,level};
+}
+function runMountedTerrainAudit(){const issues=[];const rockPad=ROCK_PLAYER_RADIUS+.13;if(rockPad>.50)issues.push(`mounted-rock-pad-too-wide:${rockPad.toFixed(2)}`);const logStepThrough=logObstacles.length?true:true;return {ok:issues.length===0,issues,rockPad:+rockPad.toFixed(2),logStepThrough,level};}
 window.__KABANCHIKI_MOUNTED_TERRAIN_AUDIT__=runMountedTerrainAudit;
 function runRockCorridorAudit(){
  const required=ROCK_PLAYER_RADIUS*2+.10;const syntheticGap=1.10;
@@ -930,7 +958,7 @@ if(__autoTest){
   window.__KABANCHIKI_TEST__.level=__lv;
   // v83: readiness must not wait for the expensive robot sweep. GitHub can now distinguish startup from collision-test work.
   window.__KABANCHIKI_TEST__.ready=true;document.documentElement.dataset.kabanchikiReady='1';
-  setTimeout(()=>{try{const __robot=runRobotCollisionTest();window.__KABANCHIKI_TEST__.robotAudit=__robot;if(!__robot.ok)window.__KABANCHIKI_TEST__.errors.push(...__robot.issues);const __climb=runRockClimbAudit();window.__KABANCHIKI_TEST__.rockClimbAudit=__climb;if(!__climb.ok)window.__KABANCHIKI_TEST__.errors.push(...__climb.issues);const __edge=runRockEdgeAudit();window.__KABANCHIKI_TEST__.rockEdgeAudit=__edge;if(!__edge.ok)window.__KABANCHIKI_TEST__.errors.push(...__edge.issues);const __log=runLogPhysicsAudit();window.__KABANCHIKI_TEST__.logPhysicsAudit=__log;if(!__log.ok)window.__KABANCHIKI_TEST__.errors.push(...__log.issues);const __branchApple=runBranchAppleAudit();window.__KABANCHIKI_TEST__.branchAppleAudit=__branchApple;if(!__branchApple.ok)window.__KABANCHIKI_TEST__.errors.push(...__branchApple.issues);const __mountedTerrain=runMountedTerrainAudit();window.__KABANCHIKI_TEST__.mountedTerrainAudit=__mountedTerrain;if(!__mountedTerrain.ok)window.__KABANCHIKI_TEST__.errors.push(...__mountedTerrain.issues);const __treeTrunk=runTreeTrunkAudit();window.__KABANCHIKI_TEST__.treeTrunkAudit=__treeTrunk;if(!__treeTrunk.ok)window.__KABANCHIKI_TEST__.errors.push(...__treeTrunk.issues);const __appleTwig=runReachableAppleTwigAudit();window.__KABANCHIKI_TEST__.reachableAppleTwigAudit=__appleTwig;if(!__appleTwig.ok)window.__KABANCHIKI_TEST__.errors.push(...__appleTwig.issues);const __branchTravel=runBranchTraversalAudit();window.__KABANCHIKI_TEST__.branchTraversalAudit=__branchTravel;if(!__branchTravel.ok)window.__KABANCHIKI_TEST__.errors.push(...__branchTravel.issues);const __multiRock=runMountedMultiRockAudit();window.__KABANCHIKI_TEST__.mountedMultiRockAudit=__multiRock;if(!__multiRock.ok)window.__KABANCHIKI_TEST__.errors.push(...__multiRock.issues);const __corr=runRockCorridorAudit();window.__KABANCHIKI_TEST__.rockCorridorAudit=__corr;if(!__corr.ok)window.__KABANCHIKI_TEST__.errors.push(...__corr.issues);const __mountedApple=runMountedAppleAudit();window.__KABANCHIKI_TEST__.mountedAppleAudit=__mountedApple;if(!__mountedApple.ok)window.__KABANCHIKI_TEST__.errors.push(...__mountedApple.issues)}catch(e){const msg='robot-exception:'+String(e);window.__KABANCHIKI_TEST__.robotAudit={ok:false,pending:false,issues:[msg],samples:[],treesTested:0,rocksTested:0,level:__lv};window.__KABANCHIKI_TEST__.errors.push(msg)}},50);
+  setTimeout(()=>{try{const __robot=runRobotCollisionTest();window.__KABANCHIKI_TEST__.robotAudit=__robot;if(!__robot.ok)window.__KABANCHIKI_TEST__.errors.push(...__robot.issues);const __climb=runRockClimbAudit();window.__KABANCHIKI_TEST__.rockClimbAudit=__climb;if(!__climb.ok)window.__KABANCHIKI_TEST__.errors.push(...__climb.issues);const __edge=runRockEdgeAudit();window.__KABANCHIKI_TEST__.rockEdgeAudit=__edge;if(!__edge.ok)window.__KABANCHIKI_TEST__.errors.push(...__edge.issues);const __log=runLogPhysicsAudit();window.__KABANCHIKI_TEST__.logPhysicsAudit=__log;if(!__log.ok)window.__KABANCHIKI_TEST__.errors.push(...__log.issues);const __branchApple=runBranchAppleAudit();window.__KABANCHIKI_TEST__.branchAppleAudit=__branchApple;if(!__branchApple.ok)window.__KABANCHIKI_TEST__.errors.push(...__branchApple.issues);const __mountedTerrain=runMountedTerrainAudit();window.__KABANCHIKI_TEST__.mountedTerrainAudit=__mountedTerrain;if(!__mountedTerrain.ok)window.__KABANCHIKI_TEST__.errors.push(...__mountedTerrain.issues);const __treeTrunk=runTreeTrunkAudit();window.__KABANCHIKI_TEST__.treeTrunkAudit=__treeTrunk;if(!__treeTrunk.ok)window.__KABANCHIKI_TEST__.errors.push(...__treeTrunk.issues);const __appleTwig=runReachableAppleTwigAudit();window.__KABANCHIKI_TEST__.reachableAppleTwigAudit=__appleTwig;if(!__appleTwig.ok)window.__KABANCHIKI_TEST__.errors.push(...__appleTwig.issues);const __branchTravel=runBranchTraversalAudit();window.__KABANCHIKI_TEST__.branchTraversalAudit=__branchTravel;if(!__branchTravel.ok)window.__KABANCHIKI_TEST__.errors.push(...__branchTravel.issues);const __passage=runTreeRockPassageAudit();window.__KABANCHIKI_TEST__.treeRockPassageAudit=__passage;if(!__passage.ok)window.__KABANCHIKI_TEST__.errors.push(...__passage.issues);const __multiRock=runMountedMultiRockAudit();window.__KABANCHIKI_TEST__.mountedMultiRockAudit=__multiRock;if(!__multiRock.ok)window.__KABANCHIKI_TEST__.errors.push(...__multiRock.issues);const __corr=runRockCorridorAudit();window.__KABANCHIKI_TEST__.rockCorridorAudit=__corr;if(!__corr.ok)window.__KABANCHIKI_TEST__.errors.push(...__corr.issues);const __mountedApple=runMountedAppleAudit();window.__KABANCHIKI_TEST__.mountedAppleAudit=__mountedApple;if(!__mountedApple.ok)window.__KABANCHIKI_TEST__.errors.push(...__mountedApple.issues)}catch(e){const msg='robot-exception:'+String(e);window.__KABANCHIKI_TEST__.robotAudit={ok:false,pending:false,issues:[msg],samples:[],treesTested:0,rocksTested:0,level:__lv};window.__KABANCHIKI_TEST__.errors.push(msg)}},50);
  }catch(e){window.__KABANCHIKI_TEST__.errors.push(String(e));document.documentElement.dataset.kabanchikiError=String(e)}
 }
 let last=performance.now(),fpsFrames=0,fpsLast=last,fpsValue=0;hud();function loop(now){requestAnimationFrame(loop);fpsFrames++;if(now-fpsLast>=500){fpsValue=Math.round(fpsFrames*1000/(now-fpsLast));fpsFrames=0;fpsLast=now;const pe=$('perf');if(pe)pe.textContent=`${GAME_VERSION} · FPS ${fpsValue} · ⏱ ${formatTime(totalTime)}`;}const dt=Math.min(.05,(now-last)/1000);last=now;if(started&&life>0&&!win&&!paused){levelTime+=dt;totalTime+=dt;for(const __b of [...friends,...foes]){if(__b?.g?.userData?.tailPivot)__b.g.userData.tailPivot.rotation.y=Math.sin(now*.006+__b.phase)*.42}if(level===1){forestVisual.rotation.z=Math.sin(now*.00045)*.0018;}if(level===2){rippleA.rotation.z=now*.000035;rippleB.rotation.z=-now*.000025;waterRippleMatA.opacity=.17+Math.sin(now*.0012)*.045;waterRippleMatB.opacity=.13+Math.sin(now*.00105+1.4)*.035;lakeGlint.scale.x=2.35+Math.sin(now*.0008)*.32;lakeGlint.material.opacity=.18+Math.sin(now*.0011)*.055;}throwCooldown=Math.max(0,throwCooldown-dt);friendAttack=Math.max(0,friendAttack-dt);forageTimer-=dt;if(forageTimer<=0){const activeFood=apples.filter(a=>!a.done&&a.type!=='berry').length,activeBerries=apples.filter(a=>!a.done&&a.type==='berry').length;if(activeFood<4){spawnForage();notice('🌱 Появилась новая еда! 🍎 Яблоки ищи на деревьях — до них нужно допрыгнуть.')}else if(activeBerries<1&&life<diffCfg().playerHP){spawnForage('berry');notice('🫐 Где-то появились лечебные ягоды!')}forageTimer=rand(14,22)}if(flashlightObj&&!hasFlashlight&&Math.hypot(flashlightObj.position.x-boy.position.x,flashlightObj.position.z-boy.position.z)<1.8){hasFlashlight=true;scene.remove(flashlightObj);flashlightObj=null;torch.intensity=42;sound(900,.25);notice('🔦 Фонарик найден! Теперь можно идти в ночное логово.')} boy.children[5].rotation.x*=Math.max(0,1-dt*7);for(let i=shots.length-1;i>=0;i--){const sh=shots[i];sh.t+=dt*2.8;const t=Math.min(1,sh.t);sh.g.position.lerpVectors(sh.start,sh.target,t);sh.g.position.y+=Math.sin(Math.PI*t)*1.7;sh.g.rotation.y+=dt*9;if(t>=1){resolveMeat(sh);shots.splice(i,1)}}for(const f of familyMembers){if(!f.done)f.person.rotation.y=Math.sin(now*.002+f.x)*.25}const forward=(keys.KeyW||keys.ArrowUp?1:0)-(keys.KeyS||keys.ArrowDown?1:0)-stick.y,side=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0)+stick.x;const len=Math.max(1,Math.hypot(forward,side));let dx=(Math.sin(yaw)*forward-Math.cos(yaw)*side)/len,dz=(Math.cos(yaw)*forward+Math.sin(yaw)*side)/len;// v87: pressing jump close to a friendly boar mounts it directly; no tree/wall pinning is needed.

@@ -16,7 +16,7 @@
 - Руки Тимура слегка качаются в противофазе при ходьбе.
 - WebAudio при visibilitychange/pagehide/blur немедленно suspend; при возврате корректно resume. Это убирает звук игры при сворачивании и помогает Android отдавать аудиофокус телефонному звонку.
 
-## v106 autotest pipeline
+## v107 autotest pipeline
 v105 adds explicit collisionAudit + robotAudit reporting. Important: the repository's Auto Update workflow must dispatch web-check.yml *after* it publishes the ZIP, otherwise GitHub tests the pre-update commit. Files `auto-update-v105.yml` and `.github/workflows/web-check.yml` contain the corrected workflows.
 
 
@@ -24,5 +24,5 @@ v105 adds explicit collisionAudit + robotAudit reporting. Important: the reposit
 Spawn Guard repairs and audits boar, friend, ground forage and family start positions after level geometry visibility is finalized. Loading screen shows the game version in small text.
 
 
-## v106
+## v107
 Cache/version sync hardened; trunk collision uses cylindrical footprint; apple twigs are registered and apples are placed at reachable twig tips.
