@@ -1,6 +1,6 @@
 window.__gameLoadProgress?.(84);let __loadFinished=false;
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
-const GAME_VERSION='v100';
+const GAME_VERSION='v101';
 const SUPABASE_URL='https://usszaimdbepgexnigiau.supabase.co';
 const SUPABASE_KEY='sb_publishable_x3H1Px6JaDTwpyZy_ARyiA_OqEKLINZ'; const $=id=>document.getElementById(id), mobile=matchMedia('(pointer:coarse)').matches;if(mobile){$('message').textContent='🕹️ Джойстик — идти · проведи пальцем — камера · справа — Прыжок и Кормить';$('introControls').innerHTML='<b>На телефоне:</b> левый джойстик — движение, проведи пальцем по миру — поворот камеры, кнопки «Прыжок» и «Кормить» справа.';$('pauseControls').innerHTML='<b>Телефон:</b> левый джойстик — движение · проведи пальцем по миру — камера · кнопки «Прыжок» и «Кормить» справа.'}else{$('message').textContent='WASD — идти · ПРОБЕЛ — прыжок · E/F — кормить · ESC — меню · V — вид';$('introControls').innerHTML='<b>На ПК:</b> WASD/стрелки — идти, ПРОБЕЛ — прыжок, E или F — бросить еду, V — сменить вид, ESC — пауза. Мышь — горизонтальный поворот камеры.';$('pauseControls').innerHTML='<b>Управление ПК:</b> WASD/стрелки — движение · ПРОБЕЛ — прыжок · E/F — кормить · мышь — камера · V — вид · ESC — меню.'}let started=false,first=false,life=5,rescued=0,win=false,invuln=0,flash=0,camMode=(mobile?0:4),yaw=0,pitch=.18,move={x:0,z:0},jump=false,act=false,keys={},drag=null,stickPointer=null,stick={x:0,y:0};$('camera').textContent=`📷 Вид ${camMode+1}/8`;
 const __autoParams=new URLSearchParams(location.search),__autoTest=__autoParams.get('autotest')==='1';
@@ -477,32 +477,44 @@ function circleHitsTreeGeometry(x,z,r){
  for(const m of treeSolidMeshes){if(!m?.parent||m.parent.visible===false)continue;m.updateWorldMatrix(true,false);const b=new THREE.Box3().setFromObject(m);const cx=Math.max(b.min.x,Math.min(x,b.max.x)),cz=Math.max(b.min.z,Math.min(z,b.max.z));if(Math.hypot(x-cx,z-cz)<r)return true}
  return false
 }
-function rockFootprintHit(mesh,x,z,pad=.58,allowJump=true){
+// v101: rock collision follows the visible rounded footprint instead of the rotated Box3.
+// A Box3 turns a rotated rock into a large invisible rectangle, which was the source of the
+// "empty space around the stone" seen in the phone recording.
+function rockShape(mesh){
+ mesh.updateWorldMatrix(true,false);
+ const sx=Math.max(.08,Math.abs(mesh.scale.x)),sz=Math.max(.08,Math.abs(mesh.scale.z));
+ // DodecahedronGeometry(1) is roughly unit-radius. A tiny inset keeps the collision on the
+ // visible stone rather than outside its silhouette.
+ return {cx:mesh.position.x,cz:mesh.position.z,ax:sx*.92,az:sz*.92,yaw:mesh.rotation.y,top:new THREE.Box3().setFromObject(mesh).max.y};
+}
+function rockEllipse(mesh,x,z,pad=0){
+ const q=rockShape(mesh),dx=x-q.cx,dz=z-q.cz,c=Math.cos(q.yaw),sn=Math.sin(q.yaw);
+ const lx= dx*c-dz*sn,lz=dx*sn+dz*c,ax=q.ax+pad,az=q.az+pad;
+ return {q,lx,lz,ax,az,n:(lx*lx)/(ax*ax)+(lz*lz)/(az*az)};
+}
+function rockFootprintHit(mesh,x,z,pad=.34,allowJump=true){
  if(!mesh||mesh.visible===false)return false;
- mesh.updateWorldMatrix(true,false);const b=new THREE.Box3().setFromObject(mesh);
- // A jump must be allowed to ENTER the rock footprint while rising; otherwise the side
- // collision prevents Timur from ever getting above the top to land on it.
- // Only climb rocks whose top is reachable by a normal jump from the current support.
+ const e=rockEllipse(mesh,x,z,pad),top=e.q.top;
  if(allowJump){
-  if(py>b.max.y+.04)return false;
-  // v100: while descending onto a reachable top, keep the footprint non-blocking long enough
-  // for the vertical solver to land on it. Previously depenetration pushed Timur sideways
-  // during the last few centimetres of the fall, so he could never settle on the rock.
-  if(vy<=0&&py>=b.max.y-.10)return false;
-  // v98: use the *remaining ballistic jump height*, not a fixed guessed threshold.
-  // This lets Timur enter a reachable rock footprint while rising, then land on its top.
-  // Ground walking still collides with the rock side.
+  if(py>top+.035)return false;
+  // While airborne, side collision disappears only when the *actual ballistic apex* can
+  // clear this top. There is no special teleport/step-up: vertical physics still does landing.
   const remainingRise=vy>0?(vy*vy)/(2*18):0;
-  if(vy>0&&py>.055&&b.max.y<=py+remainingRise+.14)return false;
+  if(vy>0&&py>.04&&top<=py+remainingRise+.08)return false;
+  // Descending above the top belongs to the landing solver, not side collision.
+  if(vy<=0&&py>=top-.045)return false;
  }
- const cx=Math.max(b.min.x,Math.min(x,b.max.x)),cz=Math.max(b.min.z,Math.min(z,b.max.z));
- return Math.hypot(x-cx,z-cz)<pad;
+ return e.n<1;
 }
 function pushOutOfRock(mesh){
- if(!mesh||mesh.visible===false||!rockFootprintHit(mesh,boy.position.x,boy.position.z,ROCK_PLAYER_RADIUS+.02,true))return false;
- mesh.updateWorldMatrix(true,false);const b=new THREE.Box3().setFromObject(mesh),x=boy.position.x,z=boy.position.z,r=ROCK_PLAYER_RADIUS+.035;
- const dl=Math.abs(x-(b.min.x-r)),dr=Math.abs((b.max.x+r)-x),db=Math.abs(z-(b.min.z-r)),dt=Math.abs((b.max.z+r)-z),m=Math.min(dl,dr,db,dt);
- if(m===dl)boy.position.x=b.min.x-r;else if(m===dr)boy.position.x=b.max.x+r;else if(m===db)boy.position.z=b.min.z-r;else boy.position.z=b.max.z+r;return true;
+ if(!mesh||mesh.visible===false||!rockFootprintHit(mesh,boy.position.x,boy.position.z,ROCK_PLAYER_RADIUS+.015,true))return false;
+ const e=rockEllipse(mesh,boy.position.x,boy.position.z,ROCK_PLAYER_RADIUS+.025);
+ // Radial projection in ellipse space gives a smooth rounded push, unlike snapping to one
+ // side of an AABB. This also prevents the jitter/teleport effect at rock corners.
+ let lx=e.lx,lz=e.lz;let n=Math.sqrt((lx*lx)/(e.ax*e.ax)+(lz*lz)/(e.az*e.az));
+ if(n<.0001){lx=e.ax;lz=0;n=1}
+ lx/=n;lz/=n;const c=Math.cos(e.q.yaw),sn=Math.sin(e.q.yaw);
+ boy.position.x=e.q.cx+lx*c+lz*sn;boy.position.z=e.q.cz-lx*sn+lz*c;return true;
 }
 function worldObstacleAt(x,z,pad=.38){
  // Trees include low branches/crowns, not only the trunk.
@@ -544,9 +556,8 @@ function playerSupportHeightAt(x,z){
  let top=0;
  // Rock tops are real platforms: land on them instead of being pushed back to the ground.
  for(const [, , ,m] of rockPositions){
-  if(!m||m.visible===false)continue;m.updateWorldMatrix(true,false);const b=new THREE.Box3().setFromObject(m);
-  const cx=Math.max(b.min.x,Math.min(x,b.max.x)),cz=Math.max(b.min.z,Math.min(z,b.max.z));
-  if(Math.hypot(x-cx,z-cz)<PLAYER_RADIUS*.72)top=Math.max(top,b.max.y);
+  if(!m||m.visible===false)continue;const e=rockEllipse(m,x,z,PLAYER_RADIUS*.12);
+  if(e.n<1)top=Math.max(top,e.q.top);
  }
  // Village roofs are platforms too, so a nearby rock can be used to jump onto a house.
  if(level===3)for(const h of houseObjects){
@@ -577,7 +588,11 @@ function movePlayerCollision(mx,mz){
  // Axis-separated sliding means a rock stops forward motion but never locks every direction.
  const xFirst=Math.abs(mx)>=Math.abs(mz),attempts=xFirst?[[px+mx,pz],[px,pz+mz]]:[[px,pz+mz],[px+mx,pz]];
  for(const [x,z] of attempts)if(!playerWorldBlocked(x,z,ridePad)){boy.position.x=x;boy.position.z=z;return}
- // Final tangent escape around the nearest circular obstacle.
+ // Rounded-rock tangent slide: if the direct step enters a rock, try both tangent directions
+ // around its visible ellipse. This makes walking behind/around a stone continuous instead of sticky.
+ let hitRock=null,hitN=Infinity;for(const [, , ,m] of rockPositions){if(!m||m.visible===false)continue;const e=rockEllipse(m,tx,tz,ROCK_PLAYER_RADIUS+ridePad);if(e.n<hitN){hitN=e.n;hitRock=m}}
+ if(hitRock&&hitN<1){const e=rockEllipse(hitRock,px,pz,ROCK_PLAYER_RADIUS+ridePad+.015),c=Math.cos(e.q.yaw),sn=Math.sin(e.q.yaw);let wx=e.lx/e.ax, wz=e.lz/e.az,wl=Math.hypot(wx,wz)||1;wx/=wl;wz/=wl;const txl=-wz,tzl=wx,mag=Math.hypot(mx,mz);for(const sg of [1,-1]){const llx=txl*e.ax*mag*sg,llz=tzl*e.az*mag*sg;const sx=px+llx*c+llz*sn,sz=pz-llx*sn+llz*c;if(!playerWorldBlocked(sx,sz,ridePad)){boy.position.x=sx;boy.position.z=sz;return}}}
+ // Final tangent escape around the nearest circular non-rock obstacle.
  let nearest=null,nd=Infinity;for(const o of solidCircles().filter(o=>o.type!=='rock')){const d=Math.hypot(tx-o.x,tz-o.z)-(o.r+PLAYER_RADIUS);if(d<nd){nd=d;nearest=o}}
  if(nearest){const rx=px-nearest.x,rz=pz-nearest.z,rl=Math.hypot(rx,rz)||1,txv=-rz/rl,tzv=rx/rl,sgn=(mx*txv+mz*tzv)>=0?1:-1,mag=Math.hypot(mx,mz);const sx=px+txv*sgn*mag,sz=pz+tzv*sgn*mag;if(!playerWorldBlocked(sx,sz,ridePad)){boy.position.x=sx;boy.position.z=sz}}
 }
@@ -731,6 +746,22 @@ function runRockClimbAudit(){
  if(tested===0)issues.push('rock-climb-no-reachable-samples');
  return {ok:issues.length===0,issues,tested,passed,samples,level};
 }
+// v101: regression test for the exact phone-video failure: visible corner clearance and smooth orbiting.
+function runRockEdgeAudit(){
+ const issues=[],samples=[];let tested=0;
+ for(let ri=0;ri<rockPositions.length&&tested<10;ri++){
+  const m=rockPositions[ri][3];if(!m||m.visible===false)continue;const q=rockShape(m);tested++;
+  // A point just outside the rounded visible corner must be free. The old Box3 collision failed this.
+  const a=q.yaw,c=Math.cos(a),sn=Math.sin(a),lx=q.ax*.82+ROCK_PLAYER_RADIUS+.12,lz=q.az*.82+ROCK_PLAYER_RADIUS+.12;
+  const x=q.cx+lx*c+lz*sn,z=q.cz-lx*sn+lz*c;const cornerBlocked=rockFootprintHit(m,x,z,ROCK_PLAYER_RADIUS,true);
+  if(cornerBlocked)issues.push(`rock-invisible-corner:${ri}`);
+  // 16 points on a player-radius orbit must not collide with this rock.
+  let orbitBlocked=0;for(let k=0;k<16;k++){const t=k/16*Math.PI*2,ex=(q.ax+ROCK_PLAYER_RADIUS+.08)*Math.cos(t),ez=(q.az+ROCK_PLAYER_RADIUS+.08)*Math.sin(t),px=q.cx+ex*c+ez*sn,pz=q.cz-ex*sn+ez*c;if(rockFootprintHit(m,px,pz,ROCK_PLAYER_RADIUS,true))orbitBlocked++}
+  if(orbitBlocked)issues.push(`rock-orbit-blocked:${ri}:${orbitBlocked}`);samples.push({rock:ri,cornerBlocked,orbitBlocked});
+ }
+ if(!tested)issues.push('rock-edge-no-samples');return {ok:issues.length===0,issues,tested,samples,level};
+}
+window.__KABANCHIKI_ROCK_EDGE_AUDIT__=runRockEdgeAudit;
 // Deterministic corridor math check: a visibly player-wide gap must remain wider than two collision pads.
 function runRockCorridorAudit(){
  const required=ROCK_PLAYER_RADIUS*2+.10;const syntheticGap=1.10;
@@ -829,7 +860,7 @@ if(__autoTest){
   window.__KABANCHIKI_TEST__.level=__lv;
   // v83: readiness must not wait for the expensive robot sweep. GitHub can now distinguish startup from collision-test work.
   window.__KABANCHIKI_TEST__.ready=true;document.documentElement.dataset.kabanchikiReady='1';
-  setTimeout(()=>{try{const __robot=runRobotCollisionTest();window.__KABANCHIKI_TEST__.robotAudit=__robot;if(!__robot.ok)window.__KABANCHIKI_TEST__.errors.push(...__robot.issues);const __climb=runRockClimbAudit();window.__KABANCHIKI_TEST__.rockClimbAudit=__climb;if(!__climb.ok)window.__KABANCHIKI_TEST__.errors.push(...__climb.issues);const __corr=runRockCorridorAudit();window.__KABANCHIKI_TEST__.rockCorridorAudit=__corr;if(!__corr.ok)window.__KABANCHIKI_TEST__.errors.push(...__corr.issues);const __mountedApple=runMountedAppleAudit();window.__KABANCHIKI_TEST__.mountedAppleAudit=__mountedApple;if(!__mountedApple.ok)window.__KABANCHIKI_TEST__.errors.push(...__mountedApple.issues)}catch(e){const msg='robot-exception:'+String(e);window.__KABANCHIKI_TEST__.robotAudit={ok:false,pending:false,issues:[msg],samples:[],treesTested:0,rocksTested:0,level:__lv};window.__KABANCHIKI_TEST__.errors.push(msg)}},50);
+  setTimeout(()=>{try{const __robot=runRobotCollisionTest();window.__KABANCHIKI_TEST__.robotAudit=__robot;if(!__robot.ok)window.__KABANCHIKI_TEST__.errors.push(...__robot.issues);const __climb=runRockClimbAudit();window.__KABANCHIKI_TEST__.rockClimbAudit=__climb;if(!__climb.ok)window.__KABANCHIKI_TEST__.errors.push(...__climb.issues);const __edge=runRockEdgeAudit();window.__KABANCHIKI_TEST__.rockEdgeAudit=__edge;if(!__edge.ok)window.__KABANCHIKI_TEST__.errors.push(...__edge.issues);const __corr=runRockCorridorAudit();window.__KABANCHIKI_TEST__.rockCorridorAudit=__corr;if(!__corr.ok)window.__KABANCHIKI_TEST__.errors.push(...__corr.issues);const __mountedApple=runMountedAppleAudit();window.__KABANCHIKI_TEST__.mountedAppleAudit=__mountedApple;if(!__mountedApple.ok)window.__KABANCHIKI_TEST__.errors.push(...__mountedApple.issues)}catch(e){const msg='robot-exception:'+String(e);window.__KABANCHIKI_TEST__.robotAudit={ok:false,pending:false,issues:[msg],samples:[],treesTested:0,rocksTested:0,level:__lv};window.__KABANCHIKI_TEST__.errors.push(msg)}},50);
  }catch(e){window.__KABANCHIKI_TEST__.errors.push(String(e));document.documentElement.dataset.kabanchikiError=String(e)}
 }
 let last=performance.now(),fpsFrames=0,fpsLast=last,fpsValue=0;hud();function loop(now){requestAnimationFrame(loop);fpsFrames++;if(now-fpsLast>=500){fpsValue=Math.round(fpsFrames*1000/(now-fpsLast));fpsFrames=0;fpsLast=now;const pe=$('perf');if(pe)pe.textContent=`${GAME_VERSION} · FPS ${fpsValue} · ⏱ ${formatTime(totalTime)}`;}const dt=Math.min(.05,(now-last)/1000);last=now;if(started&&life>0&&!win&&!paused){levelTime+=dt;totalTime+=dt;for(const __b of [...friends,...foes]){if(__b?.g?.userData?.tailPivot)__b.g.userData.tailPivot.rotation.y=Math.sin(now*.006+__b.phase)*.42}if(level===1){forestVisual.rotation.z=Math.sin(now*.00045)*.0018;}if(level===2){rippleA.rotation.z=now*.000035;rippleB.rotation.z=-now*.000025;waterRippleMatA.opacity=.17+Math.sin(now*.0012)*.045;waterRippleMatB.opacity=.13+Math.sin(now*.00105+1.4)*.035;lakeGlint.scale.x=2.35+Math.sin(now*.0008)*.32;lakeGlint.material.opacity=.18+Math.sin(now*.0011)*.055;}throwCooldown=Math.max(0,throwCooldown-dt);friendAttack=Math.max(0,friendAttack-dt);forageTimer-=dt;if(forageTimer<=0){const activeFood=apples.filter(a=>!a.done&&a.type!=='berry').length,activeBerries=apples.filter(a=>!a.done&&a.type==='berry').length;if(activeFood<4){spawnForage();notice('🌱 Появилась новая еда! 🍎 Яблоки ищи на деревьях — до них нужно допрыгнуть.')}else if(activeBerries<1&&life<diffCfg().playerHP){spawnForage('berry');notice('🫐 Где-то появились лечебные ягоды!')}forageTimer=rand(14,22)}if(flashlightObj&&!hasFlashlight&&Math.hypot(flashlightObj.position.x-boy.position.x,flashlightObj.position.z-boy.position.z)<1.8){hasFlashlight=true;scene.remove(flashlightObj);flashlightObj=null;torch.intensity=42;sound(900,.25);notice('🔦 Фонарик найден! Теперь можно идти в ночное логово.')} boy.children[5].rotation.x*=Math.max(0,1-dt*7);for(let i=shots.length-1;i>=0;i--){const sh=shots[i];sh.t+=dt*2.8;const t=Math.min(1,sh.t);sh.g.position.lerpVectors(sh.start,sh.target,t);sh.g.position.y+=Math.sin(Math.PI*t)*1.7;sh.g.rotation.y+=dt*9;if(t>=1){resolveMeat(sh);shots.splice(i,1)}}for(const f of familyMembers){if(!f.done)f.person.rotation.y=Math.sin(now*.002+f.x)*.25}const forward=(keys.KeyW||keys.ArrowUp?1:0)-(keys.KeyS||keys.ArrowDown?1:0)-stick.y,side=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0)+stick.x;const len=Math.max(1,Math.hypot(forward,side));let dx=(Math.sin(yaw)*forward-Math.cos(yaw)*side)/len,dz=(Math.cos(yaw)*forward+Math.sin(yaw)*side)/len;// v87: pressing jump close to a friendly boar mounts it directly; no tree/wall pinning is needed.

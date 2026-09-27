@@ -3,7 +3,7 @@ const html=fs.readFileSync('index.html','utf8');
 const game=fs.readFileSync('src/game.js','utf8');
 const levels=fs.readFileSync('levels/levels.js','utf8');
 const checks=[
- ['version v100',/GAME_VERSION='v100'/.test(game)],
+ ['version v101',/GAME_VERSION='v101'/.test(game)],
  ['world integrity audit',/runWorldIntegrityAudit/.test(game)&&/worldAudit/.test(game)],
  ['tree apple anchoring',/repairTreeApples/.test(game)&&/apple-floating/.test(game)],
  ['rock passage radius',/ROCK_PLAYER_RADIUS=\.34/.test(game)],
@@ -11,15 +11,17 @@ const checks=[
  ['mounted defense',/function mountedFriendDefense/.test(game)&&/mountedFriendDefense\(\)/.test(game)&&/Друг отогнал/.test(game)],
  ['mounted apple collection',/function canCollectForage\(a\)/.test(game)&&/mountedFriend\|\|/.test(game)&&/function runMountedAppleAudit\(\)/.test(game)&&/__KABANCHIKI_MOUNTED_APPLE_AUDIT__/.test(game)&&/mountedAppleAudit/.test(game)&&/mounted-apple-food/.test(game)],
  ['spawn guard',/function repairAndAuditSpawns\(\)/.test(game)&&/__KABANCHIKI_SPAWN_AUDIT__/.test(game)],
- ['loading version',/loadingVersion/.test(html)&&/>v100</.test(html)],
+ ['loading version',/loadingVersion/.test(html)&&/>v101</.test(html)],
  ['precise rock footprint',/function rockFootprintHit/.test(game)],
- ['jump clears low rocks',/py>b.max.y/.test(game)],
+ ['jump clears low rocks',/remainingRise/.test(game)&&/top<=py\+remainingRise/.test(game)],
  ['page audio suspension',/visibilitychange/.test(game)&&/audio.suspend/.test(game)],
  ['walking arm swing',/boy.children\[6\]\.rotation\.x/.test(game)],
  ['tree apples',/function appleTreeSpot\(\)/.test(game)&&/py>\.58/.test(game)],
  ['unified collision solver',/function movePlayerCollision\(mx,mz\)/.test(game)&&/function depenetratePlayer\(\)/.test(game)],
  ['collision audit',/function runCollisionAudit\(\)/.test(game)&&/__KABANCHIKI_COLLISION_AUDIT__/.test(game)],
  ['robot collision audit',/function runRobotCollisionTest\(\)/.test(game)&&/__KABANCHIKI_ROBOT_TEST__/.test(game)&&/robotAudit/.test(game)],
+ ['rounded rock footprint',/function rockEllipse/.test(game)&&/ax:sx\*\.92/.test(game)],
+ ['rock edge orbit audit',/function runRockEdgeAudit\(\)/.test(game)&&/__KABANCHIKI_ROCK_EDGE_AUDIT__/.test(game)&&/rockEdgeAudit/.test(game)&&/rock-invisible-corner/.test(game)],
  ['real rock climb audit',/function runRockClimbAudit\(\)/.test(game)&&/__KABANCHIKI_ROCK_CLIMB_AUDIT__/.test(game)&&/rockClimbAudit/.test(game)&&/rock-climb-failed/.test(game)],
  ['deterministic rock corridor audit',/function runRockCorridorAudit\(\)/.test(game)&&/__KABANCHIKI_ROCK_CORRIDOR_AUDIT__/.test(game)&&/rockCorridorAudit/.test(game)],
  ['ballistic rock entry',/remainingRise=vy>0\?\(vy\*vy\)\/\(2\*18\)/.test(game)],
