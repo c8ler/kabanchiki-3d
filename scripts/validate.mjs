@@ -3,7 +3,7 @@ const html=fs.readFileSync('index.html','utf8');
 const game=fs.readFileSync('src/game.js','utf8');
 const levels=fs.readFileSync('levels/levels.js','utf8');
 const checks=[
- ['version v110',/GAME_VERSION='v110'/.test(game)],
+ ['version v111',/GAME_VERSION='v111'/.test(game)],
  ['world integrity audit',/runWorldIntegrityAudit/.test(game)&&/worldAudit/.test(game)],
  ['tree apple anchoring',/repairTreeApples/.test(game)&&/apple-off-branch/.test(game)],
  ['rock passage radius',/ROCK_PLAYER_RADIUS=\.31/.test(game)],
@@ -12,11 +12,12 @@ const checks=[
  ['mounted apple collection',/function canCollectForage\(a\)/.test(game)&&/mountedFriend\|\|/.test(game)&&/function runMountedAppleAudit\(\)/.test(game)&&/__KABANCHIKI_MOUNTED_APPLE_AUDIT__/.test(game)&&/mountedAppleAudit/.test(game)&&/mounted-apple-food/.test(game)],
  ['spawn guard',/function repairAndAuditSpawns\(\)/.test(game)&&/__KABANCHIKI_SPAWN_AUDIT__/.test(game)],
  ['single-source version sync',/loadingVersion/.test(html)&&/window.__KABANCHIKI_VERSION__=GAME_VERSION/.test(game)&&/el.textContent=GAME_VERSION/.test(game)],
- ['cache-busted game module',/src="\.\/src\/game\.js\?v=108"/.test(html)],
- ['html build marker v110',/__KABANCHIKI_BUILD__='v110'/.test(html)],
+ ['cache-busted game module',/src="\.\/src\/game\.js\?v=111"/.test(html)],
+ ['html build marker v111',/__KABANCHIKI_BUILD__='v111'/.test(html)],
  ['no-cache document meta',/no-cache, no-store, must-revalidate/.test(html)],
  ['cylindrical tree collision',/function treeTrunkShape/.test(game)&&/function treeTrunkHit/.test(game)],
  ['apple own twig registered',/treeBranchMeshes\.push\(twig\)/.test(game)],
+ ['apples only on visible tree twigs',/twig\.parent===tree/.test(game)&&/apple-not-on-tree-twig/.test(game)&&/apple-off-visible-twig/.test(game)&&/tipGap<\.16/.test(game)],
  ['branch-sized tree geometry',/branchGeo=new THREE.CylinderGeometry\(\.09,\.14,1,6\)/.test(game)&&/len=rand\(\.68,1\.08\)/.test(game)],
  ['apples anchored on branches',/function branchApplePoint/.test(game)&&/function appleOnBranch/.test(game)&&/runBranchAppleAudit/.test(game)&&/apple-off-branch/.test(game)],
  ['mounted rock glide and log step',/MOUNTED_ROCK_RADIUS=\.78/.test(game)&&/mountedRockBlocked/.test(game)&&/rideBump/.test(game)&&/if\(mountedFriend\)return e\.n<1/.test(game)&&/runMountedTerrainAudit/.test(game)],

@@ -34,3 +34,7 @@ Mounted boar now uses a dedicated visible-body rock radius; real-rock audit reje
 
 ## v110
 Robot rock probes now use the same rotated rounded ellipse as gameplay instead of a world Box3. Walk-in, escape and above-rock probes are aligned to the real collision normal; mounted penetration checks remain unchanged.
+
+
+## v111 — Tree Branch Apples
+Яблоки создаются только на деревьях: видимая плодовая веточка крепится к существующей ветке того же дерева, а позиция яблока вычисляется из фактического world-space конца веточки. Runtime-аудит проверяет принадлежность дереву и геометрический зазор яблоко↔ветка.
