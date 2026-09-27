@@ -1,6 +1,6 @@
 window.__gameLoadProgress?.(84);let __loadFinished=false;
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
-const GAME_VERSION='v108';
+const GAME_VERSION='v109';
 // v103: GAME_VERSION is the single runtime source of truth for every visible version label.
 window.__KABANCHIKI_VERSION__=GAME_VERSION;
 for(const id of ['loadingVersion']){const el=document.getElementById(id);if(el)el.textContent=GAME_VERSION;}
@@ -743,21 +743,22 @@ function runRobotCollisionTest(){
   }
   ti++
  }
- // Rocks: low rocks whose top is already below Timur's feet are intentionally walkable.
- // For solid-height rocks test walk-in + escape; every rock is also tested while jumping above its top.
+ // v109: rock probes use the same rotated ellipse as gameplay. The old robot used the
+ // world Box3 edge, so on rotated rounded rocks it started too far away and reported every
+ // walk-in as free even though gameplay collision was correct. Probe along the rock's local X
+ // normal, just outside the real player-padded ellipse, then move through that boundary.
  let ri=0;for(const [, , ,m] of rockPositions){if(ri>=20)break;if(!m||m.visible===false)continue;
-  m.updateWorldMatrix(true,false);const b=new THREE.Box3().setFromObject(m),c=new THREE.Vector3();b.getCenter(c);const ex=(b.max.x-b.min.x)/2+PLAYER_RADIUS+.10;
-  const sx=c.x+ex,sz=c.z,walkSolid=!(0>b.max.y+.04);
+  const q=rockShape(m),c=Math.cos(q.yaw),sn=Math.sin(q.yaw),edge=q.ax+ROCK_PLAYER_RADIUS;
+  const sx=q.cx+(edge+.10)*c,sz=q.cz-(edge+.10)*sn,inx=-.55*c,inz=.55*sn,outx=.42*c,outz=-.42*sn;
   if(!playerWorldBlocked(sx,sz)){
-   if(walkSolid){
-    probe(`rock${ri}-into`,sx,sz,-.55,0,true);
-    if(!playerWorldBlocked(sx+.42,sz))probe(`rock${ri}-away`,sx,sz,.42,0,false);
-    else samples.push({label:`rock${ri}-away-crowded`,moved:0,blocked:true,skipped:true});
-   }
-   else samples.push({label:`rock${ri}-low-walkable`,moved:0,blocked:false,skipped:true});
+   probe(`rock${ri}-into`,sx,sz,inx,inz,true);
+   if(!playerWorldBlocked(sx+outx,sz+outz))probe(`rock${ri}-away`,sx,sz,outx,outz,false);
+   else samples.push({label:`rock${ri}-away-crowded`,moved:0,blocked:true,skipped:true});
   }else samples.push({label:`rock${ri}-crowded`,moved:0,blocked:true,skipped:true});
-  boy.position.set(sx,0,sz);py=b.max.y+.18;boy.position.y=py;vy=0;
-  const before=boy.position.x;movePlayerCollision(-.65,0);const jumpMoved=Math.abs(boy.position.x-before),jumpBlocked=jumpMoved<.35;
+  // Above the actual rock top, the same inward trajectory must remain traversable.
+  boy.position.set(sx,0,sz);py=q.top+.18;boy.position.y=py;vy=0;
+  const bx=boy.position.x,bz=boy.position.z,want=Math.hypot(inx,inz);movePlayerCollision(inx,inz);
+  const jumpMoved=Math.hypot(boy.position.x-bx,boy.position.z-bz),jumpBlocked=jumpMoved<want*.65;
   samples.push({label:`rock${ri}-jump`,moved:+jumpMoved.toFixed(3),blocked:jumpBlocked});if(jumpBlocked)issues.push(`robot-jump-blocked:rock${ri}`);ri++
  }
  boy.position.x=ox;boy.position.z=oz;py=opy;vy=ovy;boy.position.y=py;
