@@ -3,7 +3,7 @@ const html=fs.readFileSync('index.html','utf8');
 const game=fs.readFileSync('src/game.js','utf8');
 const levels=fs.readFileSync('levels/levels.js','utf8');
 const checks=[
- ['version v102',/GAME_VERSION='v102'/.test(game)],
+ ['version v103',/GAME_VERSION='v103'/.test(game)],
  ['world integrity audit',/runWorldIntegrityAudit/.test(game)&&/worldAudit/.test(game)],
  ['tree apple anchoring',/repairTreeApples/.test(game)&&/apple-floating/.test(game)],
  ['rock passage radius',/ROCK_PLAYER_RADIUS=\.34/.test(game)],
@@ -11,7 +11,8 @@ const checks=[
  ['mounted defense',/function mountedFriendDefense/.test(game)&&/mountedFriendDefense\(\)/.test(game)&&/Друг отогнал/.test(game)],
  ['mounted apple collection',/function canCollectForage\(a\)/.test(game)&&/mountedFriend\|\|/.test(game)&&/function runMountedAppleAudit\(\)/.test(game)&&/__KABANCHIKI_MOUNTED_APPLE_AUDIT__/.test(game)&&/mountedAppleAudit/.test(game)&&/mounted-apple-food/.test(game)],
  ['spawn guard',/function repairAndAuditSpawns\(\)/.test(game)&&/__KABANCHIKI_SPAWN_AUDIT__/.test(game)],
- ['loading version',/loadingVersion/.test(html)&&/>v102</.test(html)],
+ ['single-source version sync',/loadingVersion/.test(html)&&/window.__KABANCHIKI_VERSION__=GAME_VERSION/.test(game)&&/el.textContent=GAME_VERSION/.test(game)],
+ ['cache-busted game module',/src="\.\/src\/game\.js\?v=103"/.test(html)],
  ['precise rock footprint',/function rockFootprintHit/.test(game)],
  ['jump clears low rocks',/remainingRise/.test(game)&&/top<=py\+remainingRise/.test(game)],
  ['page audio suspension',/visibilitychange/.test(game)&&/audio.suspend/.test(game)],
@@ -28,7 +29,7 @@ const checks=[
  ['deterministic rock corridor audit',/function runRockCorridorAudit\(\)/.test(game)&&/__KABANCHIKI_ROCK_CORRIDOR_AUDIT__/.test(game)&&/rockCorridorAudit/.test(game)],
  ['ballistic rock entry',/remainingRise=vy>0\?\(vy\*vy\)\/\(2\*18\)/.test(game)],
  ['branches use geometry collision',/circleHitsTreeGeometry/.test(game)&&/treeSolidMeshes/.test(game)],
- ['external game module',/src="\.\/src\/game\.js"/.test(html)],
+ ['external game module',/src="\.\/src\/game\.js(?:\?v=\d+)?"/.test(html)],
  ['no giant inline game module',!/<script type="module">[\s\S]{5000,}<\/script>/.test(html)],
  ['five level metadata entries',(levels.match(/id:/g)||[]).length===5],
  ['forest remaster layer',/const forestVisual=new THREE.Group/.test(game)],
