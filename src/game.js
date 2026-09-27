@@ -1,6 +1,6 @@
 window.__gameLoadProgress?.(84);let __loadFinished=false;
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
-const GAME_VERSION='v107';
+const GAME_VERSION='v108';
 // v103: GAME_VERSION is the single runtime source of truth for every visible version label.
 window.__KABANCHIKI_VERSION__=GAME_VERSION;
 for(const id of ['loadingVersion']){const el=document.getElementById(id);if(el)el.textContent=GAME_VERSION;}
@@ -564,7 +564,7 @@ function worldObstacleAt(x,z,pad=.38){
  return false;
 }
 // v77: one collision model for player, generation audit and automated tests.
-const PLAYER_RADIUS=.43,ROCK_PLAYER_RADIUS=.31;
+const PLAYER_RADIUS=.43,ROCK_PLAYER_RADIUS=.31,MOUNTED_ROCK_RADIUS=.78;
 function solidCircles(){
  const out=[];
  for(let i=0;i<treePositions.length;i++){const t=treeObjects[i];if(t?.visible!==false){const [x,z]=treePositions[i];out.push({x,z,r:1.62,type:'tree'})}}
@@ -621,22 +621,25 @@ function depenetratePlayer(){
   if(!changed)break
  }
 }
+function mountedRockBlocked(x,z){
+ if(!mountedFriend)return false;
+ return rockPositions.some(([, , ,m])=>m?.visible!==false&&rockFootprintHit(m,x,z,MOUNTED_ROCK_RADIUS,false));
+}
+function movementBlocked(x,z){return playerWorldBlocked(x,z,0)||mountedRockBlocked(x,z)}
 function movePlayerCollisionStep(mx,mz){
  depenetratePlayer();
  if(Math.hypot(mx,mz)<.00001)return;
  const px=boy.position.x,pz=boy.position.z,tx=px+mx,tz=pz+mz;
- // v107: riding has its own modest body allowance. Collision is evaluated for every
- // sub-step, so touching one stone can never disable the next stone in the same ride.
- const ridePad=mountedFriend?.13:0;
- if(!playerWorldBlocked(tx,tz,ridePad)){boy.position.x=tx;boy.position.z=tz;return}
+ // v108: the mounted boar has a real stone footprint of its own. Do not reuse Timur's
+ // much smaller rock radius, otherwise the boar model visibly clips through a stone.
+ if(!movementBlocked(tx,tz)){boy.position.x=tx;boy.position.z=tz;return}
  const xFirst=Math.abs(mx)>=Math.abs(mz),attempts=xFirst?[[px+mx,pz],[px,pz+mz]]:[[px,pz+mz],[px+mx,pz]];
- for(const [x,z] of attempts)if(!playerWorldBlocked(x,z,ridePad)){boy.position.x=x;boy.position.z=z;return}
- let hitRock=null,hitN=Infinity;for(const [, , ,m] of rockPositions){if(!m||m.visible===false)continue;const e=rockEllipse(m,tx,tz,ROCK_PLAYER_RADIUS+ridePad);if(e.n<hitN){hitN=e.n;hitRock=m}}
- if(hitRock&&hitN<1){const e=rockEllipse(hitRock,px,pz,ROCK_PLAYER_RADIUS+ridePad+.012),c=Math.cos(e.q.yaw),sn=Math.sin(e.q.yaw);let wx=e.lx/e.ax,wz=e.lz/e.az,wl=Math.hypot(wx,wz)||1;wx/=wl;wz/=wl;const txl=-wz,tzl=wx,mag=Math.hypot(mx,mz);for(const sg of [1,-1]){const llx=txl*e.ax*mag*sg,llz=tzl*e.az*mag*sg;const sx=px+llx*c+llz*sn,sz=pz-llx*sn+llz*c;if(!playerWorldBlocked(sx,sz,ridePad)){boy.position.x=sx;boy.position.z=sz;return}}}
- // Trees use their real trunk circle here too; no legacy 1.62-radius tree halo is allowed.
- let nearest=null,nd=Infinity;for(const m of treeSolidMeshes){if(!m?.parent||m.parent.visible===false)continue;const t=treeTrunkShape(m),d=Math.hypot(tx-t.x,tz-t.z)-(t.r+PLAYER_RADIUS+ridePad);if(d<nd){nd=d;nearest={x:t.x,z:t.z,r:t.r}}}
- for(const o of solidCircles().filter(o=>o.type!=='rock'&&o.type!=='tree')){const d=Math.hypot(tx-o.x,tz-o.z)-(o.r+PLAYER_RADIUS+ridePad);if(d<nd){nd=d;nearest=o}}
- if(nearest){const rx=px-nearest.x,rz=pz-nearest.z,rl=Math.hypot(rx,rz)||1,txv=-rz/rl,tzv=rx/rl,sgn=(mx*txv+mz*tzv)>=0?1:-1,mag=Math.hypot(mx,mz);const sx=px+txv*mag*sgn,sz=pz+tzv*mag*sgn;if(!playerWorldBlocked(sx,sz,ridePad)){boy.position.x=sx;boy.position.z=sz}}
+ for(const [x,z] of attempts)if(!movementBlocked(x,z)){boy.position.x=x;boy.position.z=z;return}
+ let hitRock=null,hitN=Infinity;for(const [, , ,m] of rockPositions){if(!m||m.visible===false)continue;const e=rockEllipse(m,tx,tz,mountedFriend?MOUNTED_ROCK_RADIUS:ROCK_PLAYER_RADIUS);if(e.n<hitN){hitN=e.n;hitRock=m}}
+ if(hitRock&&hitN<1){const radius=mountedFriend?MOUNTED_ROCK_RADIUS:ROCK_PLAYER_RADIUS,e=rockEllipse(hitRock,px,pz,radius+.012),c=Math.cos(e.q.yaw),sn=Math.sin(e.q.yaw);let wx=e.lx/e.ax,wz=e.lz/e.az,wl=Math.hypot(wx,wz)||1;wx/=wl;wz/=wl;const txl=-wz,tzl=wx,mag=Math.hypot(mx,mz);for(const sg of [1,-1]){const llx=txl*e.ax*mag*sg,llz=tzl*e.az*mag*sg;const sx=px+llx*c+llz*sn,sz=pz-llx*sn+llz*c;if(!movementBlocked(sx,sz)){boy.position.x=sx;boy.position.z=sz;return}}}
+ let nearest=null,nd=Infinity;for(const m of treeSolidMeshes){if(!m?.parent||m.parent.visible===false)continue;const t=treeTrunkShape(m),d=Math.hypot(tx-t.x,tz-t.z)-(t.r+PLAYER_RADIUS);if(d<nd){nd=d;nearest={x:t.x,z:t.z,r:t.r}}}
+ for(const o of solidCircles().filter(o=>o.type!=='rock'&&o.type!=='tree')){const d=Math.hypot(tx-o.x,tz-o.z)-(o.r+PLAYER_RADIUS);if(d<nd){nd=d;nearest=o}}
+ if(nearest){const rx=px-nearest.x,rz=pz-nearest.z,rl=Math.hypot(rx,rz)||1,txv=-rz/rl,tzv=rx/rl,sgn=(mx*txv+mz*tzv)>=0?1:-1,mag=Math.hypot(mx,mz);const sx=px+txv*mag*sgn,sz=pz+tzv*mag*sgn;if(!movementBlocked(sx,sz)){boy.position.x=sx;boy.position.z=sz}}
 }
 function movePlayerCollision(mx,mz){
  // v107 swept/sub-stepped motion prevents a fast mounted boar from tunnelling through
@@ -851,15 +854,15 @@ function runTreeRockPassageAudit(){
 }
 function runMountedMultiRockAudit(){
  const issues=[],samples=[],oldMounted=mountedFriend,oldPy=py,ox=boy.position.x,oz=boy.position.z,oy=boy.position.y;mountedFriend=true;py=1.18;let tested=0;
- // Reproduce the phone bug: ride straight at many different REAL stones, one after another.
- // Success means the rider cannot cross from one side of a stone to the opposite side.
- for(const [, , ,m] of rockPositions){if(!m?.visible)continue;const q=rockShape(m),r=Math.max(q.ax,q.az)+ROCK_PLAYER_RADIUS+.13,dirx=Math.cos(q.yaw),dirz=Math.sin(q.yaw);boy.position.set(q.cx-dirx*(r+.65),1.18,q.cz-dirz*(r+.65));let crossed=false,minN=99;
-  for(let k=0;k<90;k++){movePlayerCollision(dirx*.055,dirz*.055);const e=rockEllipse(m,boy.position.x,boy.position.z,ROCK_PLAYER_RADIUS+.13);minN=Math.min(minN,e.n);const side=(boy.position.x-q.cx)*dirx+(boy.position.z-q.cz)*dirz;if(side>r*.35){crossed=true;break}}
-  samples.push({top:+q.top.toFixed(2),crossed,minN:+minN.toFixed(2)});tested++;if(crossed)issues.push(`mounted-rock-crossed:${tested-1}`);if(minN<.86)issues.push(`mounted-rock-penetrated:${tested-1}`);if(tested>=16)break;
+ // v108: drive straight at REAL stones and measure the mounted body footprint every step.
+ // Going around a rounded stone is valid; entering its expanded visible footprint is not.
+ for(const [, , ,m] of rockPositions){if(!m?.visible)continue;const q=rockShape(m),dirx=Math.cos(q.yaw),dirz=Math.sin(q.yaw),start=Math.max(q.ax,q.az)+MOUNTED_ROCK_RADIUS+.70;boy.position.set(q.cx-dirx*start,1.18,q.cz-dirz*start);let minN=99,penetrated=false,maxLateral=0;
+  for(let k=0;k<110;k++){movePlayerCollision(dirx*.055,dirz*.055);const e=rockEllipse(m,boy.position.x,boy.position.z,MOUNTED_ROCK_RADIUS);minN=Math.min(minN,e.n);maxLateral=Math.max(maxLateral,Math.abs(e.lz));if(e.n<.985){penetrated=true;break}}
+  samples.push({top:+q.top.toFixed(2),penetrated,minN:+minN.toFixed(3),maxLateral:+maxLateral.toFixed(2)});tested++;if(penetrated)issues.push(`mounted-rock-penetrated:${tested-1}`);if(tested>=16)break;
  }
- boy.position.set(ox,oy,oz);mountedFriend=oldMounted;py=oldPy;if(tested<2)issues.push('mounted-rock-too-few-samples');return {ok:issues.length===0,issues,tested,samples,level};
+ boy.position.set(ox,oy,oz);mountedFriend=oldMounted;py=oldPy;if(tested<2)issues.push('mounted-rock-too-few-samples');return {ok:issues.length===0,issues,tested,samples,mountedRadius:MOUNTED_ROCK_RADIUS,level};
 }
-function runMountedTerrainAudit(){const issues=[];const rockPad=ROCK_PLAYER_RADIUS+.13;if(rockPad>.50)issues.push(`mounted-rock-pad-too-wide:${rockPad.toFixed(2)}`);const logStepThrough=logObstacles.length?true:true;return {ok:issues.length===0,issues,rockPad:+rockPad.toFixed(2),logStepThrough,level};}
+function runMountedTerrainAudit(){const issues=[];const rockPad=MOUNTED_ROCK_RADIUS;if(rockPad<.65||rockPad>.90)issues.push(`mounted-rock-body-radius:${rockPad.toFixed(2)}`);const logStepThrough=true;return {ok:issues.length===0,issues,rockPad:+rockPad.toFixed(2),logStepThrough,level};}
 window.__KABANCHIKI_MOUNTED_TERRAIN_AUDIT__=runMountedTerrainAudit;
 function runRockCorridorAudit(){
  const required=ROCK_PLAYER_RADIUS*2+.10;const syntheticGap=1.10;
