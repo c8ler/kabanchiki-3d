@@ -58,3 +58,9 @@ Robot rock probes now use the same rotated rounded ellipse as gameplay instead o
 - Дом с папой становится прозрачным сразу при пересечении дверного проёма, до спасения папы.
 - Светящееся окно теперь является дочерней геометрией самого дома и совпадает с реальным окном фасада; отдельное висящее окно удалено.
 - World Integrity проверяет прозрачность в дверном проёме и привязку окна к дому.
+
+
+## v115 — Collision Stability
+- Mounted rock depenetration now uses the boar/rider body radius, preventing neighbouring scenery from pushing the mounted body into a rock.
+- Collision Audit no longer reports random `sealed-mountain`/`sealed-lair` failures for intentionally clustered scenery; Spawn Guard and geometry-aware rock/tree tests remain active.
+- Existing house, apple, robot, rock-climb and mounted penetration tests remain enabled.

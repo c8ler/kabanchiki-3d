@@ -3,7 +3,7 @@ const html=fs.readFileSync('index.html','utf8');
 const game=fs.readFileSync('src/game.js','utf8');
 const levels=fs.readFileSync('levels/levels.js','utf8');
 const checks=[
- ['version v114',/GAME_VERSION='v114'/.test(game)],
+ ['version v115',/GAME_VERSION='v115'/.test(game)],
  ['level visibility before apple spawn',/syncWorldGeneration\(n\);\nseedForage\(\)/.test(game)],
  ['hidden-tree apple rejected',/tree\.visible===false/.test(game)&&/apple-hidden-tree/.test(game)&&/br\.parent!==tree/.test(game)],
  ['apple repair keeps new twig',/a\.branch=p\[3\]/.test(game)&&/a\.tree=p\[4\]/.test(game)],
@@ -17,8 +17,8 @@ const checks=[
  ['mounted apple collection',/function canCollectForage\(a\)/.test(game)&&/mountedFriend\|\|/.test(game)&&/function runMountedAppleAudit\(\)/.test(game)&&/__KABANCHIKI_MOUNTED_APPLE_AUDIT__/.test(game)&&/mountedAppleAudit/.test(game)&&/mounted-apple-food/.test(game)],
  ['spawn guard',/function repairAndAuditSpawns\(\)/.test(game)&&/__KABANCHIKI_SPAWN_AUDIT__/.test(game)],
  ['single-source version sync',/loadingVersion/.test(html)&&/window.__KABANCHIKI_VERSION__=GAME_VERSION/.test(game)&&/el.textContent=GAME_VERSION/.test(game)],
- ['cache-busted game module',/src="\.\/src\/game\.js\?v=114"/.test(html)],
- ['html build marker v114',/__KABANCHIKI_BUILD__='v114'/.test(html)],
+ ['cache-busted game module',/src="\.\/src\/game\.js\?v=115"/.test(html)],
+ ['html build marker v115',/__KABANCHIKI_BUILD__='v115'/.test(html)],
  ['no-cache document meta',/no-cache, no-store, must-revalidate/.test(html)],
  ['cylindrical tree collision',/function treeTrunkShape/.test(game)&&/function treeTrunkHit/.test(game)],
  ['apple own twig registered',/treeBranchMeshes\.push\(twig\)/.test(game)],
@@ -27,6 +27,8 @@ const checks=[
  ['branch-sized tree geometry',/branchGeo=new THREE.CylinderGeometry\(\.09,\.14,1,6\)/.test(game)&&/len=rand\(\.68,1\.08\)/.test(game)],
  ['apples anchored on branches',/function branchApplePoint/.test(game)&&/function appleOnBranch/.test(game)&&/runBranchAppleAudit/.test(game)&&/apple-off-branch/.test(game)],
  ['mounted rock glide and log step',/MOUNTED_ROCK_RADIUS=\.78/.test(game)&&/mountedRockBlocked/.test(game)&&/rideBump/.test(game)&&/if\(mountedFriend\)return e\.n<1/.test(game)&&/runMountedTerrainAudit/.test(game)],
+ ['mounted depenetration uses rider radius',/const bodyRadius=mountedFriend\?MOUNTED_ROCK_RADIUS:ROCK_PLAYER_RADIUS/.test(game)&&/rockFootprintHit\(mesh,boy\.position\.x,boy\.position\.z,bodyRadius\+\.015,false\)/.test(game)],
+ ['cluster-safe environment audit',/intentionally clustered mountain\/lair prop/.test(game)&&/invalid-\$\{o\.type\}-circle/.test(game)&&!/sealed-\$\{o\.type\}/.test(game)],
  ['tree-rock real passage audit',/function runTreeRockPassageAudit/.test(game)&&/treeRockPassageAudit/.test(game)&&/tree-rock-visible-gap-blocked/.test(game)],
  ['mounted swept multi-rock audit',/function movePlayerCollisionStep/.test(game)&&/step=\.055/.test(game)&&/MOUNTED_ROCK_RADIUS=\.78/.test(game)&&/mounted-rock-penetrated/.test(game)],
  ['precise rock footprint',/function rockFootprintHit/.test(game)],
