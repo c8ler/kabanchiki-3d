@@ -141,3 +141,10 @@ Robot rock probes now use the same rotated rounded ellipse as gameplay instead o
 - Lake center reads deeper.
 - Boss minions fall in one hit; boss requires 10 hits.
 - Boss fire makes trees burn brighter and then burn away completely.
+
+
+## v135
+- Dad family marker raised above his head.
+- Boss minions enter explicit flee state on the first friendly-boar hit and run to the map boundary.
+- Boars avoid the deep centre of the lake while still using the shallow rim.
+- Escalating weather now sways trees, sheds leaves, increases rain density, applies headwind resistance, blows fallen logs and ground food, and ends with a scripted hurricane carry beyond the map.
