@@ -7,7 +7,7 @@ const checks=[
  ['apples outside tree trunks',/function appleOutsideOwnTrunk/.test(game)&&/apple-inside-tree/.test(game)&&/startR=trunkR\+\.08/.test(game)],
  ['road clear of solid scenery',/function roadClearForRadius/.test(game)&&/road-rock/.test(game)&&/road-mountain/.test(game)&&/road-lair/.test(game)&&/safeSolidScenerySpot/.test(game)],
  ['forage road runtime audit',/function runForageRoadAudit/.test(game)&&/__KABANCHIKI_FORAGE_ROAD_AUDIT__/.test(game)&&/forageRoadAudit/.test(game)],
- ['version v122',/GAME_VERSION='v122'/.test(game)],
+ ['version v123',/GAME_VERSION='v123'/.test(game)],
  ['level visibility before apple spawn',/syncWorldGeneration\(n\);\nseedForage\(\)/.test(game)],
  ['hidden-tree apple rejected',/tree\.visible===false/.test(game)&&/apple-hidden-tree/.test(game)&&/br\.parent!==tree/.test(game)],
  ['apple repair keeps new twig',/a\.branch=p\[3\]/.test(game)&&/a\.tree=p\[4\]/.test(game)],
@@ -22,7 +22,7 @@ const checks=[
  ['spawn guard',/function repairAndAuditSpawns\(\)/.test(game)&&/__KABANCHIKI_SPAWN_AUDIT__/.test(game)],
  ['single-source version sync',/loadingVersion/.test(html)&&/window.__KABANCHIKI_VERSION__=GAME_VERSION/.test(game)&&/el.textContent=GAME_VERSION/.test(game)],
  ['cache-busted game module',/src="\.\/src\/game\.js\?v=117"/.test(html)],
- ['html build marker v122',/__KABANCHIKI_BUILD__='v122'/.test(html)],
+ ['html build marker v123',/__KABANCHIKI_BUILD__='v123'/.test(html)],
  ['no-cache document meta',/no-cache, no-store, must-revalidate/.test(html)],
  ['cylindrical tree collision',/function treeTrunkShape/.test(game)&&/function treeTrunkHit/.test(game)],
  ['apple own twig registered',/treeBranchMeshes\.push\(twig\)/.test(game)],
@@ -94,7 +94,12 @@ const checks=[
  ['failed runs submit globally',!/if\(!win\)return \{ok:false,localOnly:true\}/.test(game)&&/if\(!resultGlobalSaved\)global=await submitGlobalResult\(name\)/.test(game)],
  ['branch audit forest-only',/if\(level!==1\|\|!forestVisual\.visible\)return \{ok:true,issues,tested:0,samples,level\}/.test(game)],
  ['branch audit crosses capsule normal',/const c=Math\.cos\(o\.yaw\),sn=Math\.sin\(o\.yaw\),nx=-sn,nz=c/.test(game)],
- ['live foot branch step-up',/const branchTop=branchStepHeightAt\(boy\.position\.x,boy\.position\.z\);[\s\S]{0,180}py=branchTop/.test(game)]
+ ['live foot branch step-up',/const branchTop=branchStepHeightAt\(boy\.position\.x,boy\.position\.z\);[\s\S]{0,180}py=branchTop/.test(game)],
+
+ ['generic camera occlusion fade',/setObjectCameraFade/.test(game)&&/occluderRoots=/.test(game)&&/houseObjects/.test(game)&&/rockPositions/.test(game)&&/ridgeObjects/.test(game)],
+ ['dad house inside-shell reveal',/insideShell=q\.x>-2\.28/.test(game)&&/familyHouseRevealAt/.test(game)],
+ ['dad house warm light stays on',/hideDoorGlow\.visible=\(n===3\)/.test(game)&&/familyWindow\.material\.opacity<\.7/.test(game)],
+ ['runtime occlusion visibility audit',/__KABANCHIKI_OCCLUSION_AUDIT__/.test(game)&&/dad-house-inside-not-transparent/.test(game)],
 ];
 let bad=0;for(const [n,ok] of checks){console.log(`${ok?'✓':'✗'} ${n}`);if(!ok)bad++}
 if(bad)process.exit(1);

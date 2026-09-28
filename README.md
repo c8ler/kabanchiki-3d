@@ -93,7 +93,14 @@ Robot rock probes now use the same rotated rounded ellipse as gameplay instead o
 - Duplicate submission protection remains active.
 
 
-## v122 — Branch Physics
+## v123 — Branch Physics
 - Branch traversal audit runs only in the forest and crosses each fallen branch perpendicular to its capsule.
 - Runtime movement now lifts Timur onto the visible low branch while walking across it, preserving normal jumping.
 - Audit requires multiple clear generated branch samples and verifies both crossing and visible vertical bump.
+
+
+## v123 — Occlusion + Lit Dad Hideout
+- Dad's hideout becomes transparent immediately when Timur crosses the doorway/house shell.
+- The hideout keeps a bright warm window and point light while its walls are transparent.
+- Houses, trees, rocks and cliffs between the camera and Timur fade automatically, then restore.
+- Runtime occlusion audit checks fade/restore and Dad-house light/transparency.
