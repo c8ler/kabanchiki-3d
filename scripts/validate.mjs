@@ -3,7 +3,7 @@ const html=fs.readFileSync('index.html','utf8');
 const game=fs.readFileSync('src/game.js','utf8');
 const levels=fs.readFileSync('levels/levels.js','utf8');
 const checks=[
- ['version v113',/GAME_VERSION='v113'/.test(game)],
+ ['version v114',/GAME_VERSION='v114'/.test(game)],
  ['level visibility before apple spawn',/syncWorldGeneration\(n\);\nseedForage\(\)/.test(game)],
  ['hidden-tree apple rejected',/tree\.visible===false/.test(game)&&/apple-hidden-tree/.test(game)&&/br\.parent!==tree/.test(game)],
  ['apple repair keeps new twig',/a\.branch=p\[3\]/.test(game)&&/a\.tree=p\[4\]/.test(game)],
@@ -11,12 +11,14 @@ const checks=[
  ['tree apple anchoring',/repairTreeApples/.test(game)&&/apple-off-branch/.test(game)],
  ['rock passage radius',/ROCK_PLAYER_RADIUS=\.31/.test(game)],
  ['family house transparency audit',/family-house-not-transparent/.test(game)],
+ ['family house reveals at doorway',/function familyHouseRevealAt/.test(game)&&/family-house-not-transparent-at-door/.test(game)&&/family-house-door-reveal-zone-missing/.test(game)],
+ ['family window attached to hideout',/familyWindow\.userData\.familyWindow=true/.test(game)&&/family-window-detached/.test(game)&&/family-window-off-wall/.test(game)],
  ['mounted defense',/function mountedFriendDefense/.test(game)&&/mountedFriendDefense\(\)/.test(game)&&/Друг отогнал/.test(game)],
  ['mounted apple collection',/function canCollectForage\(a\)/.test(game)&&/mountedFriend\|\|/.test(game)&&/function runMountedAppleAudit\(\)/.test(game)&&/__KABANCHIKI_MOUNTED_APPLE_AUDIT__/.test(game)&&/mountedAppleAudit/.test(game)&&/mounted-apple-food/.test(game)],
  ['spawn guard',/function repairAndAuditSpawns\(\)/.test(game)&&/__KABANCHIKI_SPAWN_AUDIT__/.test(game)],
  ['single-source version sync',/loadingVersion/.test(html)&&/window.__KABANCHIKI_VERSION__=GAME_VERSION/.test(game)&&/el.textContent=GAME_VERSION/.test(game)],
- ['cache-busted game module',/src="\.\/src\/game\.js\?v=113"/.test(html)],
- ['html build marker v113',/__KABANCHIKI_BUILD__='v113'/.test(html)],
+ ['cache-busted game module',/src="\.\/src\/game\.js\?v=114"/.test(html)],
+ ['html build marker v114',/__KABANCHIKI_BUILD__='v114'/.test(html)],
  ['no-cache document meta',/no-cache, no-store, must-revalidate/.test(html)],
  ['cylindrical tree collision',/function treeTrunkShape/.test(game)&&/function treeTrunkHit/.test(game)],
  ['apple own twig registered',/treeBranchMeshes\.push\(twig\)/.test(game)],

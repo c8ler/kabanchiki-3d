@@ -1,6 +1,6 @@
 window.__gameLoadProgress?.(84);let __loadFinished=false;
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
-const GAME_VERSION='v113';
+const GAME_VERSION='v114';
 // v103: GAME_VERSION is the single runtime source of truth for every visible version label.
 window.__KABANCHIKI_VERSION__=GAME_VERSION;
 for(const id of ['loadingVersion']){const el=document.getElementById(id);if(el)el.textContent=GAME_VERSION;}
@@ -111,10 +111,12 @@ function villageHouse(x,z,type=0,rot=0){
 }
 villageHouse(-27,-27,0,.08);villageHouse(-12,-29,1,-.08);
 const familyHideout=villageHouse(9,-28,2,0);familyHideout.userData.enterable=true;familyHideout.scale.z=1.65;familyHideout.userData.familyHideout=true;villageHouse(27,-23,3,-.10);
-const hideDoor=group(9,-24.55);
-const windowGlowMat=new THREE.MeshBasicMaterial({color:0xffd36a,transparent:true,opacity:.96});
-block(hideDoor,windowGlowMat,-1.45,1.65,.02,.82,.82,.08);block(hideDoor,windowGlowMat,1.45,1.65,.02,.82,.82,.08);
-const hideDoorGlow=new THREE.PointLight(0xffc45c,5.2,12,1.8);hideDoorGlow.position.set(9,2.15,-24.35);hideDoorGlow.visible=false;scene.add(hideDoorGlow);
+// v114: the warm window belongs to the hideout itself. The old standalone pair used world coordinates,
+// so one pane could visibly float beside the asymmetric house.
+const hideDoor=new THREE.Group();familyHideout.add(hideDoor);
+const windowGlowMat=new THREE.MeshBasicMaterial({color:0xffd36a,transparent:true,opacity:.82});
+const familyWindow=block(hideDoor,windowGlowMat,-1.55,1.45,2.135,.72,.72,.045);familyWindow.userData.familyWindow=true;
+const hideDoorGlow=new THREE.PointLight(0xffc45c,5.2,12,1.8);hideDoorGlow.position.set(-1.55,1.9,2.0);familyHideout.add(hideDoorGlow);hideDoorGlow.visible=false;
 let insideFamilyHouse=false;
 villageHouse(-29,-7,2,Math.PI/2+.06);villageHouse(28,1,1,-Math.PI/2-.04);villageHouse(-25,19,3,.10);villageHouse(-13,25,0,-.05);villageHouse(25,23,2,.08)
 const biomeObjects=[],mountainObstacles=[],lairObstacles=[];function biomeMesh(obj,lv){obj.visible=false;obj.userData.biomeLevel=lv;biomeObjects.push(obj);return obj}
@@ -466,12 +468,17 @@ $('fullscreen').onclick=goFullscreen;$('menuFullscreen').onclick=goFullscreen;
 document.addEventListener('fullscreenchange',syncFullscreenButton);document.addEventListener('webkitfullscreenchange',syncFullscreenButton);document.addEventListener('mozfullscreenchange',syncFullscreenButton);document.addEventListener('MSFullscreenChange',syncFullscreenButton);document.addEventListener('keydown',e=>{keys[e.code]=true;if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();if(e.code==='Escape'&&!e.repeat){e.preventDefault();togglePause()}if(e.code==='KeyV'&&!e.repeat)$('camera').click();if(e.code==='Space'&&!e.repeat)jump=true;if((e.code==='KeyE'||e.code==='KeyF')&&!e.repeat)feed();if(e.code==='KeyP'&&!e.repeat)togglePause()});document.addEventListener('keyup',e=>keys[e.code]=false);renderer.domElement.addEventListener('pointerdown',e=>{if(!started)return;if(e.pointerType==='mouse'&&e.button!==0)return;drag={id:e.pointerId,x:e.clientX,y:e.clientY};try{renderer.domElement.setPointerCapture(e.pointerId)}catch(_){}});renderer.domElement.addEventListener('pointermove',e=>{if(drag?.id!==e.pointerId)return;const delta=e.clientX-drag.x;/* v19: mobile horizontal camera direction fixed; mouse behavior unchanged */yaw+=(e.pointerType==='touch'?-delta:delta)*.006;drag.x=e.clientX;drag.y=e.clientY});function endCameraDrag(e){if(drag?.id===e.pointerId)drag=null}renderer.domElement.addEventListener('pointerup',endCameraDrag);renderer.domElement.addEventListener('pointercancel',endCameraDrag);renderer.domElement.addEventListener('contextmenu',e=>e.preventDefault());const stickEl=$('stick'),nub=$('nub');function setStick(e){const r=stickEl.getBoundingClientRect(),dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2),len=Math.max(1,Math.hypot(dx,dy)),s=Math.min(1,len/52);stick.x=dx/len*s;stick.y=dy/len*s;nub.style.transform=`translate(${stick.x*43}px,${stick.y*43}px)`}stickEl.addEventListener('pointerdown',e=>{e.preventDefault();stickPointer=e.pointerId;stickEl.setPointerCapture(e.pointerId);setStick(e)});stickEl.addEventListener('pointermove',e=>{if(stickPointer===e.pointerId)setStick(e)});function resetStick(e){if(stickPointer===e.pointerId){stickPointer=null;stick.x=stick.y=0;nub.style.transform=''}}stickEl.addEventListener('pointerup',resetStick);stickEl.addEventListener('pointercancel',resetStick);addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});makePortal();function boarBodies(){const a=foes.filter(f=>f?.g&&!f.flee);if(friend?.g&&!friend.flee)a.push(friend);return a}
 function boarRadius(b){return b?.isBoss?2.45:1.02}
 function setHouseTransparent(h,on){h.traverse(o=>{if(o.isMesh){if(!o.userData._houseOwnMaterial){o.material=o.material.clone();o.userData._houseOwnMaterial=true}if(o.userData._baseOpacity===undefined){o.userData._baseOpacity=o.material.opacity??1;o.userData._baseTransparent=!!o.material.transparent;o.userData._baseDepthWrite=o.material.depthWrite!==false}o.material.transparent=on||o.userData._baseTransparent;o.material.opacity=on?.16:o.userData._baseOpacity;o.material.depthWrite=on?false:o.userData._baseDepthWrite}})}
+function familyHouseRevealAt(x,z){
+ if(level!==3||!familyHideout?.visible)return false;
+ // v114: reveal at the doorway, before Timur can reach Dad. Use house-local coordinates so scaling/rotation cannot delay it.
+ familyHideout.updateWorldMatrix(true,true);const q=familyHideout.worldToLocal(new THREE.Vector3(x,0,z));
+ const doorway=Math.abs(q.x)<1.02&&q.z>1.34&&q.z<2.72;
+ const room=q.x>-2.02&&q.x<.72&&q.z>-1.82&&q.z<2.22;
+ return doorway||room;
+}
 function updateFamilyHouseReveal(){
- if(level!==3||!familyHideout?.visible)return;
- // Use the actual world footprint, not a hand-written local rectangle. This remains correct after scaling the hideout.
- familyHideout.updateWorldMatrix(true,true);const box=new THREE.Box3().setFromObject(familyHideout);
- const nowInside=boy.position.x>box.min.x+.10&&boy.position.x<box.max.x-.10&&boy.position.z>box.min.z+.10&&boy.position.z<box.max.z-.10;
- if(nowInside!==insideFamilyHouse){insideFamilyHouse=nowInside;setHouseTransparent(familyHideout,nowInside);if(nowInside)notice('🏠 Дом становится прозрачным — теперь видно папу внутри!')}
+ const nowInside=familyHouseRevealAt(boy.position.x,boy.position.z);
+ if(nowInside!==insideFamilyHouse){insideFamilyHouse=nowInside;setHouseTransparent(familyHideout,nowInside);if(nowInside)notice('🏠 Вошёл в дом — стены стали прозрачными!')}
 }
 function houseBlockAt(x,z,pad=.45,allowJump=false){
  if(level!==3)return false;
@@ -691,7 +698,7 @@ function runWorldIntegrityAudit(){
  // Elevated apples must visibly belong to a currently visible tree.
  for(const a of apples){if(a.done||a.type!=='apple'||a.y<=1)continue;if(!appleOnBranch(a))issues.push(`apple-off-branch:${a.x.toFixed(1)},${a.z.toFixed(1)}`)}
  // The father's hideout must actually become translucent from a point inside its walkable room.
- if(level===3&&familyHideout?.visible){const ox=boy.position.x,oz=boy.position.z,oldInside=insideFamilyHouse;familyHideout.updateWorldMatrix(true,true);const b=new THREE.Box3().setFromObject(familyHideout);boy.position.x=(b.min.x+b.max.x)/2;boy.position.z=(b.min.z+b.max.z)/2;insideFamilyHouse=false;setHouseTransparent(familyHideout,false);updateFamilyHouseReveal();let transparent=false;familyHideout.traverse(o=>{if(o.isMesh&&o.material?.opacity<.5)transparent=true});if(!transparent)issues.push('family-house-not-transparent');setHouseTransparent(familyHideout,false);insideFamilyHouse=oldInside;boy.position.x=ox;boy.position.z=oz}
+ if(level===3&&familyHideout?.visible){const ox=boy.position.x,oz=boy.position.z,oldInside=insideFamilyHouse;familyHideout.updateWorldMatrix(true,true);const doorWorld=new THREE.Vector3(0,0,1.72).applyMatrix4(familyHideout.matrixWorld);boy.position.x=doorWorld.x;boy.position.z=doorWorld.z;insideFamilyHouse=false;setHouseTransparent(familyHideout,false);updateFamilyHouseReveal();let transparent=false;familyHideout.traverse(o=>{if(o.isMesh&&o.material?.opacity<.5)transparent=true});if(!transparent)issues.push('family-house-not-transparent-at-door');if(!familyHouseRevealAt(doorWorld.x,doorWorld.z))issues.push('family-house-door-reveal-zone-missing');const fw=familyWindow?.getWorldPosition(new THREE.Vector3()),fl=familyHideout.worldToLocal(fw.clone());if(familyWindow?.parent!==hideDoor||hideDoor.parent!==familyHideout)issues.push('family-window-detached');if(Math.abs(fl.x+1.55)>.08||Math.abs(fl.z-2.135)>.08)issues.push('family-window-off-wall');setHouseTransparent(familyHideout,false);insideFamilyHouse=oldInside;boy.position.x=ox;boy.position.z=oz}
  // Rock collision must leave player-sized corridors when the visible AABB gap is clearly wide enough.
  const rs=rockPositions.filter(([, , ,m])=>m?.visible!==false).map((r,i)=>{r[3].updateWorldMatrix(true,false);return {i,b:new THREE.Box3().setFromObject(r[3])}});let corridors=0;
  for(let i=0;i<rs.length;i++)for(let j=i+1;j<rs.length;j++){const a=rs[i].b,b=rs[j].b;const gx=Math.max(0,Math.max(a.min.x,b.min.x)-Math.min(a.max.x,b.max.x)),gz=Math.max(0,Math.max(a.min.z,b.min.z)-Math.min(a.max.z,b.max.z));const gap=Math.hypot(gx,gz);if(gap>=1.05&&gap<=2.2)corridors++}
