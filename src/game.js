@@ -1,6 +1,6 @@
 window.__gameLoadProgress?.(84);let __loadFinished=false;
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
-const GAME_VERSION='v112';
+const GAME_VERSION='v113';
 // v103: GAME_VERSION is the single runtime source of truth for every visible version label.
 window.__KABANCHIKI_VERSION__=GAME_VERSION;
 for(const id of ['loadingVersion']){const el=document.getElementById(id);if(el)el.textContent=GAME_VERSION;}
@@ -257,13 +257,17 @@ function softCrateSound(){if(!sfxEnabled)return;try{audio??=new (window.AudioCon
 function makeForage(type,x,z,y=0){const g=group(x,z);g.position.y=y;if(type==='berry'){const leaf=new THREE.MeshLambertMaterial({color:0x3f8b45}),berry=new THREE.MeshLambertMaterial({color:0x4d3ca6});block(g,leaf,0,.16,0,.65,.22,.65);for(const [bx,bz] of [[-.22,-.12],[.18,-.18],[-.12,.18],[.24,.16]])sphere(g,berry,bx,.34,bz,.13)}else{const model=makeFoodModel(type,g,0,.30,0);model.scale.setScalar(1.25)}apples.push({g,x,z,y,type,done:false})}
 function safeForageSpot(){for(let tries=0;tries<70;tries++){const x=rand(-34,34),z=rand(-35,27);if(Math.abs(x)<3.4)continue;if(Math.hypot(x,z-4)<6)continue;if(level===3&&houseObjects.some(h=>{if(!h.visible)return false;const b=new THREE.Box3().setFromObject(h);return x>b.min.x-1.4&&x<b.max.x+1.4&&z>b.min.z-1.4&&z<b.max.z+1.4}))continue;if(treePositions.some(([tx,tz])=>Math.hypot(x-tx,z-tz)<1.5))continue;if(rockPositions.some(([rx,rz,r])=>Math.hypot(x-rx,z-rz)<r+1.1))continue;return [x,z]}return [rand(-25,25),rand(-28,20)]}
 function branchApplePoint(br){
- // v111: apples exist only on a visible twig that belongs to the selected tree.
- if(!br||br.visible===false||!br.parent)return null;const tree=br.parent;if(!tree.userData.isTree)return null;
- tree.updateWorldMatrix(true,true);br.updateWorldMatrix(true,false);
- const anchorWorld=new THREE.Vector3(0,.34,0).applyMatrix4(br.matrixWorld),treeInv=tree.matrixWorld.clone().invert(),anchorLocal=anchorWorld.clone().applyMatrix4(treeInv);
- const a=rand(0,Math.PI*2),len=rand(.58,.82),twig=new THREE.Mesh(branchGeo,mats.wood);twig.userData.appleTwig=true;twig.userData.appleBranch=true;twig.userData.appleTree=tree;
- twig.position.copy(anchorLocal);twig.scale.set(.16,len,.16);twig.rotation.z=Math.PI/2;twig.rotation.y=a;tree.add(twig);treeBranchMeshes.push(twig);tree.updateWorldMatrix(true,true);twig.updateWorldMatrix(true,false);
- const tip=new THREE.Vector3(0,.46,0).applyMatrix4(twig.matrixWorld);return [tip.x,tip.z,tip.y-.16,twig,tree]
+ // v113: every apple gets its own VISIBLE, reachable fruit twig attached directly to the same visible tree.
+ // Do not inherit the height/tilt of a random crown branch: tall trees could put apples 2.3-3.5m in the air.
+ if(!br||br.visible===false||!br.parent)return null;const tree=br.parent;if(tree.visible===false||!tree.userData?.isTree)return null;
+ tree.updateWorldMatrix(true,true);
+ const a=rand(0,Math.PI*2),len=rand(.62,.82),twig=new THREE.Mesh(branchGeo,mats.wood);twig.userData.appleTwig=true;twig.userData.appleBranch=true;twig.userData.appleTree=tree;
+ // Tree groups are yaw-only. A low branch starts at the trunk and stays below the jump-reach ceiling.
+ const branchY=rand(1.28,1.68),trunkAttach=.30;twig.position.set(Math.cos(a)*trunkAttach,branchY,Math.sin(a)*trunkAttach);twig.scale.set(.16,len,.16);twig.rotation.z=Math.PI/2;twig.rotation.y=a;
+ tree.add(twig);treeBranchMeshes.push(twig);tree.updateWorldMatrix(true,true);twig.updateWorldMatrix(true,false);
+ const tip=new THREE.Vector3(0,.46,0).applyMatrix4(twig.matrixWorld),appleY=tip.y-.16;
+ if(appleY>2.08){tree.remove(twig);const i=treeBranchMeshes.indexOf(twig);if(i>=0)treeBranchMeshes.splice(i,1);return null}
+ return [tip.x,tip.z,appleY,twig,tree]
 }
 function appleTreeSpot(){const candidates=[];for(const br of treeBranchMeshes){if(!br?.parent||br.userData.appleTwig||br.parent.visible===false||!br.parent.userData?.isTree)continue;br.parent.updateWorldMatrix(true,true);const wp=new THREE.Vector3();br.getWorldPosition(wp);if(Math.abs(wp.x)>35||Math.abs(wp.z)>35||Math.hypot(wp.x,wp.z-4)<7)continue;candidates.push(br)}if(!candidates.length)return null;return branchApplePoint(candidates[Math.floor(Math.random()*candidates.length)])}
 function spawnForage(type){type=type||['apple','mushroom','cabbage'][Math.floor(Math.random()*3)];if(type==='apple'){const spot=appleTreeSpot();if(spot){const [x,z,y,branch,tree]=spot;makeForage('apple',x,z,y);const a=apples[apples.length-1];a.branch=branch;a.tree=tree;a.g.userData.appleBranch=branch;a.g.userData.appleTree=tree;return}type=Math.random()<.5?'mushroom':'cabbage'}const [x,z]=safeForageSpot();makeForage(type,x,z)}
