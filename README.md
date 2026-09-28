@@ -131,3 +131,9 @@ Robot rock probes now use the same rotated rounded ellipse as gameplay instead o
 - The structural house shell is isolated from the window, light and Dad; entering fades every shell mesh to near-clear opacity without changing Dad.
 - The warm window and point light are active for the entire village level, before Timur approaches the house.
 - Runtime audits now verify every shell mesh, Dad's independent opaque visibility, persistent light intensity and minimum hideout distance.
+
+
+## v128 — Dad House Cutaway
+- Replaces unreliable mobile transparency with a true cutaway: the structural shell stops rendering while Timur is inside.
+- Dad is moved deeper into the room so he can be seen before rescue triggers.
+- The warm house light is strengthened and remains active for the whole village level.
