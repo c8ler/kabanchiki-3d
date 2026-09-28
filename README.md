@@ -104,3 +104,8 @@ Robot rock probes now use the same rotated rounded ellipse as gameplay instead o
 - The hideout keeps a bright warm window and point light while its walls are transparent.
 - Houses, trees, rocks and cliffs between the camera and Timur fade automatically, then restore.
 - Runtime occlusion audit checks fade/restore and Dad-house light/transparency.
+
+
+## v124 — Cache Sync
+- The game module URL now uses the same v124 build number as GAME_VERSION and the HTML build marker.
+- Validator now fails if GAME_VERSION, HTML build marker, and game.js cache-buster ever diverge.
