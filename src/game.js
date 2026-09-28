@@ -1,6 +1,6 @@
 window.__gameLoadProgress?.(84);let __loadFinished=false;
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
-const GAME_VERSION='v115';
+const GAME_VERSION='v116';
 // v103: GAME_VERSION is the single runtime source of truth for every visible version label.
 window.__KABANCHIKI_VERSION__=GAME_VERSION;
 for(const id of ['loadingVersion']){const el=document.getElementById(id);if(el)el.textContent=GAME_VERSION;}
@@ -540,10 +540,11 @@ function rockFootprintHit(mesh,x,z,pad=.34,allowJump=true){
  return e.n<1;
 }
 function pushOutOfRock(mesh){
- // v115: depenetration must use the rider's visible body radius too. Using Timur's smaller
- // radius while mounted could let a neighbouring obstacle push the boar part-way into a rock.
- const bodyRadius=mountedFriend?MOUNTED_ROCK_RADIUS:ROCK_PLAYER_RADIUS;
- if(!mesh||mesh.visible===false||!rockFootprintHit(mesh,boy.position.x,boy.position.z,bodyRadius+.015,false))return false;
+ // v116: mounted and on-foot depenetration are deliberately separate. The rider always uses
+ // the boar body radius, while Timur keeps the jump-aware rock rule so airborne movement can
+ // cross a reachable rock footprint and land on its top instead of being pushed away.
+ const riding=!!mountedFriend,bodyRadius=riding?MOUNTED_ROCK_RADIUS:ROCK_PLAYER_RADIUS;
+ if(!mesh||mesh.visible===false||!rockFootprintHit(mesh,boy.position.x,boy.position.z,bodyRadius+.015,!riding))return false;
  const e=rockEllipse(mesh,boy.position.x,boy.position.z,bodyRadius+.025);
  // Radial projection in ellipse space gives a smooth rounded push, unlike snapping to one
  // side of an AABB. This also prevents the jitter/teleport effect at rock corners.

@@ -64,3 +64,9 @@ Robot rock probes now use the same rotated rounded ellipse as gameplay instead o
 - Mounted rock depenetration now uses the boar/rider body radius, preventing neighbouring scenery from pushing the mounted body into a rock.
 - Collision Audit no longer reports random `sealed-mountain`/`sealed-lair` failures for intentionally clustered scenery; Spawn Guard and geometry-aware rock/tree tests remain active.
 - Existing house, apple, robot, rock-climb and mounted penetration tests remain enabled.
+
+
+## v116 — Foot Rock Climb Isolation
+- Mounted rock depenetration keeps the v115 boar-body radius.
+- On-foot depenetration again respects ballistic jump clearance, so Timur can enter a reachable rock footprint while airborne and land naturally on top.
+- Validator checks that mounted and on-foot rock rules stay separated.
