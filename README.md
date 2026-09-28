@@ -1,3 +1,6 @@
+## v134
+Миньоны убегают после первого удара; огонь опасен и оставляет обгоревшие пни; верховая езда сохраняется между локациями; физическая глубина озера и удушье; семья не спавнится в озере; погодная эскалация 1–5 минут.
+
 # Kabanchiki 3D v131 — Dad House Real Cutaway
 
 Dad house uses separate walls, roof and floor. Entering hides only the camera-facing wall and roof. Exterior window and porch lamp glow from village load; warm point lights stay active. Dad is deeper inside and the house is fixed at (30, -31).
