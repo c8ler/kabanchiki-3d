@@ -66,7 +66,13 @@ Robot rock probes now use the same rotated rounded ellipse as gameplay instead o
 - Existing house, apple, robot, rock-climb and mounted penetration tests remain enabled.
 
 
-## v117 — Foot Rock Climb Isolation
+## v118 — Foot Rock Climb Isolation
 - Mounted rock depenetration keeps the v115 boar-body radius.
 - On-foot depenetration again respects ballistic jump clearance, so Timur can enter a reachable rock footprint while airborne and land naturally on top.
 - Validator checks that mounted and on-foot rock rules stay separated.
+
+
+## v118 — Mounted cluster stability
+- Keeps the v117 lake/apple/road rules.
+- Resolves neighbouring rock overlaps after every mounted swept movement slice.
+- Extra depenetration passes apply only while riding; on-foot v116 rock climbing stays jump-aware.

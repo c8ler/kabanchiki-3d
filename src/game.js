@@ -1,6 +1,6 @@
 window.__gameLoadProgress?.(84);let __loadFinished=false;
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
-const GAME_VERSION='v117';
+const GAME_VERSION='v118';
 // v103: GAME_VERSION is the single runtime source of truth for every visible version label.
 window.__KABANCHIKI_VERSION__=GAME_VERSION;
 for(const id of ['loadingVersion']){const el=document.getElementById(id);if(el)el.textContent=GAME_VERSION;}
@@ -631,7 +631,7 @@ function playerSupportHeightAt(x,z){
 }
 function depenetratePlayer(){
  // Never leave Timur trapped inside a rock/tree after a level change, jump or knockback.
- for(let pass=0;pass<6;pass++){
+ for(let pass=0;pass<(mountedFriend?14:6);pass++){
   let changed=false;
   for(const o of logObstacles)if(pushOutOfLog(o))changed=true;
   for(const [, , ,m] of rockPositions)if(pushOutOfRock(m))changed=true;
@@ -667,7 +667,12 @@ function movePlayerCollision(mx,mz){
  // v107 swept/sub-stepped motion prevents a fast mounted boar from tunnelling through
  // a narrow rock between rendered frames. Every slice re-runs the full collision solver.
  const dist=Math.hypot(mx,mz),step=.055,n=Math.max(1,Math.ceil(dist/step));
- for(let i=0;i<n;i++)movePlayerCollisionStep(mx/n,mz/n);
+ for(let i=0;i<n;i++){
+  movePlayerCollisionStep(mx/n,mz/n);
+  // v118: resolve the whole neighbouring-rock cluster after each mounted sweep slice.
+  // This is mounted-only: Timur keeps the v116 jump-aware rock-climb behaviour unchanged.
+  if(mountedFriend)depenetratePlayer();
+ }
 }
 function spawnPointBlocked(x,z,pad=.72,{allowRoad=false}={}){
  if(x<-41.5||x>41.5||z<-41.5||z>41.5)return true;
