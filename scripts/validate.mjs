@@ -7,7 +7,7 @@ const checks=[
  ['apples outside tree trunks',/function appleOutsideOwnTrunk/.test(game)&&/apple-inside-tree/.test(game)&&/startR=trunkR\+\.08/.test(game)],
  ['road clear of solid scenery',/function roadClearForRadius/.test(game)&&/road-rock/.test(game)&&/road-mountain/.test(game)&&/road-lair/.test(game)&&/safeSolidScenerySpot/.test(game)],
  ['forage road runtime audit',/function runForageRoadAudit/.test(game)&&/__KABANCHIKI_FORAGE_ROAD_AUDIT__/.test(game)&&/forageRoadAudit/.test(game)],
- ['version v119',/GAME_VERSION='v119'/.test(game)],
+ ['version v120',/GAME_VERSION='v120'/.test(game)],
  ['level visibility before apple spawn',/syncWorldGeneration\(n\);\nseedForage\(\)/.test(game)],
  ['hidden-tree apple rejected',/tree\.visible===false/.test(game)&&/apple-hidden-tree/.test(game)&&/br\.parent!==tree/.test(game)],
  ['apple repair keeps new twig',/a\.branch=p\[3\]/.test(game)&&/a\.tree=p\[4\]/.test(game)],
@@ -22,7 +22,7 @@ const checks=[
  ['spawn guard',/function repairAndAuditSpawns\(\)/.test(game)&&/__KABANCHIKI_SPAWN_AUDIT__/.test(game)],
  ['single-source version sync',/loadingVersion/.test(html)&&/window.__KABANCHIKI_VERSION__=GAME_VERSION/.test(game)&&/el.textContent=GAME_VERSION/.test(game)],
  ['cache-busted game module',/src="\.\/src\/game\.js\?v=117"/.test(html)],
- ['html build marker v119',/__KABANCHIKI_BUILD__='v119'/.test(html)],
+ ['html build marker v120',/__KABANCHIKI_BUILD__='v120'/.test(html)],
  ['no-cache document meta',/no-cache, no-store, must-revalidate/.test(html)],
  ['cylindrical tree collision',/function treeTrunkShape/.test(game)&&/function treeTrunkHit/.test(game)],
  ['apple own twig registered',/treeBranchMeshes\.push\(twig\)/.test(game)],
@@ -81,10 +81,16 @@ const checks=[
  ['boss knockback',game.includes('отбрасывает его')&&game.includes('target.stagger=Math.max')],
  ['result dedup',game.includes('resultGlobalSaved')&&game.includes('resultLocalSaved')&&game.includes('resultSaving')],
  ['global leaderboard config',game.includes('SUPABASE_URL')&&game.includes('submitGlobalResult')&&game.includes('globalStatsHtml')],
+ ['explicit family roles',/function makeFamily\(x,z,forcedRole=null\)/.test(game) && /familyRoles=\{2:\[0\],3:\[1\],4:\[2,3\]\}/.test(game)],
+ ['random safe family placement audit',/function runFamilyPlacementAudit\(\)/.test(game) && /family-on-road/.test(game) && /family-in-obstacle/.test(game)],
+ ['dad remains inside moving hideout',/dadLocal=new THREE\.Vector3\(-\.65,0,-\.55\)/.test(game) && /family-dad-not-in-hideout/.test(game)],
+ ['hideout uses multiple village plots',/plots=\[\[9,-28\],\[11,-12\],\[12,12\],\[10,27\]\]/.test(game)],
+ ['dad visible before collection',/family-dad-not-visible/.test(game) && /family-house-not-transparent-at-door/.test(game)],
  ['mounted geometry uses global all-rock footprint',/function mountedRockFreeAt\(x,z,slack=0\)[\s\S]*rockEllipse\(m,x,z,MOUNTED_ROCK_RADIUS\+slack\)\.n<1/.test(game)],
  ['mounted sweep rolls back only to last globally safe footprint',/mountedRockFreeAt\(safeX,safeZ,\.004\)[\s\S]*boy\.position\.x=safeX;boy\.position\.z=safeZ/.test(game)],
  ['mounted real-rock audit starts globally clear',game.includes('begin every real-rock probe from a globally valid rider footprint')]
 ];
 let bad=0;for(const [n,ok] of checks){console.log(`${ok?'✓':'✗'} ${n}`);if(!ok)bad++}
 if(bad)process.exit(1);
+
 

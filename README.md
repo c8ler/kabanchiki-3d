@@ -76,3 +76,11 @@ Robot rock probes now use the same rotated rounded ellipse as gameplay instead o
 - Keeps the v117 lake/apple/road rules.
 - Resolves neighbouring rock overlaps after every mounted swept movement slice.
 - Extra depenetration passes apply only while riding; on-foot v116 rock climbing stays jump-aware.
+
+
+## v120 — Family & Hideout Randomization
+- Dad is explicitly role 1 and always spawns inside the enterable hideout.
+- The hideout chooses one of four safe village plots each run; its warm window stays parented to the house.
+- Entering the doorway/room makes the house transparent before Dad is collected.
+- Other family members use randomized safe off-road positions on their assigned maps.
+- Runtime family placement audit checks Dad, doorway reveal, road clearance and obstacle clearance.
