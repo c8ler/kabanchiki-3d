@@ -1,6 +1,6 @@
 window.__gameLoadProgress?.(84);let __loadFinished=false;
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
-const GAME_VERSION='v121';
+const GAME_VERSION='v122';
 // v103: GAME_VERSION is the single runtime source of truth for every visible version label.
 window.__KABANCHIKI_VERSION__=GAME_VERSION;
 for(const id of ['loadingVersion']){const el=document.getElementById(id);if(el)el.textContent=GAME_VERSION;}
@@ -891,7 +891,45 @@ function runBranchAppleAudit(){const issues=[],samples=[];let checked=0;for(cons
 window.__KABANCHIKI_BRANCH_APPLE_AUDIT__=runBranchAppleAudit;
 function runTreeTrunkAudit(){const issues=[],samples=[];for(let i=0;i<Math.min(20,treeObjects.length);i++){const g=treeObjects[i];if(!g?.visible)continue;const trunk=g.children.find(o=>o.isMesh&&o.geometry===trunkGeo);if(!trunk)continue;const t=treeTrunkShape(trunk),near=t.r+PLAYER_RADIUS+.06;const blockedInside=treeTrunkHit(trunk,t.x+t.r*.5,t.z,PLAYER_RADIUS),freeX=!treeTrunkHit(trunk,t.x+near,t.z,PLAYER_RADIUS),freeZ=!treeTrunkHit(trunk,t.x,t.z+near,PLAYER_RADIUS);samples.push({radius:+t.r.toFixed(2),blockedInside,freeX,freeZ});if(!blockedInside)issues.push(`tree-trunk-not-solid:${i}`);if(!freeX||!freeZ)issues.push(`tree-halo:${i}`)}return {ok:issues.length===0,issues,samples,level};}
 function runReachableAppleTwigAudit(){const issues=[],samples=[];for(const a of apples){if(a.done||a.type!=='apple')continue;const twig=a.branch,tree=a.tree||a.g?.userData?.appleTree,treeVisible=!!tree&&tree.visible!==false,attached=treeVisible&&!!twig?.userData?.appleTwig&&!!twig.parent&&twig.parent===tree&&!!tree?.userData?.isTree,reachable=(a.y||0)<=2.08;let tipGap=999,on=false;if(attached){tree.updateWorldMatrix(true,true);twig.updateWorldMatrix(true,false);const tip=new THREE.Vector3(0,.46,0).applyMatrix4(twig.matrixWorld);tipGap=Math.hypot(a.x-tip.x,a.z-tip.z,(a.y+.16)-tip.y);on=tipGap<.16&&appleOnBranch(a)}samples.push({y:+(a.y||0).toFixed(2),treeVisible,attached,reachable,on,tipGap:+tipGap.toFixed(3)});if(!treeVisible)issues.push('apple-hidden-tree');if(!attached)issues.push('apple-not-on-tree-twig');if(!reachable)issues.push(`apple-too-high:${(a.y||0).toFixed(2)}`);if(!on)issues.push('apple-off-visible-twig')}return {ok:issues.length===0,issues,samples,level};}
-function runBranchTraversalAudit(){const issues=[],samples=[],oldMounted=mountedFriend,oldPy=py,oldVy=vy,ox=boy.position.x,oz=boy.position.z,oy=boy.position.y;mountedFriend=false;py=0;vy=0;let tested=0;for(const o of logObstacles.slice(0,8)){if(!o?.g?.visible)continue;const c=Math.cos(o.yaw),sn=Math.sin(o.yaw),start=o.len*.5+PLAYER_RADIUS+.32;boy.position.set(o.x-c*start,0,o.z-sn*start);let crossed=false,maxSupport=0;for(let k=0;k<70;k++){movePlayerCollision(c*.065,sn*.065);maxSupport=Math.max(maxSupport,branchStepHeightAt(boy.position.x,boy.position.z));const along=(boy.position.x-o.x)*c+(boy.position.z-o.z)*sn;if(along>o.len*.5+PLAYER_RADIUS*.08){crossed=true;break}}samples.push({branch:tested,crossed,maxSupport:+maxSupport.toFixed(3)});if(!crossed)issues.push(`foot-branch-not-crossed:${tested}`);if(maxSupport<=0)issues.push(`foot-branch-no-bump:${tested}`);tested++}mountedFriend=oldMounted;py=oldPy;vy=oldVy;boy.position.set(ox,oy,oz);return {ok:issues.length===0,issues,tested,samples,level};}
+function runBranchTraversalAudit(){
+ const issues=[],samples=[];
+ // Fallen branches belong to the forest. Other maps intentionally hide forestVisual, so there is
+ // no branch traversal contract to test there.
+ if(level!==1||!forestVisual.visible)return {ok:true,issues,tested:0,samples,level};
+ const oldMounted=mountedFriend,oldPy=py,oldVy=vy,ox=boy.position.x,oz=boy.position.z,oy=boy.position.y;
+ mountedFriend=false;py=0;vy=0;let tested=0;
+ for(let bi=0;bi<logObstacles.length&&tested<8;bi++){
+  const o=logObstacles[bi];if(!o?.g?.visible)continue;
+  // Cross the branch ACROSS its capsule, not along its length. Try either side and only use a
+  // generated sample whose approach/exit are clear of unrelated rocks/trees/world geometry.
+  const c=Math.cos(o.yaw),sn=Math.sin(o.yaw),nx=-sn,nz=c,start=o.r+PLAYER_RADIUS+.42;
+  let dir=0;
+  for(const sg of [1,-1]){
+   const sx=o.x+nx*start*sg,sz=o.z+nz*start*sg,ex=o.x-nx*start*sg,ez=o.z-nz*start*sg;
+   if(!playerWorldBlocked(sx,sz)&&!playerWorldBlocked(ex,ez)){dir=sg;break}
+  }
+  if(!dir)continue;
+  const sx=o.x+nx*start*dir,sz=o.z+nz*start*dir;
+  boy.position.set(sx,0,sz);py=0;vy=0;let crossed=false,maxSupport=0,maxY=0;
+  for(let k=0;k<42;k++){
+   movePlayerCollision(-nx*.065*dir,-nz*.065*dir);
+   const branchTop=branchStepHeightAt(boy.position.x,boy.position.z);maxSupport=Math.max(maxSupport,branchTop);
+   // Use the same low-obstacle step-up rule as live gameplay.
+   if(py<=.08&&vy<=.05&&branchTop>0){py=branchTop;vy=0}
+   else if(branchTop<=0&&py>0){py=Math.max(0,py-.055)}
+   boy.position.y=py;maxY=Math.max(maxY,py);
+   const side=-(boy.position.x-o.x)*sn+(boy.position.z-o.z)*c;
+   if(side*dir<-(o.r+PLAYER_RADIUS*.08)){crossed=true;break}
+  }
+  samples.push({branch:bi,crossed,maxSupport:+maxSupport.toFixed(3),maxY:+maxY.toFixed(3)});
+  if(!crossed)issues.push(`foot-branch-not-crossed:${bi}`);
+  if(maxSupport<=0||maxY<=0)issues.push(`foot-branch-no-bump:${bi}`);
+  tested++;
+ }
+ mountedFriend=oldMounted;py=oldPy;vy=oldVy;boy.position.set(ox,oy,oz);
+ if(tested<3)issues.push(`foot-branch-too-few-clear-samples:${tested}`);
+ return {ok:issues.length===0,issues,tested,samples,level};
+}
 function runTreeRockPassageAudit(){
  const issues=[],samples=[];let tested=0;
  // Real generated tree/rock pairs: if the visible-edge gap is wider than Timur's body,
@@ -1045,6 +1083,10 @@ if(mountedFriend){
  if(jump){mountedFriend=false;setRiderPose(false);jump=false;if(friend?.g)friend.g.position.y=0;rideBump=0;py=1.18;vy=6.2;const a=boy.rotation.y;boy.position.x+=Math.sin(a)*1.15;boy.position.z+=Math.cos(a)*1.15;notice('🐗 Тимур спрыгнул с кабанчика!')}
  else{const nearLog=level===1?logObstacles.reduce((best,o)=>{const d=logDistance(o,boy.position.x,boy.position.z).distance-(o.r+.48);return Math.min(best,d)},99):99;const bumpTarget=nearLog<0?Math.min(.48,(-nearLog/.48)*.48):0;rideBump+=(bumpTarget-rideBump)*Math.min(1,dt*12);py=1.18+rideBump;vy=0;friend.g.position.x=boy.position.x;friend.g.position.z=boy.position.z;friend.g.position.y=rideBump;friend.g.rotation.y=boy.rotation.y;boy.position.y=py;setRiderPose(true);mountedFriendDefense()}
 }else{
+ // v122: a low fallen branch is a real step-over surface. When Timur walks into it from ground
+ // level, lift his feet onto the visible branch instead of leaving the model sunk through it.
+ const branchTop=branchStepHeightAt(boy.position.x,boy.position.z);
+ if(py<=.08&&vy<=.05&&branchTop>0){py=branchTop;vy=0;boy.position.y=py}
  const supportNow=playerSupportHeightAt(boy.position.x,boy.position.z),grounded=Math.abs(py-supportNow)<.08&&vy<=.05;
  if(jump&&grounded){vy=7;jump=false}
  const prevPy=py;vy-=18*dt;let nextPy=py+vy*dt;const support=playerSupportHeightAt(boy.position.x,boy.position.z);

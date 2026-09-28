@@ -91,3 +91,9 @@ Robot rock probes now use the same rotated rounded ellipse as gameplay instead o
 - Branch traversal audit now performs real swept movement across generated branches instead of only calling the collision predicate at one point.
 - Global leaderboard submission now accepts both victories and failed/incomplete runs using the existing leaderboard schema (score, time, difficulty, family, version).
 - Duplicate submission protection remains active.
+
+
+## v122 — Branch Physics
+- Branch traversal audit runs only in the forest and crosses each fallen branch perpendicular to its capsule.
+- Runtime movement now lifts Timur onto the visible low branch while walking across it, preserving normal jumping.
+- Audit requires multiple clear generated branch samples and verifies both crossing and visible vertical bump.
