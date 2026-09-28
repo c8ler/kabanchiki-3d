@@ -1,6 +1,6 @@
 window.__gameLoadProgress?.(84);let __loadFinished=false;
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
-const GAME_VERSION='v118';
+const GAME_VERSION='v119';
 // v103: GAME_VERSION is the single runtime source of truth for every visible version label.
 window.__KABANCHIKI_VERSION__=GAME_VERSION;
 for(const id of ['loadingVersion']){const el=document.getElementById(id);if(el)el.textContent=GAME_VERSION;}
@@ -643,9 +643,14 @@ function depenetratePlayer(){
   if(!changed)break
  }
 }
+function mountedRockFreeAt(x,z,slack=0){
+ // v119: one geometric truth for the whole mounted body against every visible rock.
+ // This helper is independent of current rider state so audits can validate approach points too.
+ return !rockPositions.some(([, , ,m])=>m?.visible!==false&&rockEllipse(m,x,z,MOUNTED_ROCK_RADIUS+slack).n<1);
+}
 function mountedRockBlocked(x,z){
  if(!mountedFriend)return false;
- return rockPositions.some(([, , ,m])=>m?.visible!==false&&rockFootprintHit(m,x,z,MOUNTED_ROCK_RADIUS,false));
+ return !mountedRockFreeAt(x,z,0);
 }
 function movementBlocked(x,z){return playerWorldBlocked(x,z,0)||mountedRockBlocked(x,z)}
 function movePlayerCollisionStep(mx,mz){
@@ -668,10 +673,17 @@ function movePlayerCollision(mx,mz){
  // a narrow rock between rendered frames. Every slice re-runs the full collision solver.
  const dist=Math.hypot(mx,mz),step=.055,n=Math.max(1,Math.ceil(dist/step));
  for(let i=0;i<n;i++){
+  const safeX=boy.position.x,safeZ=boy.position.z;
   movePlayerCollisionStep(mx/n,mz/n);
-  // v118: resolve the whole neighbouring-rock cluster after each mounted sweep slice.
-  // This is mounted-only: Timur keeps the v116 jump-aware rock-climb behaviour unchanged.
-  if(mountedFriend)depenetratePlayer();
+  // v119: resolve the whole neighbouring-rock cluster, then require a globally valid mounted
+  // footprint. If overlapping ellipses cannot be resolved simultaneously, keep the last safe
+  // position instead of allowing one rock's push-out to place the boar inside another rock.
+  if(mountedFriend){
+   depenetratePlayer();
+   if(!mountedRockFreeAt(boy.position.x,boy.position.z,.004)&&mountedRockFreeAt(safeX,safeZ,.004)){
+    boy.position.x=safeX;boy.position.z=safeZ;
+   }
+  }
  }
 }
 function spawnPointBlocked(x,z,pad=.72,{allowRoad=false}={}){
@@ -893,8 +905,12 @@ function runMountedMultiRockAudit(){
  const issues=[],samples=[],oldMounted=mountedFriend,oldPy=py,ox=boy.position.x,oz=boy.position.z,oy=boy.position.y;mountedFriend=true;py=1.18;let tested=0;
  // v108: drive straight at REAL stones and measure the mounted body footprint every step.
  // Going around a rounded stone is valid; entering its expanded visible footprint is not.
- for(const [, , ,m] of rockPositions){if(!m?.visible)continue;const q=rockShape(m),dirx=Math.cos(q.yaw),dirz=Math.sin(q.yaw),start=Math.max(q.ax,q.az)+MOUNTED_ROCK_RADIUS+.70;boy.position.set(q.cx-dirx*start,1.18,q.cz-dirz*start);let minN=99,penetrated=false,maxLateral=0;
-  for(let k=0;k<110;k++){movePlayerCollision(dirx*.055,dirz*.055);const e=rockEllipse(m,boy.position.x,boy.position.z,MOUNTED_ROCK_RADIUS);minN=Math.min(minN,e.n);maxLateral=Math.max(maxLateral,Math.abs(e.lz));if(e.n<.985){penetrated=true;break}}
+ for(const [, , ,m] of rockPositions){if(!m?.visible)continue;const q=rockShape(m),dirx=Math.cos(q.yaw),dirz=Math.sin(q.yaw);let start=Math.max(q.ax,q.az)+MOUNTED_ROCK_RADIUS+.70;
+  // v119: begin every real-rock probe from a globally valid rider footprint. A neighbouring
+  // overlapping rock must not make the audit start already embedded before the first sweep.
+  for(let back=0;back<24&&!mountedRockFreeAt(q.cx-dirx*start,q.cz-dirz*start,.004);back++)start+=.18;
+  boy.position.set(q.cx-dirx*start,1.18,q.cz-dirz*start);let minN=99,penetrated=false,maxLateral=0;
+  for(let k=0;k<110;k++){movePlayerCollision(dirx*.055,dirz*.055);const e=rockEllipse(m,boy.position.x,boy.position.z,MOUNTED_ROCK_RADIUS);minN=Math.min(minN,e.n);maxLateral=Math.max(maxLateral,Math.abs(e.lz));if(e.n<.985||!mountedRockFreeAt(boy.position.x,boy.position.z,-.006)){penetrated=true;break}}
   samples.push({top:+q.top.toFixed(2),penetrated,minN:+minN.toFixed(3),maxLateral:+maxLateral.toFixed(2)});tested++;if(penetrated)issues.push(`mounted-rock-penetrated:${tested-1}`);if(tested>=16)break;
  }
  boy.position.set(ox,oy,oz);mountedFriend=oldMounted;py=oldPy;if(tested<2)issues.push('mounted-rock-too-few-samples');return {ok:issues.length===0,issues,tested,samples,mountedRadius:MOUNTED_ROCK_RADIUS,level};
