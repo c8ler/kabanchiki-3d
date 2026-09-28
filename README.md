@@ -1,4 +1,4 @@
-# Kabanchiki 3D v129 — Dad House Real Cutaway
+# Kabanchiki 3D v131 — Dad House Real Cutaway
 
 Dad house uses separate walls, roof and floor. Entering hides only the camera-facing wall and roof. Exterior window and porch lamp glow from village load; warm point lights stay active. Dad is deeper inside and the house is fixed at (30, -31).
 
@@ -128,3 +128,13 @@ Robot rock probes now use the same rotated rounded ellipse as gameplay instead o
 - A friendly boar can also drive a boss minion away with three hits, on foot or while mounted.
 - Each hit flashes the minion aura, knocks it back and briefly staggers it; at 0/3 HP it flees instead of dying.
 - Validator covers both combat paths and preserves boss/minion stat separation.
+
+
+## v131
+- Swapped level 2/3 weather progression so the lake is brighter than the village.
+- Added visible gallop/bounce animation while Timur rides a boar.
+- Fleeing boars persist until they cross the map boundary.
+- Family hideout now has a visible open door; window is wall-anchored and turns transparent from inside; brother/father placements swapped.
+- Lake center reads deeper.
+- Boss minions fall in one hit; boss requires 10 hits.
+- Boss fire makes trees burn brighter and then burn away completely.
