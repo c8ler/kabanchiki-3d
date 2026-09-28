@@ -3,7 +3,11 @@ const html=fs.readFileSync('index.html','utf8');
 const game=fs.readFileSync('src/game.js','utf8');
 const levels=fs.readFileSync('levels/levels.js','utf8');
 const checks=[
- ['version v116',/GAME_VERSION='v116'/.test(game)],
+ ['lake has no mushrooms',/level===2&&type==='mushroom'/.test(game)&&/lake-mushroom/.test(game)],
+ ['apples outside tree trunks',/function appleOutsideOwnTrunk/.test(game)&&/apple-inside-tree/.test(game)&&/startR=trunkR\+\.08/.test(game)],
+ ['road clear of solid scenery',/function roadClearForRadius/.test(game)&&/road-rock/.test(game)&&/road-mountain/.test(game)&&/road-lair/.test(game)&&/safeSolidScenerySpot/.test(game)],
+ ['forage road runtime audit',/function runForageRoadAudit/.test(game)&&/__KABANCHIKI_FORAGE_ROAD_AUDIT__/.test(game)&&/forageRoadAudit/.test(game)],
+ ['version v117',/GAME_VERSION='v117'/.test(game)],
  ['level visibility before apple spawn',/syncWorldGeneration\(n\);\nseedForage\(\)/.test(game)],
  ['hidden-tree apple rejected',/tree\.visible===false/.test(game)&&/apple-hidden-tree/.test(game)&&/br\.parent!==tree/.test(game)],
  ['apple repair keeps new twig',/a\.branch=p\[3\]/.test(game)&&/a\.tree=p\[4\]/.test(game)],
@@ -17,8 +21,8 @@ const checks=[
  ['mounted apple collection',/function canCollectForage\(a\)/.test(game)&&/mountedFriend\|\|/.test(game)&&/function runMountedAppleAudit\(\)/.test(game)&&/__KABANCHIKI_MOUNTED_APPLE_AUDIT__/.test(game)&&/mountedAppleAudit/.test(game)&&/mounted-apple-food/.test(game)],
  ['spawn guard',/function repairAndAuditSpawns\(\)/.test(game)&&/__KABANCHIKI_SPAWN_AUDIT__/.test(game)],
  ['single-source version sync',/loadingVersion/.test(html)&&/window.__KABANCHIKI_VERSION__=GAME_VERSION/.test(game)&&/el.textContent=GAME_VERSION/.test(game)],
- ['cache-busted game module',/src="\.\/src\/game\.js\?v=115"/.test(html)],
- ['html build marker v116',/__KABANCHIKI_BUILD__='v116'/.test(html)],
+ ['cache-busted game module',/src="\.\/src\/game\.js\?v=117"/.test(html)],
+ ['html build marker v117',/__KABANCHIKI_BUILD__='v117'/.test(html)],
  ['no-cache document meta',/no-cache, no-store, must-revalidate/.test(html)],
  ['cylindrical tree collision',/function treeTrunkShape/.test(game)&&/function treeTrunkHit/.test(game)],
  ['apple own twig registered',/treeBranchMeshes\.push\(twig\)/.test(game)],
