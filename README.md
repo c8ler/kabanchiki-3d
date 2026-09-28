@@ -109,3 +109,11 @@ Robot rock probes now use the same rotated rounded ellipse as gameplay instead o
 ## v124 — Cache Sync
 - The game module URL now uses the same v124 build number as GAME_VERSION and the HTML build marker.
 - Validator now fails if GAME_VERSION, HTML build marker, and game.js cache-buster ever diverge.
+
+
+## v125 — Boss Finale
+- Defeating the boss immediately starts a 5-second victory celebration even if minions are alive.
+- Boss minions flee, fireworks burst over the lair, then the outro starts automatically.
+- Boss throws fireballs from the start of the fight and has stronger red/orange lighting.
+- The moon is bright and visible in the boss arena.
+- Unrescued family members turn to face Timur.
