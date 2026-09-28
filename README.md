@@ -1,3 +1,7 @@
+# Kabanchiki 3D v129 — Dad House Real Cutaway
+
+Dad house uses separate walls, roof and floor. Entering hides only the camera-facing wall and roof. Exterior window and porch lamp glow from village load; warm point lights stay active. Dad is deeper inside and the house is fixed at (30, -31).
+
 # Кабанчики 3D v79 — Collision Autotest
 
 - Коллизия деревьев теперь строится по реальной геометрии ствола и каждой низкой ветки, а не по одному кругу вокруг дерева.
@@ -124,16 +128,3 @@ Robot rock probes now use the same rotated rounded ellipse as gameplay instead o
 - A friendly boar can also drive a boss minion away with three hits, on foot or while mounted.
 - Each hit flashes the minion aura, knocks it back and briefly staggers it; at 0/3 HP it flees instead of dying.
 - Validator covers both combat paths and preserves boss/minion stat separation.
-
-
-## v127 — Dad House Rework
-- Dad's hideout is fixed in the far village corner at `(30, -31)`, far from Timur's village start.
-- The structural house shell is isolated from the window, light and Dad; entering fades every shell mesh to near-clear opacity without changing Dad.
-- The warm window and point light are active for the entire village level, before Timur approaches the house.
-- Runtime audits now verify every shell mesh, Dad's independent opaque visibility, persistent light intensity and minimum hideout distance.
-
-
-## v128 — Dad House Cutaway
-- Replaces unreliable mobile transparency with a true cutaway: the structural shell stops rendering while Timur is inside.
-- Dad is moved deeper into the room so he can be seen before rescue triggers.
-- The warm house light is strengthened and remains active for the whole village level.
