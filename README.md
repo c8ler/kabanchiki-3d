@@ -117,3 +117,10 @@ Robot rock probes now use the same rotated rounded ellipse as gameplay instead o
 - Boss throws fireballs from the start of the fight and has stronger red/orange lighting.
 - The moon is bright and visible in the boss arena.
 - Unrescued family members turn to face Timur.
+
+
+## v126 — Minion Combat
+- Boss minions keep the peaceful feeding/friend route.
+- A friendly boar can also drive a boss minion away with three hits, on foot or while mounted.
+- Each hit flashes the minion aura, knocks it back and briefly staggers it; at 0/3 HP it flees instead of dying.
+- Validator covers both combat paths and preserves boss/minion stat separation.
