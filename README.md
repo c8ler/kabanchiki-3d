@@ -84,3 +84,10 @@ Robot rock probes now use the same rotated rounded ellipse as gameplay instead o
 - Entering the doorway/room makes the house transparent before Dad is collected.
 - Other family members use randomized safe off-road positions on their assigned maps.
 - Runtime family placement audit checks Dad, doorway reveal, road clearance and obstacle clearance.
+
+
+## v121 — Branch Traversal + All Global Results
+- Fallen branches remain non-blocking during normal movement, while their low capsule top supplies a physical step/bump under Timur.
+- Branch traversal audit now performs real swept movement across generated branches instead of only calling the collision predicate at one point.
+- Global leaderboard submission now accepts both victories and failed/incomplete runs using the existing leaderboard schema (score, time, difficulty, family, version).
+- Duplicate submission protection remains active.

@@ -7,7 +7,7 @@ const checks=[
  ['apples outside tree trunks',/function appleOutsideOwnTrunk/.test(game)&&/apple-inside-tree/.test(game)&&/startR=trunkR\+\.08/.test(game)],
  ['road clear of solid scenery',/function roadClearForRadius/.test(game)&&/road-rock/.test(game)&&/road-mountain/.test(game)&&/road-lair/.test(game)&&/safeSolidScenerySpot/.test(game)],
  ['forage road runtime audit',/function runForageRoadAudit/.test(game)&&/__KABANCHIKI_FORAGE_ROAD_AUDIT__/.test(game)&&/forageRoadAudit/.test(game)],
- ['version v120',/GAME_VERSION='v120'/.test(game)],
+ ['version v121',/GAME_VERSION='v121'/.test(game)],
  ['level visibility before apple spawn',/syncWorldGeneration\(n\);\nseedForage\(\)/.test(game)],
  ['hidden-tree apple rejected',/tree\.visible===false/.test(game)&&/apple-hidden-tree/.test(game)&&/br\.parent!==tree/.test(game)],
  ['apple repair keeps new twig',/a\.branch=p\[3\]/.test(game)&&/a\.tree=p\[4\]/.test(game)],
@@ -22,7 +22,7 @@ const checks=[
  ['spawn guard',/function repairAndAuditSpawns\(\)/.test(game)&&/__KABANCHIKI_SPAWN_AUDIT__/.test(game)],
  ['single-source version sync',/loadingVersion/.test(html)&&/window.__KABANCHIKI_VERSION__=GAME_VERSION/.test(game)&&/el.textContent=GAME_VERSION/.test(game)],
  ['cache-busted game module',/src="\.\/src\/game\.js\?v=117"/.test(html)],
- ['html build marker v120',/__KABANCHIKI_BUILD__='v120'/.test(html)],
+ ['html build marker v121',/__KABANCHIKI_BUILD__='v121'/.test(html)],
  ['no-cache document meta',/no-cache, no-store, must-revalidate/.test(html)],
  ['cylindrical tree collision',/function treeTrunkShape/.test(game)&&/function treeTrunkHit/.test(game)],
  ['apple own twig registered',/treeBranchMeshes\.push\(twig\)/.test(game)],
@@ -88,7 +88,10 @@ const checks=[
  ['dad visible before collection',/family-dad-not-visible/.test(game) && /family-house-not-transparent-at-door/.test(game)],
  ['mounted geometry uses global all-rock footprint',/function mountedRockFreeAt\(x,z,slack=0\)[\s\S]*rockEllipse\(m,x,z,MOUNTED_ROCK_RADIUS\+slack\)\.n<1/.test(game)],
  ['mounted sweep rolls back only to last globally safe footprint',/mountedRockFreeAt\(safeX,safeZ,\.004\)[\s\S]*boy\.position\.x=safeX;boy\.position\.z=safeZ/.test(game)],
- ['mounted real-rock audit starts globally clear',game.includes('begin every real-rock probe from a globally valid rider footprint')]
+ ['mounted real-rock audit starts globally clear',game.includes('begin every real-rock probe from a globally valid rider footprint')],
+ ['branch traversal uses real swept crossing',/function runBranchTraversalAudit\(\)[\s\S]*movePlayerCollision\(c\*\.065,sn\*\.065\)[\s\S]*foot-branch-not-crossed/.test(game)],
+ ['branch crossing has physical bump',/function branchStepHeightAt\(x,z\)[\s\S]*logDistance\(o,x,z\)[\s\S]*foot-branch-no-bump/.test(game)],
+ ['failed runs submit globally',!/if\(!win\)return \{ok:false,localOnly:true\}/.test(game)&&/if\(!resultGlobalSaved\)global=await submitGlobalResult\(name\)/.test(game)]
 ];
 let bad=0;for(const [n,ok] of checks){console.log(`${ok?'✓':'✗'} ${n}`);if(!ok)bad++}
 if(bad)process.exit(1);

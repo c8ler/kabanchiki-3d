@@ -1,6 +1,6 @@
 window.__gameLoadProgress?.(84);let __loadFinished=false;
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
-const GAME_VERSION='v120';
+const GAME_VERSION='v121';
 // v103: GAME_VERSION is the single runtime source of truth for every visible version label.
 window.__KABANCHIKI_VERSION__=GAME_VERSION;
 for(const id of ['loadingVersion']){const el=document.getElementById(id);if(el)el.textContent=GAME_VERSION;}
@@ -414,11 +414,11 @@ function playCinematic(kind,onDone){
  cinematicFinish=finish;$('cinematicSkip').onclick=finish;cineLater(finish,duration);
 }
 function showEnd(won){if(endShown)return;if(!won)playDeathMusic();endShown=true;paused=true;resultSaving=false;resultLocalSaved=false;resultGlobalSaved=false;const best=(()=>{try{return JSON.parse(localStorage.getItem('kabanchiki3d_results')||'[]')}catch{return[]}})();$('endTitle').textContent=won?'🎉 Победа!':'💀 Игра окончена';$('endStats').innerHTML=`⏱ Время: <b>${formatTime(totalTime)}</b><br>🏆 Очки: <b>${score}</b><br>🍎 Кормлений: <b>${statsData.fed}</b><br>🌿 Собрано еды: <b>${statsData.forage}</b><br>🫐 Лечебных ягод: <b>${statsData.berries}</b><br>❤️ Получено урона: <b>${statsData.damage}</b><br>👨‍👩‍👦 Найдено семьи: <b>${familyFound}/4</b><br>🐗 Побеждено миньонов: <b>${statsData.minions}</b><br>👑 Ударов друга по боссу: <b>${statsData.bossHits}</b>`;$('playerName').value=localStorage.getItem('kabanchiki3d_player_name')||'';$('endScreen').style.display='grid'}async function submitGlobalResult(name){
- if(!win)return {ok:false,localOnly:true};
+ // v121: completed and failed runs use the same existing leaderboard row schema.
  const payload={player_name:name,score:Math.max(0,Math.round(score)),play_time:Math.max(0,Math.round(totalTime)),difficulty:selectedDiff,family:Math.max(0,Math.min(4,familyFound)),game_version:GAME_VERSION};
  try{const r=await fetch(`${SUPABASE_URL}/rest/v1/leaderboard`,{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify(payload)});if(!r.ok)throw new Error(`HTTP ${r.status}`);return {ok:true}}catch(e){console.warn('Global leaderboard submit failed',e);return {ok:false,error:e}}
 }
-$('saveResult').onclick=async()=>{if(resultSaving||resultGlobalSaved)return;const name=($('playerName').value.trim()||'Аноним').slice(0,20);resultSaving=true;$('saveResult').disabled=true;$('saveMsg').textContent='💾 Сохраняю результат…';let localOk=resultLocalSaved;if(!resultLocalSaved){try{localStorage.setItem('kabanchiki3d_player_name',name);const a=JSON.parse(localStorage.getItem('kabanchiki3d_results')||'[]');a.unshift({name,score,time:Math.round(totalTime),win,level,difficulty:selectedDiff,family:familyFound,version:GAME_VERSION,date:new Date().toLocaleDateString()});localStorage.setItem('kabanchiki3d_results',JSON.stringify(a.slice(0,50)));resultLocalSaved=true;localOk=true}catch{localOk=false}}let global={ok:resultGlobalSaved};if(win&&!resultGlobalSaved)global=await submitGlobalResult(name);if(win&&global.ok){resultGlobalSaved=true;$('saveMsg').textContent='✅ Результат сохранён один раз — на устройстве и в 🌍 мировом рейтинге!'}else if(win)$('saveMsg').textContent=(localOk?'✅ Локально сохранено один раз. ':'⚠️ Локальное сохранение недоступно. ')+'🌍 Мировой рейтинг сейчас недоступен — можно повторить отправку.';else $('saveMsg').textContent=localOk?'✅ Результат сохранён на этом устройстве. В мировой рейтинг попадают победы.':'⚠️ Браузер запретил локальное сохранение.';resultSaving=false;$('saveResult').disabled=resultGlobalSaved||(!win&&resultLocalSaved)};function restartGame(){
+$('saveResult').onclick=async()=>{if(resultSaving||resultGlobalSaved)return;const name=($('playerName').value.trim()||'Аноним').slice(0,20);resultSaving=true;$('saveResult').disabled=true;$('saveMsg').textContent='💾 Сохраняю результат…';let localOk=resultLocalSaved;if(!resultLocalSaved){try{localStorage.setItem('kabanchiki3d_player_name',name);const a=JSON.parse(localStorage.getItem('kabanchiki3d_results')||'[]');a.unshift({name,score,time:Math.round(totalTime),win,level,difficulty:selectedDiff,family:familyFound,version:GAME_VERSION,date:new Date().toLocaleDateString()});localStorage.setItem('kabanchiki3d_results',JSON.stringify(a.slice(0,50)));resultLocalSaved=true;localOk=true}catch{localOk=false}}let global={ok:resultGlobalSaved};if(!resultGlobalSaved)global=await submitGlobalResult(name);if(global.ok){resultGlobalSaved=true;$('saveMsg').textContent='✅ Результат сохранён один раз — на устройстве и в 🌍 мировой таблице!'}else $('saveMsg').textContent=(localOk?'✅ Локально сохранено один раз. ':'⚠️ Локальное сохранение недоступно. ')+'🌍 Мировая таблица сейчас недоступна — можно повторить отправку.';resultSaving=false;$('saveResult').disabled=resultGlobalSaved};function restartGame(){
  stopMusic();stopCinematicMusic();cineClear();cinematicRunning=false;cinematicFinish=null;
  $('cinematic').style.display='none';$('endScreen').style.display='none';$('pauseMenu').style.display='none';$('familyPopup').style.display='none';$('statsScreen').style.display='none';
  win=false;started=true;paused=false;endShown=false;resultSaving=false;resultLocalSaved=false;resultGlobalSaved=false;life=diffCfg().playerHP;food=diffCfg().foodMax;score=0;familyFound=0;friendHP=diffCfg().friendHP;bossHits=0;damage=0;totalTime=0;invuln=0;
@@ -562,14 +562,9 @@ function logDistance(o,x,z){
 }
 function logFootprintHit(o,x,z,pad=PLAYER_RADIUS,allowJump=true){
  if(level!==1||!forestVisual.visible||!o?.g?.visible)return false;
- // v105: small fallen branches/logs are traversable both on foot and while riding; height is handled as a bump.
+ // v121: fallen branches are low traversal geometry, not walls. Normal player/rider movement may
+ // cross their capsule footprint; the vertical solver supplies the visible step-over/jump arc.
  if(allowJump)return false;
- if(allowJump){
-  if(py>o.top+.035)return false;
-  const remainingRise=vy>0?(vy*vy)/(2*18):0;
-  if(vy>0&&py>.04&&o.top<=py+remainingRise+.06)return false;
-  if(vy<=0&&py>=o.top-.04)return false;
- }
  return logDistance(o,x,z).distance<o.r+pad;
 }
 function pushOutOfLog(o){
@@ -617,10 +612,13 @@ function playerSupportHeightAtNoRock(x,z){
  }
  return top;
 }
+function branchStepHeightAt(x,z){
+ let top=0;if(level===1&&forestVisual.visible)for(const o of logObstacles)if(o?.g?.visible!==false&&logDistance(o,x,z).distance<o.r+PLAYER_RADIUS*.10)top=Math.max(top,o.top);return top;
+}
 function playerSupportHeightAt(x,z){
  let top=0;
- // Low logs can be landed on naturally; their capsule footprint has no invisible corner area.
- if(level===1)for(const o of logObstacles)if(logDistance(o,x,z).distance<o.r+PLAYER_RADIUS*.10)top=Math.max(top,o.top);
+ // v121: a low branch creates a small physical step while crossing it; it never blocks horizontal motion.
+ top=Math.max(top,branchStepHeightAt(x,z));
  // Rock tops are real platforms: land on them instead of being pushed back to the ground.
  for(const [, , ,m] of rockPositions){
   if(!m||m.visible===false)continue;const e=rockEllipse(m,x,z,PLAYER_RADIUS*.12);
@@ -893,7 +891,7 @@ function runBranchAppleAudit(){const issues=[],samples=[];let checked=0;for(cons
 window.__KABANCHIKI_BRANCH_APPLE_AUDIT__=runBranchAppleAudit;
 function runTreeTrunkAudit(){const issues=[],samples=[];for(let i=0;i<Math.min(20,treeObjects.length);i++){const g=treeObjects[i];if(!g?.visible)continue;const trunk=g.children.find(o=>o.isMesh&&o.geometry===trunkGeo);if(!trunk)continue;const t=treeTrunkShape(trunk),near=t.r+PLAYER_RADIUS+.06;const blockedInside=treeTrunkHit(trunk,t.x+t.r*.5,t.z,PLAYER_RADIUS),freeX=!treeTrunkHit(trunk,t.x+near,t.z,PLAYER_RADIUS),freeZ=!treeTrunkHit(trunk,t.x,t.z+near,PLAYER_RADIUS);samples.push({radius:+t.r.toFixed(2),blockedInside,freeX,freeZ});if(!blockedInside)issues.push(`tree-trunk-not-solid:${i}`);if(!freeX||!freeZ)issues.push(`tree-halo:${i}`)}return {ok:issues.length===0,issues,samples,level};}
 function runReachableAppleTwigAudit(){const issues=[],samples=[];for(const a of apples){if(a.done||a.type!=='apple')continue;const twig=a.branch,tree=a.tree||a.g?.userData?.appleTree,treeVisible=!!tree&&tree.visible!==false,attached=treeVisible&&!!twig?.userData?.appleTwig&&!!twig.parent&&twig.parent===tree&&!!tree?.userData?.isTree,reachable=(a.y||0)<=2.08;let tipGap=999,on=false;if(attached){tree.updateWorldMatrix(true,true);twig.updateWorldMatrix(true,false);const tip=new THREE.Vector3(0,.46,0).applyMatrix4(twig.matrixWorld);tipGap=Math.hypot(a.x-tip.x,a.z-tip.z,(a.y+.16)-tip.y);on=tipGap<.16&&appleOnBranch(a)}samples.push({y:+(a.y||0).toFixed(2),treeVisible,attached,reachable,on,tipGap:+tipGap.toFixed(3)});if(!treeVisible)issues.push('apple-hidden-tree');if(!attached)issues.push('apple-not-on-tree-twig');if(!reachable)issues.push(`apple-too-high:${(a.y||0).toFixed(2)}`);if(!on)issues.push('apple-off-visible-twig')}return {ok:issues.length===0,issues,samples,level};}
-function runBranchTraversalAudit(){const issues=[];const oldMounted=mountedFriend,oldPy=py;mountedFriend=false;py=0;for(const o of logObstacles.slice(0,12)){if(logFootprintHit(o,o.x,o.z,PLAYER_RADIUS,true))issues.push('foot-branch-blocked')}mountedFriend=true;py=1.18;for(const o of logObstacles.slice(0,12)){if(logFootprintHit(o,o.x,o.z,PLAYER_RADIUS,true))issues.push('mounted-branch-blocked')}mountedFriend=oldMounted;py=oldPy;return {ok:issues.length===0,issues,tested:Math.min(12,logObstacles.length),level};}
+function runBranchTraversalAudit(){const issues=[],samples=[],oldMounted=mountedFriend,oldPy=py,oldVy=vy,ox=boy.position.x,oz=boy.position.z,oy=boy.position.y;mountedFriend=false;py=0;vy=0;let tested=0;for(const o of logObstacles.slice(0,8)){if(!o?.g?.visible)continue;const c=Math.cos(o.yaw),sn=Math.sin(o.yaw),start=o.len*.5+PLAYER_RADIUS+.32;boy.position.set(o.x-c*start,0,o.z-sn*start);let crossed=false,maxSupport=0;for(let k=0;k<70;k++){movePlayerCollision(c*.065,sn*.065);maxSupport=Math.max(maxSupport,branchStepHeightAt(boy.position.x,boy.position.z));const along=(boy.position.x-o.x)*c+(boy.position.z-o.z)*sn;if(along>o.len*.5+PLAYER_RADIUS*.08){crossed=true;break}}samples.push({branch:tested,crossed,maxSupport:+maxSupport.toFixed(3)});if(!crossed)issues.push(`foot-branch-not-crossed:${tested}`);if(maxSupport<=0)issues.push(`foot-branch-no-bump:${tested}`);tested++}mountedFriend=oldMounted;py=oldPy;vy=oldVy;boy.position.set(ox,oy,oz);return {ok:issues.length===0,issues,tested,samples,level};}
 function runTreeRockPassageAudit(){
  const issues=[],samples=[];let tested=0;
  // Real generated tree/rock pairs: if the visible-edge gap is wider than Timur's body,
