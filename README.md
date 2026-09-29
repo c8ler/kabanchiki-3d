@@ -175,3 +175,12 @@ Robot rock probes now use the same rotated rounded ellipse as gameplay instead o
 - Apples are anchored to visible tree twigs at 2.05–2.08 m, above Timur but reachable by jump.
 - Yellow berry, mushroom and apple bonuses now use an explicit 1/20 chance; fixed the berry/mushroom bonus flag bug.
 - Added runtime forage placement audit and validation checks.
+
+
+## v144
+- Yellow berry chance increased from 1/20 to 1/10. Yellow mushrooms and yellow apples remain 1/20.
+
+
+## v145
+- Music reworked into darker late-90s/early-00s techno: muted low-pass synths, deeper bass and tracker-style kick/noise drums.
+- Removed bright square-wave/chiptune lead character from location music.
