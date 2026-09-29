@@ -164,3 +164,8 @@ Robot rock probes now use the same rotated rounded ellipse as gameplay instead o
 - 1/20 yellow apples: collecting one doubles its tree height.
 - Bonus items use a new comic sound.
 - HUD timer moved to bottom: total run time + current location time.
+
+
+## v140
+- Storm/fire state is isolated per location. Lightning targets are tagged with a world epoch, and all temporary burn materials, flames, lights and charred remains are restored/removed before the next map loads.
+- Prevents red/burned trees from leaking into later locations.
