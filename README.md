@@ -156,3 +156,11 @@ Robot rock probes now use the same rotated rounded ellipse as gameplay instead o
 - Boss minions enter explicit flee state on the first friendly-boar hit and run to the map boundary.
 - Boars avoid the deep centre of the lake while still using the shallow rim.
 - Escalating weather now sways trees, sheds leaves, increases rain density, applies headwind resistance, blows fallen logs and ground food, and ends with a scripted hurricane carry beyond the map.
+
+## v139
+- Burning storm objects damage Timur nearby; active storm fires are cleared on location change.
+- 1/20 yellow berries: Timur becomes a boar for 30 seconds, can only walk and collect ground items, enemies ignore him.
+- 1/20 yellow fly agarics: stored special feed colors a boar/boss yellow for 30 seconds.
+- 1/20 yellow apples: collecting one doubles its tree height.
+- Bonus items use a new comic sound.
+- HUD timer moved to bottom: total run time + current location time.
