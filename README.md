@@ -184,3 +184,7 @@ Robot rock probes now use the same rotated rounded ellipse as gameplay instead o
 ## v145
 - Music reworked into darker late-90s/early-00s techno: muted low-pass synths, deeper bass and tracker-style kick/noise drums.
 - Removed bright square-wave/chiptune lead character from location music.
+
+
+## v146
+- Raised the dark retro-techno mix roughly 1.7–2x across lead, bass, pads and tracker drums while preserving the muted low-pass sound.
