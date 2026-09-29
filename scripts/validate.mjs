@@ -7,7 +7,7 @@ const checks=[
  ['apples outside tree trunks',/function appleOutsideOwnTrunk/.test(game)&&/apple-inside-tree/.test(game)&&/startR=trunkR\+\.08/.test(game)],
  ['road clear of solid scenery',/function roadClearForRadius/.test(game)&&/road-rock/.test(game)&&/road-mountain/.test(game)&&/road-lair/.test(game)&&/safeSolidScenerySpot/.test(game)],
  ['forage road runtime audit',/function runForageRoadAudit/.test(game)&&/__KABANCHIKI_FORAGE_ROAD_AUDIT__/.test(game)&&/forageRoadAudit/.test(game)],
- ['version v137',/GAME_VERSION='v137'/.test(game)],
+ ['version v138',/GAME_VERSION='v138'/.test(game)],
  ['level visibility before apple spawn',/syncWorldGeneration\(n\);\nseedForage\(\)/.test(game)],
  ['hidden-tree apple rejected',/tree\.visible===false/.test(game)&&/apple-hidden-tree/.test(game)&&/br\.parent!==tree/.test(game)],
  ['apple repair keeps new twig',/a\.branch=p\[3\]/.test(game)&&/a\.tree=p\[4\]/.test(game)],
@@ -21,9 +21,9 @@ const checks=[
  ['mounted apple collection',/function canCollectForage\(a\)/.test(game)&&/mountedFriend\|\|/.test(game)&&/function runMountedAppleAudit\(\)/.test(game)&&/__KABANCHIKI_MOUNTED_APPLE_AUDIT__/.test(game)&&/mountedAppleAudit/.test(game)&&/mounted-apple-food/.test(game)],
  ['spawn guard',/function repairAndAuditSpawns\(\)/.test(game)&&/__KABANCHIKI_SPAWN_AUDIT__/.test(game)],
  ['single-source version sync',/loadingVersion/.test(html)&&/window.__KABANCHIKI_VERSION__=GAME_VERSION/.test(game)&&/el.textContent=GAME_VERSION/.test(game)],
- ['cache-busted game module',/src="\.\/src\/game\.js\?v=137"/.test(html)],
- ['module cache version matches game',(()=>{const gv=game.match(/GAME_VERSION='(v\d+)'/)?.[1],raw=html.match(/src="\.\/src\/game\.js\?v=(\d+)"/)?.[1],mv=raw?'v'+raw:undefined,bv=html.match(/__KABANCHIKI_BUILD__='(v\d+)'/)?.[1];return gv==='v137'&&gv===mv&&gv===bv})()],
- ['html build marker v137',/__KABANCHIKI_BUILD__='v137'/.test(html)],
+ ['cache-busted game module',/src="\.\/src\/game\.js\?v=138"/.test(html)],
+ ['module cache version matches game',(()=>{const gv=game.match(/GAME_VERSION='(v\d+)'/)?.[1],raw=html.match(/src="\.\/src\/game\.js\?v=(\d+)"/)?.[1],mv=raw?'v'+raw:undefined,bv=html.match(/__KABANCHIKI_BUILD__='(v\d+)'/)?.[1];return gv==='v138'&&gv===mv&&gv===bv})()],
+ ['html build marker v138',/__KABANCHIKI_BUILD__='v138'/.test(html)],
  ['no-cache document meta',/no-cache, no-store, must-revalidate/.test(html)],
  ['cylindrical tree collision',/function treeTrunkShape/.test(game)&&/function treeTrunkHit/.test(game)],
  ['apple own twig registered',/treeBranchMeshes\.push\(twig\)/.test(game)],
@@ -137,6 +137,11 @@ const checks=[
  ['hurricane moves logs and food',/for\(const o of logObstacles\)/.test(game)&&/for\(const a of apples\)/.test(game)&&/weatherStage>=4/.test(game)],
  ['five minute scripted carry finale',/function updateHurricaneCarry/.test(game)&&/hurricaneCarry>3\.2/.test(game)&&/Тимура унесло за пределы карты/.test(game)],
  ['five minute escalating storm',/levelTime>=60/.test(game)&&/levelTime>=120/.test(game)&&/levelTime>=180/.test(game)&&/levelTime>=240/.test(game)&&/levelTime>=300/.test(game)&&/Ураган подхватил Тимура/.test(game)],
+ ['storm clouds multiply and accelerate',/weatherClouds/.test(game)&&/counts=\[4,7,11,16,weatherClouds.length\]/.test(game)&&/w.power\*3\.6/.test(game)],
+ ['random whole-sky lightning',/nextLightningAt=now\+rand/.test(game)&&/lightningSky.intensity=9\*lightningFlash/.test(game)&&/scene.background.copy\(weatherBaseSky\).lerp/.test(game)],
+ ['minute four lightning strikes scenery',/weatherStage>=4&&c.length/.test(game)&&/igniteStormTarget\(strike.o,strike.k\)/.test(game)],
+ ['storm burns houses for ten seconds',/kind===['"]house['"]/.test(game)&&/time:10,kind,flames,light/.test(game)&&/makeCharredHouseRemains/.test(game)],
+ ['organic charred remains',/CylinderGeometry\(r\*\.72,r,h,7\)/.test(game)&&/обломанными ветвями/.test(game)],
 ];
 let bad=0;for(const [n,ok] of checks){console.log(`${ok?'✓':'✗'} ${n}`);if(!ok)bad++}
 if(bad)process.exit(1);

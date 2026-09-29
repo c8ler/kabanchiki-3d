@@ -1,3 +1,11 @@
+# Kabanchiki 3D v138 — Storm Lightning & Burn Remains
+
+- Weather now builds progressively more clouds; stronger wind drives them faster.
+- Lightning timing is randomized and lights the whole sky/world, not just exposure.
+- From minute 4, lightning can strike trees, ordinary village houses, and fallen logs.
+- Struck scenery burns for 10 seconds. Trees leave rounded charred stumps with broken limbs; houses leave irregular charred posts/beams and ash rather than cube debris.
+- Boss-fire tree remains use the same improved non-cubic charred geometry.
+
 ## v134
 Миньоны убегают после первого удара; огонь опасен и оставляет обгоревшие пни; верховая езда сохраняется между локациями; физическая глубина озера и удушье; семья не спавнится в озере; погодная эскалация 1–5 минут.
 
