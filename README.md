@@ -169,3 +169,9 @@ Robot rock probes now use the same rotated rounded ellipse as gameplay instead o
 ## v140
 - Storm/fire state is isolated per location. Lightning targets are tagged with a world epoch, and all temporary burn materials, flames, lights and charred remains are restored/removed before the next map loads.
 - Prevents red/burned trees from leaking into later locations.
+
+## v141
+- Fixed forage Y bug: mushrooms, cabbage and berries are always spawned on ground level.
+- Apples are anchored to visible tree twigs at 2.05–2.08 m, above Timur but reachable by jump.
+- Yellow berry, mushroom and apple bonuses now use an explicit 1/20 chance; fixed the berry/mushroom bonus flag bug.
+- Added runtime forage placement audit and validation checks.
