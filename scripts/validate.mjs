@@ -80,7 +80,7 @@ const checks=[
  ['automation hook',/__KABANCHIKI_TEST__/.test(game)],
  ['audio toggles',/toggleMusic/.test(html)&&/toggleSfx/.test(html)&&/musicEnabled/.test(game)&&/sfxEnabled/.test(game)],
  ['lake evening restored',(()=>{const skies=game.match(/const skies=\[([^\]]+)\]/)?.[1].split(',').map(Number);if(!skies||skies.length!==5)return false;const c=skies[1];return (c>>>16&255)>(c>>>8&255)&&(c>>>8&255)>(c&255)})()],
- ['boss knockback',game.includes('отбрасывает его')&&game.includes('target.stagger=Math.max')],
+ ['boss counterattack throws friend',game.includes('bossRepelsFriend(target,friend)')&&game.includes('updateFriendKnockback(dt)')&&game.includes('target.stagger=Math.max')],
  ['result dedup',game.includes('resultGlobalSaved')&&game.includes('resultLocalSaved')&&game.includes('resultSaving')],
  ['global leaderboard config',game.includes('SUPABASE_URL')&&game.includes('submitGlobalResult')&&game.includes('globalStatsHtml')],
  ['explicit family roles',/function makeFamily\(x,z,forcedRole=null\)/.test(game) && /familyRoles=\{2:\[0\],3:\[2\],4:\[1,3\]\}/.test(game)],
