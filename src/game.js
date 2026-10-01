@@ -4,7 +4,7 @@ import { BOAR_MAX_WATER_DEPTH, attacksPlayer, shallowStepAllowed, capsuleAt, cap
 import { convexHull, polygonContact, FriendYield } from './movement-geometry.js';
 import { Knockback } from './knockback.js';
 import { AdaptiveQuality, GRAPHICS_TIERS } from './adaptive-quality.js';
-const GAME_VERSION='v147';
+const GAME_VERSION='v155';
 // v103: GAME_VERSION is the single runtime source of truth for every visible version label.
 window.__KABANCHIKI_VERSION__=GAME_VERSION;
 for(const id of ['loadingVersion']){const el=document.getElementById(id);if(el)el.textContent=GAME_VERSION;}
