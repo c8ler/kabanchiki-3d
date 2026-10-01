@@ -35,4 +35,4 @@ window.__showGameError=function(title,detail){
 window.addEventListener('error',e=>window.__showGameError('JavaScript error: '+(e.message||'unknown'),(e.filename||'')+':'+(e.lineno||0)+':'+(e.colno||0)+(e.error&&e.error.stack?'\n'+e.error.stack:'')));
 window.addEventListener('unhandledrejection',e=>window.__showGameError('Promise error',e.reason&&e.reason.stack?e.reason.stack:String(e.reason)));
 setTimeout(()=>{if(!document.querySelector('canvas'))window.__showGameError('3D canvas не создан','Модуль Three.js не запустился. Возможна ошибка загрузки CDN/import.');},5000);
-</script><script type="module" src="./src/game.js?v=147-graphics1sound1auto1move1enter1boars1"></script></body></html>
+</script><script type="module" src="./src/game.js?v=147-graphics1sound1auto1move1enter1boars1lake2storm2"></script></body></html>
