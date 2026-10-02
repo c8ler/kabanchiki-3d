@@ -1,12 +1,12 @@
 window.__gameLoadProgress?.(84);let __loadFinished=false;
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
-import { BOAR_MAX_WATER_DEPTH, attacksPlayer, shallowStepAllowed, capsuleAt, capsuleCircleContact, capsuleCapsuleContact } from './boar-physics.js';
-import { convexHull, polygonContact, FriendYield } from './movement-geometry.js';
-import { BOSS_HITS, riverCenterAt, riverDepthAt, onRiverBridge, WorldSurface, lakePointAt, lakeRadiusAt, lakeDepth } from './world-surface.js';
-import { Knockback } from './knockback.js';
-import { AdaptiveQuality, GRAPHICS_TIERS } from './adaptive-quality.js';
-import { AttemptProgress, seasonForAttempts } from './seasons.js';
-import { Soundscape } from './soundscape.js';
+import { BOAR_MAX_WATER_DEPTH, attacksPlayer, shallowStepAllowed, capsuleAt, capsuleCircleContact, capsuleCapsuleContact } from './boar-physics.js?v=157';
+import { convexHull, polygonContact, FriendYield } from './movement-geometry.js?v=157';
+import { BOSS_HITS, riverCenterAt, riverDepthAt, onRiverBridge, WorldSurface, lakePointAt, lakeRadiusAt, lakeDepth } from './world-surface.js?v=157';
+import { Knockback } from './knockback.js?v=157';
+import { AdaptiveQuality, GRAPHICS_TIERS } from './adaptive-quality.js?v=157';
+import { AttemptProgress, seasonForAttempts } from './seasons.js?v=157';
+import { Soundscape } from './soundscape.js?v=157';
 const GAME_VERSION='v157';
 const attemptProgress=new AttemptProgress((()=>{try{return window.localStorage}catch{return null}})());let currentSeason=attemptProgress.season;
 // v103: GAME_VERSION is the single runtime source of truth for every visible version label.
