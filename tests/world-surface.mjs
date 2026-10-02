@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { BOSS_HITS, riverCenterAt, riverDepthAt, WorldSurface } from '../src/world-surface.js';
+import { BOSS_HITS, riverCenterAt, riverDepthAt, WorldSurface, lakePointAt, lakeRadiusAt, lakeDepth } from '../src/world-surface.js';
 
 test('boss difficulty ranges from five to twenty hits', () => {
   assert.equal(BOSS_HITS.length, 5);
@@ -33,3 +33,5 @@ test('basins are lower than their rims and water locations remain flat', () => {
   assert.equal(new WorldSurface(2).height(-18, -17), 0);
   assert.equal(new WorldSurface(4).height(15, riverCenterAt(15)), 0);
 });
+
+test('elongated irregular lake shares its visible bank and depth',()=>{let minX=Infinity,maxX=-Infinity,minZ=Infinity,maxZ=-Infinity;for(let i=0;i<180;i++){const a=i/180*Math.PI*2,p=lakePointAt(a);assert.ok(Math.abs(lakeRadiusAt(p.x,p.z)-13.6)<1e-10);assert.ok(lakeDepth(p.x,p.z)<1e-10);const inside=lakePointAt(a,8),outside=lakePointAt(a,15);assert.ok(lakeDepth(inside.x,inside.z)>.5);assert.equal(lakeDepth(outside.x,outside.z),0);minX=Math.min(minX,p.x);maxX=Math.max(maxX,p.x);minZ=Math.min(minZ,p.z);maxZ=Math.max(maxZ,p.z)}assert.ok(maxZ-minZ>(maxX-minX)*1.4);assert.equal(lakeDepth(-18,-17),5.2)});

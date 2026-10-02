@@ -16,7 +16,7 @@ export class WorldSurface {
     
     
     let weight = smooth((Math.abs(x) - 3.5) / 2);
-    if (this.level === 2) weight = Math.min(weight, smooth((Math.hypot(x + 18, z + 17) - 17) / 2));
+    if (this.level === 2) weight = Math.min(weight, smooth((lakeRadiusAt(x,z) - 17) / 2));
     if (this.level === 4) weight = Math.min(weight, smooth((Math.abs(z - riverCenterAt(x)) - 6.4) / 2));
     for (const q of this.zones) {
       weight = Math.min(weight, smooth((Math.hypot(x - q.x, z - q.z) - q.r) / 2));
@@ -30,3 +30,9 @@ export class WorldSurface {
     return height * weight;
   }
 }
+// One shoreline definition for geometry, depth, vegetation and spawning.
+export const LAKE_CENTER={x:-18,z:-17};
+const shoreScale=a=>1+.08*Math.sin(a*3)+.045*Math.cos(a*5);
+export function lakePointAt(angle,radius=13.6){const k=radius/13.6*shoreScale(angle);return {x:-18+Math.cos(angle)*12.2*k,z:-17+Math.sin(angle)*20.2*k}}
+export function lakeRadiusAt(x,z){const dx=(x+18)/12.2,dz=(z+17)/20.2;return Math.hypot(dx,dz)/shoreScale(Math.atan2(dz,dx))*13.6}
+export function lakeDepth(x,z){const k=Math.max(0,1-lakeRadiusAt(x,z)/13.6);return Math.min(5.2,k*k*6.4)}
