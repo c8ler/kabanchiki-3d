@@ -224,7 +224,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: kabanchiki-v157-test-report
+          name: kabanchiki-v158-test-report
           path: |
             screenshots/
             logs/
