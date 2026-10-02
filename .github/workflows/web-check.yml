@@ -16,6 +16,9 @@ jobs:
       - name: Static game checks
         run: node scripts/validate.mjs
 
+      - name: Unit tests
+        run: npm test
+
       - name: Check JavaScript syntax
         run: |
           sed '/from.*three.*cdn/d' src/game.js > /tmp/game.mjs
@@ -32,7 +35,7 @@ jobs:
           npm install playwright
           npx playwright install --with-deps chromium
 
-      - name: Runtime + collision robot on all 5 locations
+      - name: Runtime + collision robot on all 6 locations
         run: |
           mkdir -p screenshots logs
 
@@ -44,7 +47,7 @@ jobs:
           let failed = false;
           const report = [];
 
-          for(let level=1; level<=5; level++){
+          for(let level=1; level<=6; level++){
             console.log(`\n========== LOCATION ${level} ==========`);
 
             const page = await browser.newPage({
@@ -221,7 +224,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: kabanchiki-v81-test-report
+          name: kabanchiki-v156-test-report
           path: |
             screenshots/
             logs/

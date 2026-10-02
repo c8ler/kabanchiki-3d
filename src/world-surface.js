@@ -1,0 +1,32 @@
+export const BOSS_HITS = [5, 8, 12, 16, 20];
+export const riverCenterAt = x => -14 + Math.sin(x * .105) * 2.3;
+export const onRiverBridge = (x, z) => Math.abs(x) < 2.8 && Math.abs(z - riverCenterAt(x)) < 5.3;
+export function riverDepthAt(x, z) {
+  if (onRiverBridge(x, z)) return 0;
+  const distance = Math.abs(z - riverCenterAt(x));
+  if (distance >= 4.2) return 0;
+  const depth = 1.8 * (1 - distance / 4.2) ** 2;
+  return Math.abs(x - 28) < 3 ? Math.min(.2, depth) : depth;
+}
+const smooth = n => { n = Math.max(0, Math.min(1, n)); return n * n * (3 - 2 * n); };
+export class WorldSurface {
+  constructor(level, zones = [], basins = []) { this.level = level; this.zones = zones; this.basins = basins; }
+  height(x, z) {
+    if (Math.abs(x) < 3.5 || Math.abs(x) > 46 || Math.abs(z) > 46) return 0;
+    
+    
+    let weight = smooth((Math.abs(x) - 3.5) / 2);
+    if (this.level === 2) weight = Math.min(weight, smooth((Math.hypot(x + 18, z + 17) - 17) / 2));
+    if (this.level === 4) weight = Math.min(weight, smooth((Math.abs(z - riverCenterAt(x)) - 6.4) / 2));
+    for (const q of this.zones) {
+      weight = Math.min(weight, smooth((Math.hypot(x - q.x, z - q.z) - q.r) / 2));
+      if (weight === 0) return 0;
+    }
+    let height = .2 + .16 * Math.sin(x * .16 + this.level) * Math.cos(z * .13) + .1 * Math.sin((x + z) * .1);
+    for (const b of this.basins) {
+      const d = Math.hypot(x - b.x, z - b.z) / b.r;
+      if (d < 1) height -= .52 * (1 - d * d) ** 2;
+    }
+    return height * weight;
+  }
+}
