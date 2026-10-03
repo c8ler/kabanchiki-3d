@@ -592,7 +592,7 @@ function applySeason(){
    scene.background.lerp(new THREE.Color(level>=5?0x39445e:0xc8d7e1),.55);scene.fog.color.copy(scene.background);scene.fog.far=level>=5?48:68;hemi.intensity=Math.max(hemi.intensity,.55);snowGroup.visible=true;
   }
  }
- birdLife.reset(currentSeason,treeObjects.filter(t=>t.visible));weatherBaseSky=scene.background.clone();
+ tagStormTargetsForCurrentLocation();birdLife.reset(currentSeason,treeObjects.filter(t=>t.visible));weatherBaseSky=scene.background.clone();
 }
 function growSnowDrifts(minute){if(minute<1)return;while(winterDrifts.length<Math.min(24,minute*6)){const i=winterDrifts.length;let found=null;for(let n=0;n<500;n++){const x=rand(-37,37),z=rand(-37,35);if(Math.abs(x)<7||(level===2&&(lakeRadiusAt(x,z)<16.5||lakeInletDepthAt(x,z)>0))||(level===4&&Math.abs(z-riverCenterAt(x))<7)||worldObstacleAt(x,z,1.8)||winterDrifts.some(d=>Math.hypot(d.x-x,d.z-z)<5))continue;found={x,z};break}if(!found)break;const r=rand(1.2,2.5),m=new THREE.Mesh(new THREE.SphereGeometry(1,12,8),winterRoadMaterial);m.position.set(found.x,worldSurface.height(found.x,found.z)-.015,found.z);m.receiveShadow=!mobile;seasonVisual.add(m);winterDrifts.push({...found,r,height:0,m})}for(const d of winterDrifts){d.height=.16+minute*.17;d.m.scale.set(d.r,d.height,d.r)}const p=surfaceGeometry.attributes.position;for(let i=0;i<p.count;i++)p.setZ(i,groundSurfaceHeightAt(p.getX(i),-p.getY(i)));p.needsUpdate=true;surfaceGeometry.computeVertexNormals()}
 function updateSnow(dt,now){
