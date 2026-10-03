@@ -1,16 +1,16 @@
 window.__gameLoadProgress?.(84);let __loadFinished=false;
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
-import { BOAR_MAX_WATER_DEPTH, attacksPlayer, shallowStepAllowed, capsuleAt, capsuleCircleContact, capsuleCapsuleContact } from './boar-physics.js?v=161';
-import { convexHull, polygonContact, FriendYield } from './movement-geometry.js?v=161';
-import { BOSS_HITS, riverCenterAt, riverDepthAt, onRiverBridge, lakeInletCenterAt, lakeInletDepthAt, bridgeRailBlocked, weatherDeadline, rainFillLimit, rainFillRate, WorldSurface, lakePointAt, lakeRadiusAt, lakeDepth } from './world-surface.js?v=161';
-import { Knockback } from './knockback.js?v=161';
-import { AdaptiveQuality, GRAPHICS_TIERS } from './adaptive-quality.js?v=161';
-import { AttemptProgress, seasonForAttempts } from './seasons.js?v=161';
-import { Soundscape } from './soundscape.js?v=161';
-import { introStagingAt } from './cinematic-staging.js?v=161';
-import { segmentHitsBox, findGridPath } from './navigation.js?v=161';
-import { BirdLife } from './bird-life.js?v=161';
-const GAME_VERSION='v161';
+import { BOAR_MAX_WATER_DEPTH, attacksPlayer, shallowStepAllowed, capsuleAt, capsuleCircleContact, capsuleCapsuleContact } from './boar-physics.js?v=162';
+import { convexHull, polygonContact, FriendYield } from './movement-geometry.js?v=162';
+import { BOSS_HITS, riverCenterAt, riverDepthAt, onRiverBridge, lakeInletCenterAt, lakeInletDepthAt, bridgeRailBlocked, weatherDeadline, rainFillLimit, rainFillRate, WorldSurface, lakePointAt, lakeRadiusAt, lakeDepth } from './world-surface.js?v=162';
+import { Knockback } from './knockback.js?v=162';
+import { AdaptiveQuality, GRAPHICS_TIERS } from './adaptive-quality.js?v=162';
+import { AttemptProgress, seasonForAttempts } from './seasons.js?v=162';
+import { Soundscape } from './soundscape.js?v=162';
+import { introStagingAt } from './cinematic-staging.js?v=162';
+import { segmentHitsBox, findGridPath } from './navigation.js?v=162';
+import { BirdLife } from './bird-life.js?v=162';
+const GAME_VERSION='v162';
 const attemptProgress=new AttemptProgress((()=>{try{return window.localStorage}catch{return null}})());let currentSeason=attemptProgress.season;
 // v103: GAME_VERSION is the single runtime source of truth for every visible version label.
 window.__KABANCHIKI_VERSION__=GAME_VERSION;
@@ -745,7 +745,7 @@ function localStatsHtml(){let a=[];try{a=JSON.parse(localStorage.getItem('kabanc
 async function globalStatsHtml(){try{const q='select=player_name,score,play_time,difficulty,family,game_version&order=score.desc,play_time.asc&limit=20';const r=await fetch(`${SUPABASE_URL}/rest/v1/leaderboard?${q}`,{headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`}});if(!r.ok)throw new Error(`HTTP ${r.status}`);const rows=await r.json();if(!rows.length)return '<p>🌍 Мировой рейтинг пока пуст. Стань первым победителем!</p>';return '<div style="display:grid;grid-template-columns:30px 1fr 62px 66px 42px;gap:6px;align-items:center;font-size:13px"><b>№</b><b>Игрок</b><b>Очки</b><b>Время</b><b>Сл.</b>'+rows.map((x,i)=>`<span>${i+1}</span><b>${escStat(x.player_name||'Аноним')}</b><span>🏆${x.score||0}</span><span>⏱${formatTime(x.play_time||0)}</span><span>${Number(x.difficulty)+1}</span>`).join('')+'</div>'}catch(e){console.warn('Global leaderboard load failed',e);return '<p>⚠️ Не удалось загрузить мировой рейтинг. Проверь интернет — локальная статистика продолжает работать.</p>'}}
 async function showPlayerStats(mode='global'){const box=$('statsTable');$('statsScreen').style.display='grid';box.innerHTML='<div style="display:flex;gap:8px;justify-content:center;margin-bottom:12px"><button id="globalStatsTab">🌍 Мир</button><button id="localStatsTab">📱 Мои</button></div><div id="statsRows">Загрузка…</div>';const rows=$('statsRows'),g=$('globalStatsTab'),l=$('localStatsTab');const showLocal=()=>{rows.innerHTML=localStatsHtml();g.disabled=false;l.disabled=true};const showGlobal=async()=>{g.disabled=true;l.disabled=false;rows.textContent='🌍 Загружаю мировой ТОП-20…';rows.innerHTML=await globalStatsHtml()};g.onclick=showGlobal;l.onclick=showLocal;if(mode==='local')showLocal();else await showGlobal()}
 $('showStatsIntro').onclick=()=>showPlayerStats('global');$('showStatsEnd').onclick=()=>showPlayerStats('global');$('closeStats').onclick=()=>$('statsScreen').style.display='none';
-let noticeTimer=null;function notice(t){const m=$('message');m.textContent=t;m.classList.remove('hidden');flash=3;clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>m.classList.add('hidden'),3200)}function hud(){$('stats').textContent=` · ${GAME_VERSION}${currentSeason==='winter'?' · ❄️ Зима':currentSeason==='autumn'?' · 🍂 Осень':''} · 📍 Локация ${level}/${levels.length}: ${levels[level-1]} · ❤️ ${life}/${diffCfg().playerHP} · 🍎 ${food}/${diffCfg().foodMax} · 🏆 ${score} · 🎮 ${DIFF_NAMES[selectedDiff]} · 👨‍👩‍👦 ${familyFound}/4${friend?` · 🐗❤️ ${friendHP}/${diffCfg().friendHP}`:''}${yellowMushroomStock?` · 🟡🍄 ${yellowMushroomStock}`:''}${yellowAppleStock?` · 🟡🍎 ${yellowAppleStock}`:''}${hasFlashlight?' · 🔦':''}`+(level===6&&foes.find(f=>f.isBoss)?` · 👑 ${foes.find(f=>f.isBoss).hp}/${foes.find(f=>f.isBoss).maxHp}`:``); $('quest').textContent=win?'🎉 Тимур нашёл семью!':questState()}$('start').onclick=()=>{$('intro').style.display='none';$('difficultyScreen').style.display='grid'};$('difficultyBack').onclick=()=>{$('difficultyScreen').style.display='none';$('intro').style.display='grid'};$('difficultyStart').onclick=()=>{try{selectedDiff=Number(document.querySelector('input[name="diff3d"]:checked')?.value??2);life=diffCfg().playerHP;food=diffCfg().foodMax;friendHP=diffCfg().friendHP;$('difficultyScreen').style.display='none';resetNewRun();playCinematic('intro',()=>{started=true;paused=false;loadLevel(1);startMusic();notice(mobile?'📱 Камера: проведи пальцем по миру влево/вправо':'🖱️ Поворот камеры: зажми мышь и веди влево/вправо')})}catch(e){window.__showGameError('Ошибка запуска игры',e.stack||String(e))}};$('camera').onclick=()=>{camMode=(camMode+1)%9;first=false;$('camera').textContent=`📷 Вид ${camMode+1}/9`;$('cross').style.display='none';notice(['Высоко · далеко','Средне · далеко','Низко · близко','Очень высоко','За плечом','Низко · далеко','Сверху под углом','Близко · средне','Строго сверху · 90°'][camMode])};$('restart').onclick=restartGame;$('menuRestart').onclick=restartGame;$('jump').onpointerdown=e=>{e.preventDefault();jump=true};$('interact').onpointerdown=e=>{e.preventDefault();feed()};function setPause(on){if(!started)return;paused=on;$('pauseMenu').style.display=on?'grid':'none';$('pauseBtn').textContent=on?'▶':'☰'}function togglePause(){setPause(!paused)}$('pauseBtn').onclick=togglePause;$('resume').onclick=()=>setPause(false);
+let noticeTimer=null;function notice(t){const m=$('message');m.textContent=t;m.classList.remove('hidden');flash=3;clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>m.classList.add('hidden'),3200)}function hud(){$('stats').textContent=` · ${GAME_VERSION}${currentSeason==='winter'?' · ❄️ Зима':currentSeason==='autumn'?' · 🍂 Осень':''} · 📍 Локация ${level}/${levels.length}: ${levels[level-1]} · ❤️ ${life}/${diffCfg().playerHP} · 🍎 ${food}/${diffCfg().foodMax} · 🏆 ${score} · 🎮 ${DIFF_NAMES[selectedDiff]} · 👨‍👩‍👦 ${familyFound}/4${friend?` · 🐗❤️ ${friendHP}/${diffCfg().friendHP}`:''}${yellowMushroomStock?` · 🟡🍄 ${yellowMushroomStock}`:''}${yellowAppleStock?` · 🟡🍎 ${yellowAppleStock}`:''}${hasFlashlight?' · 🔦':''}`+(level===6&&foes.find(f=>f.isBoss)?` · 👑 ${foes.find(f=>f.isBoss).hp}/${foes.find(f=>f.isBoss).maxHp}`:``); $('quest').textContent=win?'🎉 Тимур нашёл семью!':questState()}$('start').onclick=()=>{$('intro').style.display='none';$('difficultyScreen').style.display='grid'};$('difficultyBack').onclick=()=>{$('difficultyScreen').style.display='none';$('intro').style.display='grid'};$('difficultyStart').onclick=()=>{try{selectedDiff=Number(document.querySelector('input[name="diff3d"]:checked')?.value??2);life=diffCfg().playerHP;food=diffCfg().foodMax;friendHP=diffCfg().friendHP;$('difficultyScreen').style.display='none';resetNewRun();playCinematic('intro',()=>{started=true;paused=false;loadLevel(1);startMusic();notice(mobile?'📱 Камера: проведи пальцем по миру влево/вправо':'🖱️ Поворот камеры: зажми мышь и веди влево/вправо')})}catch(e){window.__showGameError('Ошибка запуска игры',e.stack||String(e))}};$('camera').onclick=()=>{camMode=(camMode+1)%9;first=false;$('camera').textContent=`📷 Вид ${camMode+1}/9`;$('cross').style.display='none';notice(['Высоко · далеко','Средне · далеко','Низко · близко','Очень высоко','За плечом','Низко · далеко','Сверху под углом','Близко · средне','Строго сверху · 90°'][camMode])};$('restart').onclick=restartGame;$('menuRestart').onclick=restartGame;$('jump').onpointerdown=e=>{e.preventDefault();jump=true};$('interact').onpointerdown=e=>{e.preventDefault();feed()};function setPause(on){if(!started)return;paused=on;$('pauseMenu').style.display=on?'grid':'none';$('pauseBtn').textContent=on?'▶':'☰'}function togglePause(){if(difficultyFromPause){closeDifficultyChoice();return}setPause(!paused)}$('pauseBtn').onclick=togglePause;$('resume').onclick=()=>setPause(false);
 function syncAudioButtons(){const m=$('toggleMusic'),s=$('toggleSfx');if(m)m.textContent=musicEnabled?'🎵 Музыка: ВКЛ':'🔇 Музыка: ВЫКЛ';if(s)s.textContent=sfxEnabled?'🔊 Звуки: ВКЛ':'🔈 Звуки: ВЫКЛ'}
 $('toggleMusic').onclick=()=>{musicEnabled=!musicEnabled;localStorage.setItem('kabanchiki3d_music',musicEnabled?'1':'0');if(musicEnabled)startMusic();else stopMusic();syncAudioButtons()};
 $('toggleSfx').onclick=()=>{sfxEnabled=!sfxEnabled;localStorage.setItem('kabanchiki3d_sfx',sfxEnabled?'1':'0');syncAudioButtons()};syncAudioButtons();async function goFullscreen(){
@@ -778,9 +778,37 @@ $('toggleSfx').onclick=()=>{sfxEnabled=!sfxEnabled;localStorage.setItem('kabanch
 function syncFullscreenButton(){
   const on=!!(document.fullscreenElement||document.webkitFullscreenElement||document.mozFullScreenElement||document.msFullscreenElement);
   $('fullscreen').textContent=on?'🗗':'⛶';
+  $('introFullscreen').textContent=on?'🗗 Выйти из полного экрана':'⛶ На весь экран';
   $('menuFullscreen').textContent=on?'🗗 Выйти из полного экрана':'⛶ Полный экран';
 }
-$('fullscreen').onclick=goFullscreen;$('menuFullscreen').onclick=goFullscreen;
+$('fullscreen').onclick=goFullscreen;$('menuFullscreen').onclick=goFullscreen;$('introFullscreen').onclick=goFullscreen;
+let difficultyFromPause=false;
+const startDifficultyRun=$('difficultyStart').onclick;
+function closeDifficultyChoice(){
+  $('difficultyScreen').style.display='none';
+  $('difficultyStart').innerHTML='Отправиться в путь <span>→</span>';
+  if(difficultyFromPause){difficultyFromPause=false;$('pauseMenu').style.display='grid'}
+  else $('intro').style.display='grid';
+}
+$('difficultyBack').onclick=closeDifficultyChoice;
+$('menuDifficulty').onclick=()=>{
+  difficultyFromPause=true;
+  document.querySelector(`input[name="diff3d"][value="${selectedDiff}"]`).checked=true;
+  $('pauseMenu').style.display='none';$('difficultyScreen').style.display='grid';
+  $('difficultyStart').textContent='Применить сложность';
+};
+$('difficultyStart').onclick=()=>{
+  if(!difficultyFromPause)return startDifficultyRun();
+  const previous=diffCfg(),next=Number(document.querySelector('input[name="diff3d"]:checked')?.value??selectedDiff);
+  const healthRatio=life/previous.playerHP,friendRatio=friendHP/previous.friendHP;
+  selectedDiff=next;
+  life=Math.max(1,Math.ceil(healthRatio*diffCfg().playerHP));
+  friendHP=Math.max(1,Math.ceil(friendRatio*diffCfg().friendHP));
+  food=Math.min(food,diffCfg().foodMax);
+  const boss=foes.find(f=>f.isBoss);
+  if(boss&&boss.hp>0){const ratio=boss.hp/boss.maxHp;boss.maxHp=BOSS_HITS[selectedDiff];boss.hp=Math.max(1,Math.ceil(ratio*boss.maxHp))}
+  closeDifficultyChoice();hud();notice(`🎮 Сложность: ${DIFF_NAMES[selectedDiff]}`);
+};
 document.addEventListener('fullscreenchange',syncFullscreenButton);document.addEventListener('webkitfullscreenchange',syncFullscreenButton);document.addEventListener('mozfullscreenchange',syncFullscreenButton);document.addEventListener('MSFullscreenChange',syncFullscreenButton);document.addEventListener('keydown',e=>{keys[e.code]=true;if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();if(e.code==='Escape'&&!e.repeat){e.preventDefault();togglePause()}if(e.code==='KeyV'&&!e.repeat)$('camera').click();if(e.code==='Space'&&!e.repeat)jump=true;if((e.code==='KeyE'||e.code==='KeyF')&&!e.repeat)feed();if((e.code==='Enter'||e.code==='NumpadEnter')&&!e.repeat&&started&&!paused&&!win&&!endShown&&!cinematicRunning&&!e.target?.closest?.('input,textarea,select,[contenteditable]:not([contenteditable="false"])')){e.preventDefault();feed()}if(e.code==='KeyP'&&!e.repeat)togglePause()});document.addEventListener('keyup',e=>keys[e.code]=false);renderer.domElement.addEventListener('pointerdown',e=>{e.preventDefault();if(!started)return;if(e.pointerType==='mouse'&&e.button!==0)return;drag={id:e.pointerId,x:e.clientX,y:e.clientY};try{renderer.domElement.setPointerCapture(e.pointerId)}catch(_){}});renderer.domElement.addEventListener('pointermove',e=>{if(e.cancelable)e.preventDefault();if(drag?.id!==e.pointerId)return;const delta=e.clientX-drag.x;/* v19: mobile horizontal camera direction fixed; mouse behavior unchanged */yaw+=(e.pointerType==='touch'?-delta:delta)*.006;drag.x=e.clientX;drag.y=e.clientY});function endCameraDrag(e){if(drag?.id===e.pointerId)drag=null}renderer.domElement.addEventListener('pointerup',endCameraDrag);renderer.domElement.addEventListener('pointercancel',endCameraDrag);renderer.domElement.addEventListener('contextmenu',e=>e.preventDefault());const stickEl=$('stick'),nub=$('nub');function setStick(e){const r=stickEl.getBoundingClientRect(),dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2),len=Math.max(1,Math.hypot(dx,dy)),s=Math.min(1,len/52);stick.x=dx/len*s;stick.y=dy/len*s;nub.style.transform=`translate(${stick.x*43}px,${stick.y*43}px)`}stickEl.addEventListener('pointerdown',e=>{e.preventDefault();stickPointer=e.pointerId;try{stickEl.setPointerCapture(e.pointerId)}catch{}setStick(e)});stickEl.addEventListener('pointermove',e=>{if(e.cancelable)e.preventDefault();if(stickPointer===e.pointerId)setStick(e)});stickEl.addEventListener('lostpointercapture',resetStick);function resetStick(e){if(stickPointer===e.pointerId){stickPointer=null;stick.x=stick.y=0;nub.style.transform=''}}stickEl.addEventListener('pointerup',resetStick);stickEl.addEventListener('pointercancel',resetStick);addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});makePortal();
 const editable=e=>e.target?.closest?.('input,textarea,[contenteditable="true"]');
 for(const event of ['selectstart','dragstart','gesturestart','gesturechange','gestureend'])document.addEventListener(event,e=>{if(!editable(e)&&e.cancelable)e.preventDefault()},{passive:false});
