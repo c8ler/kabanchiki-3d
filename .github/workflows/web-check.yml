@@ -226,11 +226,14 @@ jobs:
       - name: Intro, seasonal menus, vegetation and Christmas tree
         run: node scripts/seasons-intro-browser.mjs
 
+      - name: Spring, cats, repeated fishing and grazing
+        run: node scripts/new-features-browser.mjs
+
       - name: Save screenshots and audit logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: kabanchiki-v163-test-report
+          name: kabanchiki-v164-test-report
           path: |
             screenshots/
             logs/

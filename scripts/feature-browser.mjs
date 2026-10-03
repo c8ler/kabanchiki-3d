@@ -24,7 +24,7 @@ try{
  await qa('season',0);await qa('load',4);await qa('lamp');for(let role=0;role<4;role++){await qa('movie','family',6,role);await page.waitForTimeout(100);const s=await qa('v161Inspect');assert.ok(s.movie.light>0&&s.movie.hug<-.7);await qa('movieDone')}
  await qa('load',6);await qa('movie','outro',1);await page.waitForTimeout(100);const finale=await qa('v161Inspect');assert.ok(finale.movie.boss&&finale.movie.headlights===2);await qa('movieDone');
  const firstFire=await qa('v161Fire',0),laterFire=await qa('v161Fire',12);assert.equal(firstFire.emissive,0);assert.ok(laterFire.emissive>0&&laterFire.time===24);
- const fishing=await qa('v161Fish');assert.ok(fishing.fishing);await qa('load',2);await qa('rain',0);for(let stage=1;stage<=4;stage++)await qa('puddles',stage,100);const puddle=await qa('v161Inspect');assert.ok(puddle.depth>1.3);
+ const fishing=await qa('v161Fish');assert.ok(fishing.fishing);await qa('load',2);await qa('rain',0);for(let stage=1;stage<=4;stage++)await qa('puddles',stage,100);const puddle=await qa('v161Inspect');assert.ok(puddle.depth>0&&puddle.depth<=.14);assert.ok((await qa('puddles',4,0)).radius>5);
  assert.deepEqual(errors,[]);assert.deepEqual(await page.evaluate(()=>window.__KABANCHIKI_TEST__.errors),[]);console.log(JSON.stringify({walls,recovery,routes,bridge,drowning,puddleDepth:puddle.depth,snowDrifts:snowfall.map(s=>s.drifts)}));
 }finally{await browser.close()}
 const safari=await webkit.launch({headless:true});
