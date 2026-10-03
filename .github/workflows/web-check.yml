@@ -33,7 +33,7 @@ jobs:
         run: |
           npm init -y
           npm install playwright
-          npx playwright install --with-deps chromium
+          npx playwright install --with-deps chromium webkit
 
       - name: Runtime + collision robot on all 6 locations
         run: |
@@ -220,11 +220,14 @@ jobs:
 
           node kabanchiki-runtime-test.mjs
 
+      - name: Water, navigation, winter, scenes and Safari gestures
+        run: node scripts/feature-browser.mjs
+
       - name: Save screenshots and audit logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: kabanchiki-v159-test-report
+          name: kabanchiki-v160-test-report
           path: |
             screenshots/
             logs/
