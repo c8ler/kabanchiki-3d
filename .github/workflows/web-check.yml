@@ -223,11 +223,14 @@ jobs:
       - name: Water, navigation, winter, scenes and Safari gestures
         run: node scripts/feature-browser.mjs
 
+      - name: Intro, seasonal menus, vegetation and Christmas tree
+        run: node scripts/seasons-intro-browser.mjs
+
       - name: Save screenshots and audit logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: kabanchiki-v162-test-report
+          name: kabanchiki-v163-test-report
           path: |
             screenshots/
             logs/
