@@ -1,17 +1,17 @@
 window.__gameLoadProgress?.(84);let __loadFinished=false;
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
-import { BOAR_MAX_WATER_DEPTH, attacksPlayer, shallowStepAllowed, capsuleAt, capsuleCircleContact, capsuleCapsuleContact } from './boar-physics.js?v=172';
-import { convexHull, polygonContact, FriendYield } from './movement-geometry.js?v=172';
-import { BOSS_HITS, riverCenterAt, riverDepthAt, onRiverBridge, lakeInletCenterAt, lakeInletHalfWidthAt, lakeInletDepthAt, bridgeRailBlocked, weatherDeadline, rainFillLimit, rainFillRate, WorldSurface, lakePointAt, lakeRadiusAt, lakeDepth } from './world-surface.js?v=172';
-import { Knockback } from './knockback.js?v=172';
-import { AdaptiveQuality, GRAPHICS_TIERS } from './adaptive-quality.js?v=172';
-import { AttemptProgress, seasonForAttempts } from './seasons.js?v=172';
-import { Soundscape } from './soundscape.js?v=172';
-import { introStagingAt } from './cinematic-staging.js?v=172';
-import { segmentHitsBox, findGridPath } from './navigation.js?v=172';
-import { CatLife } from './cat-life.js?v=172';
-import { BirdLife } from './bird-life.js?v=172';
-const GAME_VERSION='v172';
+import { BOAR_MAX_WATER_DEPTH, attacksPlayer, shallowStepAllowed, capsuleAt, capsuleCircleContact, capsuleCapsuleContact } from './boar-physics.js?v=173';
+import { convexHull, polygonContact, FriendYield } from './movement-geometry.js?v=173';
+import { BOSS_HITS, riverCenterAt, riverDepthAt, onRiverBridge, lakeInletCenterAt, lakeInletHalfWidthAt, lakeInletDepthAt, bridgeRailBlocked, weatherDeadline, rainFillLimit, rainFillRate, WorldSurface, lakePointAt, lakeRadiusAt, lakeDepth } from './world-surface.js?v=173';
+import { Knockback } from './knockback.js?v=173';
+import { AdaptiveQuality, GRAPHICS_TIERS } from './adaptive-quality.js?v=173';
+import { AttemptProgress, seasonForAttempts } from './seasons.js?v=173';
+import { Soundscape } from './soundscape.js?v=173';
+import { introStagingAt } from './cinematic-staging.js?v=173';
+import { segmentHitsBox, findGridPath } from './navigation.js?v=173';
+import { CatLife } from './cat-life.js?v=173';
+import { BirdLife } from './bird-life.js?v=173';
+const GAME_VERSION='v173';
 const attemptProgress=new AttemptProgress((()=>{try{return window.localStorage}catch{return null}})());let currentSeason=attemptProgress.season;
 let chosenSeason=null;try{chosenSeason=localStorage.getItem('kabanchiki3d_chosen_season')}catch{}
 function unlockedSeasons(){return attemptProgress.failed>=60?['summer','autumn','winter','spring']:attemptProgress.failed>=40?['summer','autumn','winter']:attemptProgress.failed>=20?['summer','autumn']:['summer']}
@@ -73,20 +73,21 @@ for(let i=0;i<(mobile?28:60);i++){const z=rand(-43,43),edge=(Math.random()<.5?-1
 
 // Visual Remaster #1 — Forest. Decorative layer is separate from gameplay/collisions.
 const forestVisual=new THREE.Group();scene.add(forestVisual);forestVisual.visible=true;
-const grassBladeGeo=new THREE.BoxGeometry(.045,.24,.045),grassBladeMat=new THREE.MeshStandardMaterial({color:0x76a842,roughness:1});
+const grassBladeGeo=(()=>{const g=new THREE.ConeGeometry(.095,.34,3);g.translate(0,.17,0);return g})(),grassBladeMat=new THREE.MeshStandardMaterial({color:0x76a842,roughness:1});
+function grassClumpTransform(dummy,x,z,height=1,spread=1){dummy.position.set(x,.015,z);dummy.rotation.set(rand(-.22,.22),rand(0,6.28),rand(-.24,.24));dummy.scale.set(rand(.72,1.22)*spread,rand(.72,1.42)*height,rand(.72,1.22)*spread);dummy.updateMatrix()}
 const grassCount=mobile?650:2400,grassBlades=new THREE.InstancedMesh(grassBladeGeo,grassBladeMat,grassCount),grassDummy=new THREE.Object3D();
-for(let i=0;i<grassCount;i++){let x=rand(-43,43),z=rand(-43,43);if(Math.abs(x)<3.2){x+=(x<0?-1:1)*rand(3.5,8)}
- grassDummy.position.set(x,.10,z);grassDummy.rotation.set(rand(-.08,.08),rand(0,6.28),rand(-.12,.12));const k=rand(.65,1.45);grassDummy.scale.set(k,k,k);grassDummy.updateMatrix();grassBlades.setMatrixAt(i,grassDummy.matrix);grassBlades.setColorAt(i,new THREE.Color().setHSL(.20+(i%5)*.012,.48,.26+(i%7)*.027))}
+for(let i=0;i<grassCount;i++){const patch=i%5,px=((i*17)%23-11)*3.45,pz=((i*29)%23-11)*3.45;let x=px+rand(-2.7,2.7),z=pz+rand(-2.7,2.7);if(patch===0){x=rand(-43,43);z=rand(-43,43)}if(Math.abs(x)<3.2){x+=(x<0?-1:1)*rand(3.5,8)}
+ grassClumpTransform(grassDummy,x,z,rand(.72,1.25),rand(.75,1.28));grassBlades.setMatrixAt(i,grassDummy.matrix);grassBlades.setColorAt(i,new THREE.Color().setHSL(.20+(i%5)*.012,.48,.25+(i%7)*.025))}
 grassBlades.instanceMatrix.needsUpdate=true;grassBlades.instanceColor.needsUpdate=true;grassBlades.receiveShadow=!mobile;forestVisual.add(grassBlades);
 // v168: decorative meadow grass for every green outdoor location, with taller lush banks around the river.
 const meadowGrassRoot=new THREE.Group();scene.add(meadowGrassRoot);
-const meadowGrassGeo=new THREE.BoxGeometry(.052,.34,.052),meadowGrassMat=new THREE.MeshStandardMaterial({color:0x6f9f3d,roughness:1});
+const meadowGrassGeo=grassBladeGeo.clone(),meadowGrassMat=new THREE.MeshStandardMaterial({color:0x6f9f3d,roughness:1});
 const meadowGrassCount=mobile?900:3200,meadowGrass=new THREE.InstancedMesh(meadowGrassGeo,meadowGrassMat,meadowGrassCount),meadowDummy=new THREE.Object3D(),meadowLevels=new Float32Array(meadowGrassCount);
 for(let i=0;i<meadowGrassCount;i++){
  const lv=1+(i%4),x=rand(-43,43);let z=rand(-43,43),tall=1;
  if(lv===4){const bank=riverCenterAt(x),riverSlot=Math.floor(i/4),side=riverSlot%2===0?-1:1;if(riverSlot%3!==2){z=bank+side*rand(4.55,9.2);tall=rand(1.7,3.6)}else z=bank+side*rand(9.2,30)}
  else if(lv===2){const a=rand(0,Math.PI*2),r=rand(15.2,38);z=-17+Math.sin(a)*r;const xx=-18+Math.cos(a)*r;meadowDummy.position.x=xx}
- meadowLevels[i]=lv;const px=lv===2?meadowDummy.position.x:x;meadowDummy.position.set(px,.16,z);meadowDummy.rotation.set(rand(-.1,.1),rand(0,6.28),rand(-.16,.16));const k=rand(.75,1.55)*tall;meadowDummy.scale.set(k,k,k);meadowDummy.updateMatrix();meadowGrass.setMatrixAt(i,meadowDummy.matrix);meadowGrass.setColorAt(i,new THREE.Color().setHSL(.20+(i%6)*.01,.45,.24+(i%5)*.025));
+ meadowLevels[i]=lv;const px=lv===2?meadowDummy.position.x:x;grassClumpTransform(meadowDummy,px,z,rand(.75,1.28)*tall,rand(.82,1.38));meadowGrass.setMatrixAt(i,meadowDummy.matrix);meadowGrass.setColorAt(i,new THREE.Color().setHSL(.20+(i%6)*.01,.45,.24+(i%5)*.025));
 }
 meadowGrass.instanceMatrix.needsUpdate=true;meadowGrass.instanceColor.needsUpdate=true;meadowGrass.receiveShadow=!mobile;meadowGrassRoot.add(meadowGrass);
 function syncMeadowGrass(){
