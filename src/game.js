@@ -1,17 +1,17 @@
 window.__gameLoadProgress?.(84);let __loadFinished=false;
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
-import { BOAR_MAX_WATER_DEPTH, attacksPlayer, shallowStepAllowed, capsuleAt, capsuleCircleContact, capsuleCapsuleContact } from './boar-physics.js?v=173';
-import { convexHull, polygonContact, FriendYield } from './movement-geometry.js?v=173';
-import { BOSS_HITS, riverCenterAt, riverDepthAt, onRiverBridge, lakeInletCenterAt, lakeInletHalfWidthAt, lakeInletDepthAt, bridgeRailBlocked, weatherDeadline, rainFillLimit, rainFillRate, WorldSurface, lakePointAt, lakeRadiusAt, lakeDepth } from './world-surface.js?v=173';
-import { Knockback } from './knockback.js?v=173';
-import { AdaptiveQuality, GRAPHICS_TIERS } from './adaptive-quality.js?v=173';
-import { AttemptProgress, seasonForAttempts } from './seasons.js?v=173';
-import { Soundscape } from './soundscape.js?v=173';
-import { introStagingAt } from './cinematic-staging.js?v=173';
-import { segmentHitsBox, findGridPath } from './navigation.js?v=173';
-import { CatLife } from './cat-life.js?v=173';
-import { BirdLife } from './bird-life.js?v=173';
-const GAME_VERSION='v173';
+import { BOAR_MAX_WATER_DEPTH, attacksPlayer, shallowStepAllowed, capsuleAt, capsuleCircleContact, capsuleCapsuleContact } from './boar-physics.js?v=174';
+import { convexHull, polygonContact, FriendYield } from './movement-geometry.js?v=174';
+import { BOSS_HITS, riverCenterAt, riverDepthAt, onRiverBridge, lakeInletCenterAt, lakeInletHalfWidthAt, lakeInletDepthAt, bridgeRailBlocked, weatherDeadline, rainFillLimit, rainFillRate, WorldSurface, lakePointAt, lakeRadiusAt, lakeDepth } from './world-surface.js?v=174';
+import { Knockback } from './knockback.js?v=174';
+import { AdaptiveQuality, GRAPHICS_TIERS } from './adaptive-quality.js?v=174';
+import { AttemptProgress, seasonForAttempts } from './seasons.js?v=174';
+import { Soundscape } from './soundscape.js?v=174';
+import { introStagingAt } from './cinematic-staging.js?v=174';
+import { segmentHitsBox, findGridPath } from './navigation.js?v=174';
+import { CatLife } from './cat-life.js?v=174';
+import { BirdLife } from './bird-life.js?v=174';
+const GAME_VERSION='v174';
 const attemptProgress=new AttemptProgress((()=>{try{return window.localStorage}catch{return null}})());let currentSeason=attemptProgress.season;
 let chosenSeason=null;try{chosenSeason=localStorage.getItem('kabanchiki3d_chosen_season')}catch{}
 function unlockedSeasons(){return attemptProgress.failed>=60?['summer','autumn','winter','spring']:attemptProgress.failed>=40?['summer','autumn','winter']:attemptProgress.failed>=20?['summer','autumn']:['summer']}
@@ -201,12 +201,12 @@ const windowFrameMat=new THREE.MeshLambertMaterial({color:0x4b2b1d});
 for(const [x,y,w,h] of [[-1.55,1.98,.96,.10],[-1.55,1.12,.96,.10],[-2.03,1.55,.10,.96],[-1.07,1.55,.10,.96]]){const fr=block(hideDoor,windowFrameMat,x,y,2.325,w,h,.07);fr.userData.familyWindowFrame=true}
 const doorMat=new THREE.MeshLambertMaterial({color:0x75462f});
 // v170: real single-leaf door. The group is the hinge at the left jamb; the slab is offset from it.
-const familyDoor=new THREE.Group();familyDoor.position.set(-.54,0,2.30);hideDoor.add(familyDoor);familyDoor.userData.familyDoor=true;familyDoor.userData.closed=true;
-const familyDoorSlab=block(familyDoor,doorMat,.54,1.12,0,1.08,2.18,.12);familyDoorSlab.userData.familyDoor=true;
-const doorKnob=sphere(familyDoorSlab,new THREE.MeshBasicMaterial({color:0xffd56a}),.39,.03,.075,.07);doorKnob.userData.familyDoor=true;
+const familyDoor=new THREE.Group();familyDoor.position.set(-.86,.16,2.30);hideDoor.add(familyDoor);familyDoor.userData.familyDoor=true;familyDoor.userData.closed=true;
+const familyDoorSlab=block(familyDoor,doorMat,.86,1.42,0,1.72,2.84,.12);familyDoorSlab.userData.familyDoor=true;
+const doorKnob=sphere(familyDoorSlab,new THREE.MeshBasicMaterial({color:0xffd56a}),.39,-.18,.075,.07);doorKnob.userData.familyDoor=true;
 // Tight jambs/header visually close the doorway without leaving the large side/bottom gaps.
 const doorTrimMat=new THREE.MeshLambertMaterial({color:0x4b2b1d});
-for(const [x,y,w,h] of [[-.59,1.12,.10,2.28],[.59,1.12,.10,2.28],[0,2.28,1.28,.10]]){const trim=block(hideDoor,doorTrimMat,x,y,2.315,w,h,.10);trim.userData.familyDoorFrame=true}
+for(const [x,y,w,h] of [[-.88,1.58,.12,3.00],[.88,1.58,.12,3.00],[0,3.02,1.88,.12]]){const trim=block(hideDoor,doorTrimMat,x,y,2.315,w,h,.10);trim.userData.familyDoorFrame=true}
 const porchGlowMat=new THREE.MeshBasicMaterial({color:0xffe29a});const porchLamp=sphere(hideDoor,porchGlowMat,0,2.35,2.24,.16);porchLamp.userData.familyWindow=true;
 const hideDoorGlow=new THREE.PointLight(0xffc45c,14,20,1.35);hideDoorGlow.position.set(0,2.15,1.7);familyHideout.add(hideDoorGlow);hideDoorGlow.visible=false;
 const dadInteriorGlow=new THREE.PointLight(0xffd58a,7,11,1.45);dadInteriorGlow.position.set(0,1.7,-.35);familyHideout.add(dadInteriorGlow);dadInteriorGlow.visible=false;
@@ -709,7 +709,7 @@ playCinematic('family',()=>{familyPopupOpen=false;paused=false;startMusic()},{ro
 }$('familyOk').onclick=()=>{familyPopupOpen=false;$('familyPopup').style.display='none';paused=false};function formatTime(sec){const m=Math.floor(sec/60),s=Math.floor(sec%60);return `${m}:${String(s).padStart(2,'0')}`}function questsComplete(){if(level===6)return !foes.some(f=>f.isBoss);return levelBoarsDone>=levelBoarsTotal&&levelFamilyDone>=levelFamilyTotal}function questState(){if(level===6){const boss=foes.find(f=>f.isBoss);if(boss)return `👑 Босс: ${boss.hp}/${boss.maxHp} · Подружи миньона и помоги ему победить босса`;return '🎉 Босс побеждён!'}const boarsLeft=Math.max(0,levelBoarsTotal-levelBoarsDone),familyLeft=Math.max(0,levelFamilyTotal-levelFamilyDone);if(boarsLeft>0&&familyLeft>0)return `🐗 Накорми кабанов: ${levelBoarsDone}/${levelBoarsTotal} · 👨‍👩‍👦 Найди родных: ${levelFamilyDone}/${levelFamilyTotal}`;if(boarsLeft>0)return `🐗 Накорми кабанов: ${levelBoarsDone}/${levelBoarsTotal}`;if(familyLeft>0)return `👨‍👩‍👦 Найди родных: ${levelFamilyDone}/${levelFamilyTotal}`;return '🌀 Задание выполнено — иди в портал!' }
 let cinematicRunning=false,cinematicTimers=[],cinematicFinish=null,movie=null;const movieRoot=new THREE.Group();scene.add(movieRoot);
 window.addEventListener('keydown',e=>{if(cinematicRunning&&['Escape','Space','Enter'].includes(e.code)){e.preventDefault();cinematicFinish?.()}});
-function cineClear(){for(const t of cinematicTimers)clearTimeout(t);cinematicTimers=[];if(movie){if(movie.saved.doorMaterial){familyDoor.material.dispose();familyDoor.material=movie.saved.doorMaterial}for(const [o,visible] of movie.saved.visibility)o.visible=visible;scene.background.copy(movie.saved.sky);scene.fog.color.copy(movie.saved.fog);sun.intensity=movie.saved.sun;hemi.intensity=movie.saved.hemi;camera.fov=movie.saved.fov;camera.updateProjectionMatrix();for(const g of movie.privateGeometries||[])g.dispose();for(const m of movie.privateMaterials||[])m.dispose();movie=null}movieRoot.clear();}
+function cineClear(){for(const t of cinematicTimers)clearTimeout(t);cinematicTimers=[];if(movie){if(movie.saved.doorMaterial){familyDoorSlab.material.dispose();familyDoorSlab.material=movie.saved.doorMaterial}for(const [o,visible] of movie.saved.visibility)o.visible=visible;scene.background.copy(movie.saved.sky);scene.fog.color.copy(movie.saved.fog);sun.intensity=movie.saved.sun;hemi.intensity=movie.saved.hemi;camera.fov=movie.saved.fov;camera.updateProjectionMatrix();for(const g of movie.privateGeometries||[])g.dispose();for(const m of movie.privateMaterials||[])m.dispose();movie=null}movieRoot.clear();}
 function cineLater(fn,ms){cinematicTimers.push(setTimeout(fn,ms))}
 function cinemaPerson(role){makeFamily(0,0,role);const p=familyMembers.pop();scene.remove(p.g);p.g.traverse(o=>{if(o.userData.familyMarker)o.visible=false});movieRoot.add(p.g);return p.g}
 function cinemaCar(){const g=new THREE.Group(),paint=new THREE.MeshStandardMaterial({color:0x315c55,roughness:.4,metalness:.35}),trim=new THREE.MeshStandardMaterial({color:0xd5d7ce,roughness:.28,metalness:.8}),glass=new THREE.MeshPhongMaterial({color:0x80b4c8,transparent:true,opacity:.7,shininess:110}),rubber=new THREE.MeshLambertMaterial({color:0x202329});block(g,paint,0,.74,0,2.3,.68,4.35);block(g,paint,0,1.36,-.25,2.02,.72,2.2);block(g,trim,0,1.79,-.25,2.05,.09,2.25);block(g,glass,0,1.4,.87,1.8,.52,.035);block(g,glass,0,1.4,-1.36,1.8,.52,.035);block(g,paint,0,1.05,1.47,2.15,.13,1.25);for(const x of [-1.03,1.03]){block(g,glass,x,1.4,-.24,.03,.5,1.87);block(g,trim,x,1.05,-.05,.05,.035,3.4);block(g,trim,x,1.14,.6,.07,.05,.27);block(g,paint,x*1.16,1.39,.7,.26,.18,.22);for(const z of [-1.35,1.35]){const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.4,.4,.28,16),rubber);wheel.rotation.z=Math.PI/2;wheel.position.set(x*1.07,.43,z);g.add(wheel);const hub=new THREE.Mesh(new THREE.CylinderGeometry(.23,.23,.3,10),trim);hub.rotation.z=Math.PI/2;hub.position.copy(wheel.position);g.add(hub)}}for(const z of [-2.21,2.21])block(g,trim,0,.53,z,2.3,.16,.1);block(g,mats.black,0,.83,2.2,1.08,.32,.04);for(let i=-2;i<=2;i++)block(g,trim,i*.19,.83,2.23,.035,.28,.04);const beams=[],lenses=[];for(const x of [-.8,.8]){lenses.push(block(g,flashlightLensMat.clone(),x,.88,2.2,.46,.28,.05));const light=new THREE.SpotLight(0xffefcb,32,28,.32,.6,1.1);light.position.set(x,.88,2.24);light.target.position.set(x,.1,16);g.add(light,light.target);beams.push(light);block(g,new THREE.MeshBasicMaterial({color:0xd85138}),x,.86,-2.2,.35,.19,.05)}g.userData.headlights=beams;g.userData.headlightLenses=lenses;movieRoot.add(g);return g}
@@ -718,7 +718,7 @@ function cineSetup(kind,detail={}){
  $('cinematicScene').innerHTML='';$('cinematicScene').style.background='none';
  const existingGeometries=new Set(),existingMaterials=new Set(),capture=o=>{if(o.geometry)existingGeometries.add(o.geometry);if(o.material)for(const m of Array.isArray(o.material)?o.material:[o.material])existingMaterials.add(m)};scene.traverse(capture);detail.member?.g?.traverse(capture);
  const visibility=[boy,catLife.root,friend?.g,...foes.map(f=>f.g),...familyMembers.map(f=>f.g),...apples.map(a=>a.g)].filter(Boolean).map(o=>[o,o.visible]);const saved={visibility,sky:scene.background.clone(),fog:scene.fog.color.clone(),sun:sun.intensity,hemi:hemi.intensity,fov:camera.fov};for(const [o] of visibility)o.visible=false;
- if(kind==='family'&&detail.role===2){saved.doorMaterial=familyDoor.material;familyDoor.material=familyDoor.material.clone();familyDoor.material.transparent=true;familyDoor.material.opacity=.12;familyDoor.material.depthWrite=false}
+ if(kind==='family'&&detail.role===2){saved.doorMaterial=familyDoorSlab.material;familyDoorSlab.material=familyDoorSlab.material.clone();familyDoorSlab.material.transparent=true;familyDoorSlab.material.opacity=.12;familyDoorSlab.material.depthWrite=false}
  movie={kind,detail,saved,start:performance.now(),elapsed:0,people:[],boars:[],car:null};camera.fov=kind==='family'?48:55;camera.updateProjectionMatrix();
  const hero=boy.clone(true);hero.visible=true;hero.children.forEach(o=>{o.rotation.x=0;o.rotation.z=0});hero.traverse(o=>{if(o.isMesh&&o.userData._cameraFade)o.userData._cameraFade=false});const lamp=hero.children.find(o=>o.type==='Group');if(lamp)lamp.visible=false;
  if(hasFlashlight){const held=new THREE.Group();block(held,mats.black,.6,1.0,.5,.22,.22,.55);block(held,flashlightLensMat,.6,1.0,.79,.19,.19,.04);hero.add(held);movie.lamp=held;const light=new THREE.SpotLight(0xfff0cd,38,28,.48,.58,1.1),target=new THREE.Object3D();movieRoot.add(light,target);light.target=target;movie.lampLight=light}
