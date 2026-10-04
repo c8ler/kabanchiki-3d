@@ -1,17 +1,17 @@
 window.__gameLoadProgress?.(84);let __loadFinished=false;
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
-import { BOAR_MAX_WATER_DEPTH, attacksPlayer, shallowStepAllowed, capsuleAt, capsuleCircleContact, capsuleCapsuleContact } from './boar-physics.js?v=171';
-import { convexHull, polygonContact, FriendYield } from './movement-geometry.js?v=171';
-import { BOSS_HITS, riverCenterAt, riverDepthAt, onRiverBridge, lakeInletCenterAt, lakeInletHalfWidthAt, lakeInletDepthAt, bridgeRailBlocked, weatherDeadline, rainFillLimit, rainFillRate, WorldSurface, lakePointAt, lakeRadiusAt, lakeDepth } from './world-surface.js?v=171';
-import { Knockback } from './knockback.js?v=171';
-import { AdaptiveQuality, GRAPHICS_TIERS } from './adaptive-quality.js?v=171';
-import { AttemptProgress, seasonForAttempts } from './seasons.js?v=171';
-import { Soundscape } from './soundscape.js?v=171';
-import { introStagingAt } from './cinematic-staging.js?v=171';
-import { segmentHitsBox, findGridPath } from './navigation.js?v=171';
-import { CatLife } from './cat-life.js?v=171';
-import { BirdLife } from './bird-life.js?v=171';
-const GAME_VERSION='v171';
+import { BOAR_MAX_WATER_DEPTH, attacksPlayer, shallowStepAllowed, capsuleAt, capsuleCircleContact, capsuleCapsuleContact } from './boar-physics.js?v=172';
+import { convexHull, polygonContact, FriendYield } from './movement-geometry.js?v=172';
+import { BOSS_HITS, riverCenterAt, riverDepthAt, onRiverBridge, lakeInletCenterAt, lakeInletHalfWidthAt, lakeInletDepthAt, bridgeRailBlocked, weatherDeadline, rainFillLimit, rainFillRate, WorldSurface, lakePointAt, lakeRadiusAt, lakeDepth } from './world-surface.js?v=172';
+import { Knockback } from './knockback.js?v=172';
+import { AdaptiveQuality, GRAPHICS_TIERS } from './adaptive-quality.js?v=172';
+import { AttemptProgress, seasonForAttempts } from './seasons.js?v=172';
+import { Soundscape } from './soundscape.js?v=172';
+import { introStagingAt } from './cinematic-staging.js?v=172';
+import { segmentHitsBox, findGridPath } from './navigation.js?v=172';
+import { CatLife } from './cat-life.js?v=172';
+import { BirdLife } from './bird-life.js?v=172';
+const GAME_VERSION='v172';
 const attemptProgress=new AttemptProgress((()=>{try{return window.localStorage}catch{return null}})());let currentSeason=attemptProgress.season;
 let chosenSeason=null;try{chosenSeason=localStorage.getItem('kabanchiki3d_chosen_season')}catch{}
 function unlockedSeasons(){return attemptProgress.failed>=60?['summer','autumn','winter','spring']:attemptProgress.failed>=40?['summer','autumn','winter']:attemptProgress.failed>=20?['summer','autumn']:['summer']}
@@ -29,8 +29,8 @@ window.__KABANCHIKI_TEST__={version:GAME_VERSION,ready:false,level:0,errors:[]};
 
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x9bd2f1);scene.fog=new THREE.Fog(0x9bd2f1,35,83);const camera=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,.08,110);const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,mobile?1.5:2));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=!mobile;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;document.body.prepend(renderer.domElement);const hemi=new THREE.HemisphereLight(0xb9d5ff,0x52613b,1.4);scene.add(hemi);const sun=new THREE.DirectionalLight(0xffbd76,2.2);sun.position.set(-28,24,-42);sun.target.position.set(0,0,0);scene.add(sun.target);sun.castShadow=!mobile;
-sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-48;sun.shadow.camera.right=48;sun.shadow.camera.top=48;sun.shadow.camera.bottom=-48;
-sun.shadow.camera.near=.5;sun.shadow.camera.far=90;sun.shadow.bias=-.00025;sun.shadow.normalBias=.035;sun.shadow.radius=3;scene.add(sun);const torch=new THREE.SpotLight(0xfff1c2,0,29,Math.PI/5,.55,1);scene.add(torch);scene.add(torch.target);
+sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-78;sun.shadow.camera.right=78;sun.shadow.camera.top=78;sun.shadow.camera.bottom=-78;
+sun.shadow.camera.near=.1;sun.shadow.camera.far=180;sun.shadow.bias=-.00012;sun.shadow.normalBias=.018;sun.shadow.radius=2;scene.add(sun);const torch=new THREE.SpotLight(0xfff1c2,0,29,Math.PI/5,.55,1);scene.add(torch);scene.add(torch.target);
 // New visual assets use their own random stream so Three.js UUID allocation does not shift world generation.
 let visualSeed=8147;
 function visualOnly(build){const previous=Math.random;Math.random=()=>{visualSeed=(Math.imul(visualSeed,1664525)+1013904223)>>>0;return visualSeed/4294967296};try{return build()}finally{Math.random=previous}}
@@ -98,7 +98,7 @@ function syncMeadowGrass(){
 let graphicsParticleFactor=1,graphicsCloudFactor=1;
 const adaptiveGraphics=new AdaptiveQuality({initial:mobile?1:3,max:mobile?2:3,onChange:applyGraphicsQuality});
 function applyGraphicsQuality(tier){
- const preset=GRAPHICS_TIERS[tier],shadows=preset.shadows&&!mobile;
+ const preset=GRAPHICS_TIERS[tier],shadows=!mobile;
  renderer.setPixelRatio(Math.min(devicePixelRatio,preset.pixelRatio));renderer.setSize(innerWidth,innerHeight);
  renderer.shadowMap.enabled=shadows;sun.castShadow=shadows;
  if(sun.shadow.mapSize.x!==preset.shadowSize){
@@ -120,20 +120,20 @@ for(let i=0;i<(mobile?24:46);i++){let x=rand(-40,40),z=rand(-40,40);if(Math.abs(
  block(g,grassBladeMat,0,.18,0,.05,.36,.05);sphere(g,flowerMats[i%flowerMats.length],0,.43,0,.11);g.userData.seasonPlant=true;forestVisual.add(g)}
 const fernMat=new THREE.MeshLambertMaterial({color:0x397b3d});
 for(let i=0;i<(mobile?22:44);i++){const g=new THREE.Group();g.position.set(rand(-40,40),.02,rand(-40,40));if(Math.abs(g.position.x)<roadHalfWidthAt(g.position.z)+.9)continue;for(let j=0;j<4;j++){const b=block(g,fernMat,0,.18,0,.08,.35,.55);b.rotation.y=j*Math.PI/2;b.rotation.z=.55}g.userData.seasonPlant=true;forestVisual.add(g)}
-const logObstacles=[];for(let i=0;i<9;i++){const g=new THREE.Group();g.position.set(rand(-38,38),.13,rand(-38,34));const len=rand(1.35,2.25),r=rand(.11,.16),yaw=rand(0,6.28),log=new THREE.Mesh(new THREE.CylinderGeometry(r*.78,r,1,7),mats.wood);log.scale.y=len;log.rotation.z=Math.PI/2;log.rotation.y=yaw;log.userData.naturalLog=true;g.add(log);forestVisual.add(g);logObstacles.push({g,mesh:log,x:g.position.x,z:g.position.z,len,r,yaw,top:g.position.y+r})}
+const logObstacles=[];for(let i=0;i<9;i++){const g=new THREE.Group();g.position.set(rand(-38,38),.13,rand(-38,34));const len=rand(1.35,2.25),r=rand(.11,.16),yaw=rand(0,6.28),log=new THREE.Mesh(new THREE.CylinderGeometry(r*.78,r,1,7),mats.wood);log.scale.y=len;log.rotation.z=Math.PI/2;log.rotation.y=yaw;log.userData.naturalLog=true;log.castShadow=!mobile;log.receiveShadow=!mobile;g.add(log);forestVisual.add(g);logObstacles.push({g,mesh:log,x:g.position.x,z:g.position.z,len,r,yaw,top:g.position.y+r})}
 const sunHalo=visualOnly(()=>new THREE.Sprite(new THREE.SpriteMaterial({map:softGlowTexture,color:0xffb653,transparent:true,opacity:.6,blending:THREE.AdditiveBlending,depthWrite:false})));sunHalo.position.set(-28,24,-42);sunHalo.scale.set(19,19,1);scene.add(sunHalo);
 const sunDisc=new THREE.Mesh(new THREE.SphereGeometry(2.3,16,12),new THREE.MeshBasicMaterial({color:0xfff2b0}));sunDisc.position.copy(sun.position);sunDisc.renderOrder=2;scene.add(sunDisc);
 const treePositions=[],treeObjects=[],treeSolidMeshes=[],treeBranchMeshes=[];
-function syncWorldShadowCasters(){if(mobile)return;scene.traverse(o=>{if(!o.isMesh)return;if(o===skyDome||o===sunDisc)return;const basic=o.material?.isMeshBasicMaterial,transparent=o.material?.transparent&&o.material?.opacity<.45;if(!basic&&!transparent){o.castShadow=true;o.receiveShadow=true}});ground.castShadow=false;ground.receiveShadow=true;sun.shadow.needsUpdate=true;renderer.shadowMap.needsUpdate=true}
+function syncWorldShadowCasters(){if(mobile)return;scene.traverse(o=>{if(!o.isMesh)return;if(o===skyDome||o===sunDisc)return;const transparent=o.material?.transparent&&o.material?.opacity<.20;if(!transparent){o.castShadow=true;o.receiveShadow=true}});ground.castShadow=false;ground.receiveShadow=true;grassBlades.castShadow=false;meadowGrass.castShadow=false;sun.shadow.needsUpdate=true;renderer.shadowMap.needsUpdate=true}
 
 // v104: slimmer branches match the trunk/crown scale and also provide exact apple anchor geometry.
 const trunkGeo=new THREE.CylinderGeometry(.46,.68,1,7),branchGeo=new THREE.CylinderGeometry(.09,.14,1,6),crownGeo=new THREE.BoxGeometry(1.65,1.55,1.65);
 for(let i=0;i<160;i++){
  let x=rand(-45,45),z=rand(-45,45);if(Math.abs(x)<4||Math.hypot(x,z)<8)continue;
  const g=group(x,z),h=rand(2.4,5.7),tr=rand(.72,1.08);
- const trunk=new THREE.Mesh(trunkGeo,mats.wood);trunk.position.y=h/2;trunk.scale.set(tr,h,tr);g.add(trunk);
+ const trunk=new THREE.Mesh(trunkGeo,mats.wood);trunk.position.y=h/2;trunk.scale.set(tr,h,tr);trunk.castShadow=!mobile;trunk.receiveShadow=!mobile;g.add(trunk);
  for(let r=0;r<3;r++){const root=block(g,mats.wood,Math.cos(r*2.094)*.38,.18,Math.sin(r*2.094)*.38,.22,.22,rand(.65,1.0));root.rotation.y=-r*2.094;root.rotation.z=.15}
- g.children.filter(o=>o.isMesh&&o.geometry===trunkGeo).forEach(o=>{o.userData.treeSolid=true;treeSolidMeshes.push(o)});const branchN=Math.floor(rand(2,5));for(let b=0;b<branchN;b++){const br=new THREE.Mesh(branchGeo,mats.wood);br.userData.appleBranch=true;treeBranchMeshes.push(br);const a=rand(0,6.28),len=rand(.68,1.08);br.position.set(Math.cos(a)*.30,h*.66+rand(-.10,.24),Math.sin(a)*.30);br.scale.set(tr*.38,len,tr*.38);br.rotation.z=rand(.78,1.08);br.rotation.y=a;g.add(br)}
+ g.children.filter(o=>o.isMesh&&o.geometry===trunkGeo).forEach(o=>{o.userData.treeSolid=true;treeSolidMeshes.push(o)});const branchN=Math.floor(rand(2,5));for(let b=0;b<branchN;b++){const br=new THREE.Mesh(branchGeo,mats.wood);br.userData.appleBranch=true;treeBranchMeshes.push(br);const a=rand(0,6.28),len=rand(.68,1.08);br.position.set(Math.cos(a)*.30,h*.66+rand(-.10,.24),Math.sin(a)*.30);br.scale.set(tr*.38,len,tr*.38);br.rotation.z=rand(.78,1.08);br.rotation.y=a;br.castShadow=!mobile;br.receiveShadow=!mobile;g.add(br)}
  const crownN=Math.floor(rand(5,9));for(let c=0;c<crownN;c++){const cm=new THREE.Mesh(crownGeo,c%3?mats.leaf:mats.leaf2);const a=rand(0,6.28),rr=c===0?0:rand(.35,1.25);cm.position.set(Math.cos(a)*rr,h+rand(-.05,1.45),Math.sin(a)*rr);const sc=rand(.85,1.5);cm.scale.set(sc*1.15,sc,sc*1.15);cm.userData.springCrown=true;cm.userData.fullCrownScale=cm.scale.clone();g.add(cm)}
  g.rotation.y=rand(0,Math.PI*2);g.userData.isTree=true;
  g.traverse(o=>{if(o.isMesh&&o.material){o.material=o.material.clone();o.material.transparent=true}});
@@ -1186,7 +1186,7 @@ function runForagePlacementAudit(){const issues=[],samples=[];for(const a of app
 window.__KABANCHIKI_FORAGE_PLACEMENT_AUDIT__=runForagePlacementAudit;
 function runJumpSurfaceAudit(){const oldLevel=level,ox=boy.position.x,oy=boy.position.y,oz=boy.position.z,opy=py,ovy=vy,issues=[],samples=[];for(const sample of [{lv:1,x:0,z:8,name:'grass'},{lv:2,x:10,z:10,name:'lake-land'},{lv:3,x:0,z:8,name:'village'},{lv:4,x:0,z:riverCenterAt(0),name:'bridge'}]){level=sample.lv;const support=playerSupportHeightAt(sample.x,sample.z);py=support;vy=0;const grounded=Math.abs(py-support)<.13&&vy<=.12;samples.push({...sample,support:+support.toFixed(3),grounded});if(!grounded)issues.push('jump-support-'+sample.name);if(sample.name==='bridge'&&Math.abs(support-.28)>.02)issues.push('bridge-support')}level=oldLevel;boy.position.set(ox,oy,oz);py=opy;vy=ovy;return {ok:issues.length===0,issues,samples}}
 window.__KABANCHIKI_JUMP_SURFACE_AUDIT__=runJumpSurfaceAudit;
-function runSunShadowAudit(){const same=sun.position.distanceTo(sunDisc.position)<.01,casters=treeObjects.filter(t=>t.visible).flatMap(t=>{const a=[];t.traverse(o=>{if(o.isMesh)a.push(o)});return a}),missing=casters.filter(o=>!o.castShadow).length;return {ok:same&&sunDisc.visible&&missing===0,sunAligned:same,sunVisible:sunDisc.visible,visibleTreeMeshes:casters.length,missingTreeCasters:missing,shadowCamera:[sun.shadow.camera.left,sun.shadow.camera.right,sun.shadow.camera.top,sun.shadow.camera.bottom]}}
+function runSunShadowAudit(){const same=sun.position.distanceTo(sunDisc.position)<.01,casters=[];scene.traverse(o=>{if(o.isMesh&&o.visible&&o!==ground&&o!==skyDome&&o!==sunDisc&&o!==grassBlades&&o!==meadowGrass&&!(o.material?.transparent&&o.material?.opacity<.20))casters.push(o)});const missing=casters.filter(o=>!o.castShadow).length;return {ok:same&&sunDisc.visible&&missing===0,sunAligned:same,sunVisible:sunDisc.visible,visibleSolidMeshes:casters.length,missingCasters:missing,shadowCamera:[sun.shadow.camera.left,sun.shadow.camera.right,sun.shadow.camera.top,sun.shadow.camera.bottom],shadowFar:sun.shadow.camera.far}}
 window.__KABANCHIKI_SUN_SHADOW_AUDIT__=runSunShadowAudit;
 function repairTreeApples(issues,repairs){
  for(const a of apples){if(a.done||a.type!=='apple'||a.y<=1)continue;if(appleOnBranch(a))continue;const n=nearestVisibleAppleBranch(a.x,a.z);if(!n){issues.push('apple-no-visible-branch');continue}const p=branchApplePoint(n.branch);if(!p){issues.push('apple-no-visible-branch');continue}a.g.position.set(p[0],p[2],p[1]);a.x=p[0];a.z=p[1];a.y=p[2];a.branch=p[3];a.tree=p[4];a.g.userData.appleBranch=p[3];a.g.userData.appleTree=p[4];repairs.push('apple-branch-anchor');if(!appleOnBranch(a))issues.push(`apple-off-branch:${a.x.toFixed(1)},${a.z.toFixed(1)}`);
