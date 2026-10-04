@@ -1028,7 +1028,8 @@ function solidCircles(){
 function playerWorldBlocked(x,z,pad=0){
  if(x<-43.15||x>43.15||z<-43.15||z>43.15)return true;
  const rr=PLAYER_RADIUS+pad;
- // v165: on foot the bridge rail blocks at deck height, but a normal jump can clear it.\n if(level===4&&(mountedFriend||py<.62)&&bridgeRailBlocked(x,z,mountedFriend?.86:rr))return true;
+ // v165: on foot the bridge rail blocks at deck height, but a normal jump can clear it.
+ if(level===4&&(mountedFriend||py<.62)&&bridgeRailBlocked(x,z,mountedFriend?.86:rr))return true;
  if(circleHitsTreeGeometry(x,z,rr))return true;
  if((mountedFriend||boarFormTime>0)&&(boarTreeContacts(playerBoarBody(),x,z).length||!boarLakeStepAllowed(playerBoarBody(),x,z)))return true;
  if(mountainBlockedAt(x,z,mountedFriend?MOUNTED_ROCK_RADIUS:rr))return true;
