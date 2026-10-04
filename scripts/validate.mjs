@@ -3,11 +3,15 @@ const html=fs.readFileSync('index.html','utf8');
 const game=fs.readFileSync('src/game.js','utf8');
 const levels=fs.readFileSync('levels/levels.js','utf8');
 const checks=[
+ ['v166 desktop mouse actions',/e\.button===0[^}]*feed\(\)/s.test(game)&&/e\.button===2[^}]*jump=true/s.test(game)],
+ ['v166 cinematic ground safety',/heroGround=Math\.max\(0,terrainHeightAt/.test(game)&&/const ground=Math\.max\(0,terrainHeightAt\(q\.x,q\.z\)\)/.test(game)],
+ ['v166 intro boar entrance',/b\.g\.scale\.setScalar\(q\.scale\?\?1\)/.test(game)],
+
  ['lake has no mushrooms',/level===2&&type==='mushroom'/.test(game)&&/lake-mushroom/.test(game)],
  ['apples outside tree trunks',/function appleOutsideOwnTrunk/.test(game)&&/apple-inside-tree/.test(game)&&/startR=trunkR\+\.08/.test(game)],
  ['road clear of solid scenery',/function roadClearForRadius/.test(game)&&/road-rock/.test(game)&&/road-mountain/.test(game)&&/road-lair/.test(game)&&/safeSolidScenerySpot/.test(game)],
  ['forage road runtime audit',/function runForageRoadAudit/.test(game)&&/__KABANCHIKI_FORAGE_ROAD_AUDIT__/.test(game)&&/forageRoadAudit/.test(game)],
- ['version v165',/GAME_VERSION='v165'/.test(game)],
+ ['version v166',/GAME_VERSION='v166'/.test(game)],
  ['damage sound feedback',/function playerDamageSound\(\)/.test(game)&&/function playerHitFeedback\([^)]*\)\{[^}]*playerDamageSound\(\)/.test(game)],
  ['level visibility before apple spawn',/syncWorldGeneration\(n\);rebuildWorldSurface\(\);\nseedForage\(\)/.test(game)],
  ['hidden-tree apple rejected',/tree\.visible===false/.test(game)&&/apple-hidden-tree/.test(game)&&/br\.parent!==tree/.test(game)],
@@ -22,9 +26,9 @@ const checks=[
  ['mounted apple collection',/function canCollectForage\(a\)/.test(game)&&/mountedFriend\|\|/.test(game)&&/function runMountedAppleAudit\(\)/.test(game)&&/__KABANCHIKI_MOUNTED_APPLE_AUDIT__/.test(game)&&/mountedAppleAudit/.test(game)&&/mounted-apple-food/.test(game)],
  ['spawn guard',/function repairAndAuditSpawns\(\)/.test(game)&&/__KABANCHIKI_SPAWN_AUDIT__/.test(game)],
  ['single-source version sync',/loadingVersion/.test(html)&&/window.__KABANCHIKI_VERSION__=GAME_VERSION/.test(game)&&/el.textContent=GAME_VERSION/.test(game)],
- ['cache-busted game module',/src="\.\/src\/game\.js\?v=165(?:-[a-z0-9]+)?"/.test(html)],
- ['module cache version matches game',(()=>{const gv=game.match(/GAME_VERSION='(v\d+)'/)?.[1],raw=html.match(/src="\.\/src\/game\.js\?v=(\d+)(?:-[a-z0-9]+)?"/)?.[1],mv=raw?'v'+raw:undefined,bv=html.match(/__KABANCHIKI_BUILD__='(v\d+)'/)?.[1];return gv==='v165'&&gv===mv&&gv===bv})()],
- ['html build marker v165',/__KABANCHIKI_BUILD__='v165'/.test(html)],
+ ['cache-busted game module',/src="\.\/src\/game\.js\?v=166(?:-[a-z0-9]+)?"/.test(html)],
+ ['module cache version matches game',(()=>{const gv=game.match(/GAME_VERSION='(v\d+)'/)?.[1],raw=html.match(/src="\.\/src\/game\.js\?v=(\d+)(?:-[a-z0-9]+)?"/)?.[1],mv=raw?'v'+raw:undefined,bv=html.match(/__KABANCHIKI_BUILD__='(v\d+)'/)?.[1];return gv==='v166'&&gv===mv&&gv===bv})()],
+ ['html build marker v166',/__KABANCHIKI_BUILD__='v166'/.test(html)],
  ['no-cache document meta',/no-cache, no-store, must-revalidate/.test(html)],
  ['cylindrical tree collision',/function treeTrunkShape/.test(game)&&/function treeTrunkHit/.test(game)],
  ['apple own twig registered',/treeBranchMeshes\.push\(twig\)/.test(game)],
