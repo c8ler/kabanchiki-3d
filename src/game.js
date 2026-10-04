@@ -1,17 +1,17 @@
 window.__gameLoadProgress?.(84);let __loadFinished=false;
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
-import { BOAR_MAX_WATER_DEPTH, attacksPlayer, shallowStepAllowed, capsuleAt, capsuleCircleContact, capsuleCapsuleContact } from './boar-physics.js?v=166';
-import { convexHull, polygonContact, FriendYield } from './movement-geometry.js?v=166';
-import { BOSS_HITS, riverCenterAt, riverDepthAt, onRiverBridge, lakeInletCenterAt, lakeInletHalfWidthAt, lakeInletDepthAt, bridgeRailBlocked, weatherDeadline, rainFillLimit, rainFillRate, WorldSurface, lakePointAt, lakeRadiusAt, lakeDepth } from './world-surface.js?v=166';
-import { Knockback } from './knockback.js?v=166';
-import { AdaptiveQuality, GRAPHICS_TIERS } from './adaptive-quality.js?v=166';
-import { AttemptProgress, seasonForAttempts } from './seasons.js?v=166';
-import { Soundscape } from './soundscape.js?v=166';
-import { introStagingAt } from './cinematic-staging.js?v=166';
-import { segmentHitsBox, findGridPath } from './navigation.js?v=166';
-import { CatLife } from './cat-life.js?v=166';
-import { BirdLife } from './bird-life.js?v=166';
-const GAME_VERSION='v166';
+import { BOAR_MAX_WATER_DEPTH, attacksPlayer, shallowStepAllowed, capsuleAt, capsuleCircleContact, capsuleCapsuleContact } from './boar-physics.js?v=167';
+import { convexHull, polygonContact, FriendYield } from './movement-geometry.js?v=167';
+import { BOSS_HITS, riverCenterAt, riverDepthAt, onRiverBridge, lakeInletCenterAt, lakeInletHalfWidthAt, lakeInletDepthAt, bridgeRailBlocked, weatherDeadline, rainFillLimit, rainFillRate, WorldSurface, lakePointAt, lakeRadiusAt, lakeDepth } from './world-surface.js?v=167';
+import { Knockback } from './knockback.js?v=167';
+import { AdaptiveQuality, GRAPHICS_TIERS } from './adaptive-quality.js?v=167';
+import { AttemptProgress, seasonForAttempts } from './seasons.js?v=167';
+import { Soundscape } from './soundscape.js?v=167';
+import { introStagingAt } from './cinematic-staging.js?v=167';
+import { segmentHitsBox, findGridPath } from './navigation.js?v=167';
+import { CatLife } from './cat-life.js?v=167';
+import { BirdLife } from './bird-life.js?v=167';
+const GAME_VERSION='v167';
 const attemptProgress=new AttemptProgress((()=>{try{return window.localStorage}catch{return null}})());let currentSeason=attemptProgress.season;
 let chosenSeason=null;try{chosenSeason=localStorage.getItem('kabanchiki3d_chosen_season')}catch{}
 function unlockedSeasons(){return attemptProgress.failed>=60?['summer','autumn','winter','spring']:attemptProgress.failed>=40?['summer','autumn','winter']:attemptProgress.failed>=20?['summer','autumn']:['summer']}
@@ -844,7 +844,7 @@ document.addEventListener('pointerlockchange',()=>{if(!mobile&&started&&!cinemat
 document.addEventListener('webkitpointerlockchange',()=>{if(!mobile&&started&&!cinematicRunning&&!win&&!endShown&&!document.pointerLockElement&&!document.webkitPointerLockElement&&!paused)setPause(true)});
 document.addEventListener('mousemove',e=>{
  const locked=document.pointerLockElement===renderer.domElement||document.webkitPointerLockElement===renderer.domElement;
- if(!mobile&&locked&&started&&!paused&&!cinematicRunning)yaw+=e.movementX*.0027;
+ if(!mobile&&locked&&started&&!paused&&!cinematicRunning)yaw-=e.movementX*.0027;
 });
 document.addEventListener('fullscreenchange',syncFullscreenButton);document.addEventListener('webkitfullscreenchange',syncFullscreenButton);document.addEventListener('mozfullscreenchange',syncFullscreenButton);document.addEventListener('MSFullscreenChange',syncFullscreenButton);document.addEventListener('keydown',e=>{keys[e.code]=true;if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();if(e.code==='Escape'&&!e.repeat){e.preventDefault();togglePause()}if(e.code==='KeyV'&&!e.repeat)$('camera').click();if(e.code==='Space'&&!e.repeat)jump=true;if((e.code==='KeyE'||e.code==='KeyF')&&!e.repeat)feed();if((e.code==='Enter'||e.code==='NumpadEnter')&&!e.repeat&&started&&!paused&&!win&&!endShown&&!cinematicRunning&&!e.target?.closest?.('input,textarea,select,[contenteditable]:not([contenteditable="false"])')){e.preventDefault();feed()}if(e.code==='KeyP'&&!e.repeat)togglePause()});document.addEventListener('keyup',e=>keys[e.code]=false);renderer.domElement.addEventListener('pointerdown',e=>{e.preventDefault();if(!started)return;if(e.pointerType==='mouse'){
  const locked=document.pointerLockElement===renderer.domElement||document.webkitPointerLockElement===renderer.domElement;
