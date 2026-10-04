@@ -1,17 +1,17 @@
 window.__gameLoadProgress?.(84);let __loadFinished=false;
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
-import { BOAR_MAX_WATER_DEPTH, attacksPlayer, shallowStepAllowed, capsuleAt, capsuleCircleContact, capsuleCapsuleContact } from './boar-physics.js?v=169';
-import { convexHull, polygonContact, FriendYield } from './movement-geometry.js?v=169';
-import { BOSS_HITS, riverCenterAt, riverDepthAt, onRiverBridge, lakeInletCenterAt, lakeInletHalfWidthAt, lakeInletDepthAt, bridgeRailBlocked, weatherDeadline, rainFillLimit, rainFillRate, WorldSurface, lakePointAt, lakeRadiusAt, lakeDepth } from './world-surface.js?v=169';
-import { Knockback } from './knockback.js?v=169';
-import { AdaptiveQuality, GRAPHICS_TIERS } from './adaptive-quality.js?v=169';
-import { AttemptProgress, seasonForAttempts } from './seasons.js?v=169';
-import { Soundscape } from './soundscape.js?v=169';
-import { introStagingAt } from './cinematic-staging.js?v=169';
-import { segmentHitsBox, findGridPath } from './navigation.js?v=169';
-import { CatLife } from './cat-life.js?v=169';
-import { BirdLife } from './bird-life.js?v=169';
-const GAME_VERSION='v169';
+import { BOAR_MAX_WATER_DEPTH, attacksPlayer, shallowStepAllowed, capsuleAt, capsuleCircleContact, capsuleCapsuleContact } from './boar-physics.js?v=170';
+import { convexHull, polygonContact, FriendYield } from './movement-geometry.js?v=170';
+import { BOSS_HITS, riverCenterAt, riverDepthAt, onRiverBridge, lakeInletCenterAt, lakeInletHalfWidthAt, lakeInletDepthAt, bridgeRailBlocked, weatherDeadline, rainFillLimit, rainFillRate, WorldSurface, lakePointAt, lakeRadiusAt, lakeDepth } from './world-surface.js?v=170';
+import { Knockback } from './knockback.js?v=170';
+import { AdaptiveQuality, GRAPHICS_TIERS } from './adaptive-quality.js?v=170';
+import { AttemptProgress, seasonForAttempts } from './seasons.js?v=170';
+import { Soundscape } from './soundscape.js?v=170';
+import { introStagingAt } from './cinematic-staging.js?v=170';
+import { segmentHitsBox, findGridPath } from './navigation.js?v=170';
+import { CatLife } from './cat-life.js?v=170';
+import { BirdLife } from './bird-life.js?v=170';
+const GAME_VERSION='v170';
 const attemptProgress=new AttemptProgress((()=>{try{return window.localStorage}catch{return null}})());let currentSeason=attemptProgress.season;
 let chosenSeason=null;try{chosenSeason=localStorage.getItem('kabanchiki3d_chosen_season')}catch{}
 function unlockedSeasons(){return attemptProgress.failed>=60?['summer','autumn','winter','spring']:attemptProgress.failed>=40?['summer','autumn','winter']:attemptProgress.failed>=20?['summer','autumn']:['summer']}
@@ -197,8 +197,13 @@ const familyWindow=block(hideDoor,windowGlowMat,-1.55,1.55,2.315,.72,.76,.045);f
 const windowFrameMat=new THREE.MeshLambertMaterial({color:0x4b2b1d});
 for(const [x,y,w,h] of [[-1.55,1.98,.96,.10],[-1.55,1.12,.96,.10],[-2.03,1.55,.10,.96],[-1.07,1.55,.10,.96]]){const fr=block(hideDoor,windowFrameMat,x,y,2.325,w,h,.07);fr.userData.familyWindowFrame=true}
 const doorMat=new THREE.MeshLambertMaterial({color:0x75462f});
-const familyDoor=block(hideDoor,doorMat,0,1.12,2.30,1.02,2.18,.12);familyDoor.rotation.y=0;familyDoor.userData.familyDoor=true;familyDoor.userData.closed=true;
-const doorKnob=sphere(familyDoor,new THREE.MeshBasicMaterial({color:0xffd56a}),.36,.03,.075,.07);doorKnob.userData.familyDoor=true;
+// v170: real single-leaf door. The group is the hinge at the left jamb; the slab is offset from it.
+const familyDoor=new THREE.Group();familyDoor.position.set(-.54,0,2.30);hideDoor.add(familyDoor);familyDoor.userData.familyDoor=true;familyDoor.userData.closed=true;
+const familyDoorSlab=block(familyDoor,doorMat,.54,1.12,0,1.08,2.18,.12);familyDoorSlab.userData.familyDoor=true;
+const doorKnob=sphere(familyDoorSlab,new THREE.MeshBasicMaterial({color:0xffd56a}),.39,.03,.075,.07);doorKnob.userData.familyDoor=true;
+// Tight jambs/header visually close the doorway without leaving the large side/bottom gaps.
+const doorTrimMat=new THREE.MeshLambertMaterial({color:0x4b2b1d});
+for(const [x,y,w,h] of [[-.59,1.12,.10,2.28],[.59,1.12,.10,2.28],[0,2.28,1.28,.10]]){const trim=block(hideDoor,doorTrimMat,x,y,2.315,w,h,.10);trim.userData.familyDoorFrame=true}
 const porchGlowMat=new THREE.MeshBasicMaterial({color:0xffe29a});const porchLamp=sphere(hideDoor,porchGlowMat,0,2.35,2.24,.16);porchLamp.userData.familyWindow=true;
 const hideDoorGlow=new THREE.PointLight(0xffc45c,14,20,1.35);hideDoorGlow.position.set(0,2.15,1.7);familyHideout.add(hideDoorGlow);hideDoorGlow.visible=false;
 const dadInteriorGlow=new THREE.PointLight(0xffd58a,7,11,1.45);dadInteriorGlow.position.set(0,1.7,-.35);familyHideout.add(dadInteriorGlow);dadInteriorGlow.visible=false;
@@ -914,7 +919,7 @@ function setDadHouseCutaway(on){
 function updateFamilyHouseReveal(){
  const nowInside=familyHouseRevealAt(boy.position.x,boy.position.z);
  if(nowInside!==insideFamilyHouse){insideFamilyHouse=nowInside;if(nowInside)notice('🏠 Вошёл в дом — открылась сторона дома, теперь братика видно внутри!')}
- const door=familyDoor.getWorldPosition(new THREE.Vector3()),nearBoy=Math.hypot(boy.position.x-door.x,boy.position.z-door.z)<3,nearFriend=friend?.g&&Math.hypot(friend.g.position.x-door.x,friend.g.position.z-door.z)<3;familyDoor.userData.closed=!(nearBoy||nearFriend||nowInside);familyDoor.rotation.y=familyDoor.userData.closed?0:-Math.PI/2;
+ const door=familyDoor.getWorldPosition(new THREE.Vector3()),nearBoy=Math.hypot(boy.position.x-door.x,boy.position.z-door.z)<3,nearFriend=friend?.g&&Math.hypot(friend.g.position.x-door.x,friend.g.position.z-door.z)<3;familyDoor.userData.closed=!(nearBoy||nearFriend||nowInside);familyDoor.rotation.y=familyDoor.userData.closed?0:-Math.PI*.48;
  familyWindow.material.opacity=nowInside?.18:1;familyWindow.material.depthWrite=false;
  setDadHouseCutaway(nowInside);
 }
