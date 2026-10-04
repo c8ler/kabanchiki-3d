@@ -1,17 +1,17 @@
 window.__gameLoadProgress?.(84);let __loadFinished=false;
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
-import { BOAR_MAX_WATER_DEPTH, attacksPlayer, shallowStepAllowed, capsuleAt, capsuleCircleContact, capsuleCapsuleContact } from './boar-physics.js?v=168';
-import { convexHull, polygonContact, FriendYield } from './movement-geometry.js?v=168';
-import { BOSS_HITS, riverCenterAt, riverDepthAt, onRiverBridge, lakeInletCenterAt, lakeInletHalfWidthAt, lakeInletDepthAt, bridgeRailBlocked, weatherDeadline, rainFillLimit, rainFillRate, WorldSurface, lakePointAt, lakeRadiusAt, lakeDepth } from './world-surface.js?v=168';
-import { Knockback } from './knockback.js?v=168';
-import { AdaptiveQuality, GRAPHICS_TIERS } from './adaptive-quality.js?v=168';
-import { AttemptProgress, seasonForAttempts } from './seasons.js?v=168';
-import { Soundscape } from './soundscape.js?v=168';
-import { introStagingAt } from './cinematic-staging.js?v=168';
-import { segmentHitsBox, findGridPath } from './navigation.js?v=168';
-import { CatLife } from './cat-life.js?v=168';
-import { BirdLife } from './bird-life.js?v=168';
-const GAME_VERSION='v168';
+import { BOAR_MAX_WATER_DEPTH, attacksPlayer, shallowStepAllowed, capsuleAt, capsuleCircleContact, capsuleCapsuleContact } from './boar-physics.js?v=169';
+import { convexHull, polygonContact, FriendYield } from './movement-geometry.js?v=169';
+import { BOSS_HITS, riverCenterAt, riverDepthAt, onRiverBridge, lakeInletCenterAt, lakeInletHalfWidthAt, lakeInletDepthAt, bridgeRailBlocked, weatherDeadline, rainFillLimit, rainFillRate, WorldSurface, lakePointAt, lakeRadiusAt, lakeDepth } from './world-surface.js?v=169';
+import { Knockback } from './knockback.js?v=169';
+import { AdaptiveQuality, GRAPHICS_TIERS } from './adaptive-quality.js?v=169';
+import { AttemptProgress, seasonForAttempts } from './seasons.js?v=169';
+import { Soundscape } from './soundscape.js?v=169';
+import { introStagingAt } from './cinematic-staging.js?v=169';
+import { segmentHitsBox, findGridPath } from './navigation.js?v=169';
+import { CatLife } from './cat-life.js?v=169';
+import { BirdLife } from './bird-life.js?v=169';
+const GAME_VERSION='v169';
 const attemptProgress=new AttemptProgress((()=>{try{return window.localStorage}catch{return null}})());let currentSeason=attemptProgress.season;
 let chosenSeason=null;try{chosenSeason=localStorage.getItem('kabanchiki3d_chosen_season')}catch{}
 function unlockedSeasons(){return attemptProgress.failed>=60?['summer','autumn','winter','spring']:attemptProgress.failed>=40?['summer','autumn','winter']:attemptProgress.failed>=20?['summer','autumn']:['summer']}
@@ -84,7 +84,7 @@ const meadowGrassGeo=new THREE.BoxGeometry(.052,.34,.052),meadowGrassMat=new THR
 const meadowGrassCount=mobile?900:3200,meadowGrass=new THREE.InstancedMesh(meadowGrassGeo,meadowGrassMat,meadowGrassCount),meadowDummy=new THREE.Object3D(),meadowLevels=new Float32Array(meadowGrassCount);
 for(let i=0;i<meadowGrassCount;i++){
  const lv=1+(i%4),x=rand(-43,43);let z=rand(-43,43),tall=1;
- if(lv===4){const bank=riverCenterAt(x),side=i%2?1:-1;z=bank+side*rand(4.8,10.5);tall=rand(1.8,3.8)}
+ if(lv===4){const bank=riverCenterAt(x),riverSlot=Math.floor(i/4),side=riverSlot%2===0?-1:1;if(riverSlot%3!==2){z=bank+side*rand(4.55,9.2);tall=rand(1.7,3.6)}else z=bank+side*rand(9.2,30)}
  else if(lv===2){const a=rand(0,Math.PI*2),r=rand(15.2,38);z=-17+Math.sin(a)*r;const xx=-18+Math.cos(a)*r;meadowDummy.position.x=xx}
  meadowLevels[i]=lv;const px=lv===2?meadowDummy.position.x:x;meadowDummy.position.set(px,.16,z);meadowDummy.rotation.set(rand(-.1,.1),rand(0,6.28),rand(-.16,.16));const k=rand(.75,1.55)*tall;meadowDummy.scale.set(k,k,k);meadowDummy.updateMatrix();meadowGrass.setMatrixAt(i,meadowDummy.matrix);meadowGrass.setColorAt(i,new THREE.Color().setHSL(.20+(i%6)*.01,.45,.24+(i%5)*.025));
 }
@@ -863,10 +863,10 @@ document.addEventListener('mousemove',e=>{
  const locked=document.pointerLockElement===renderer.domElement||document.webkitPointerLockElement===renderer.domElement;
  if(!mobile&&locked&&started&&!paused&&!cinematicRunning)yaw-=e.movementX*.0027;
 });
-document.addEventListener('fullscreenchange',syncFullscreenButton);document.addEventListener('webkitfullscreenchange',syncFullscreenButton);document.addEventListener('mozfullscreenchange',syncFullscreenButton);document.addEventListener('MSFullscreenChange',syncFullscreenButton);document.addEventListener('keydown',e=>{keys[e.code]=true;if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();if(e.code==='Escape'&&!e.repeat){e.preventDefault();togglePause()}if(e.code==='KeyV'&&!e.repeat)$('camera').click();if(e.code==='Space'&&!e.repeat)jump=true;if((e.code==='KeyE'||e.code==='KeyF')&&!e.repeat)feed();if((e.code==='Enter'||e.code==='NumpadEnter')&&!e.repeat&&started&&!paused&&!win&&!endShown&&!cinematicRunning&&!e.target?.closest?.('input,textarea,select,[contenteditable]:not([contenteditable="false"])')){e.preventDefault();feed()}if(e.code==='KeyP'&&!e.repeat)togglePause()});document.addEventListener('keyup',e=>keys[e.code]=false);renderer.domElement.addEventListener('pointerdown',e=>{e.preventDefault();if(!started)return;if(e.pointerType==='mouse'){
+document.addEventListener('fullscreenchange',syncFullscreenButton);document.addEventListener('webkitfullscreenchange',syncFullscreenButton);document.addEventListener('mozfullscreenchange',syncFullscreenButton);document.addEventListener('MSFullscreenChange',syncFullscreenButton);document.addEventListener('keydown',e=>{keys[e.code]=true;if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();if(e.code==='Escape'&&!e.repeat){e.preventDefault();togglePause()}if(e.code==='KeyV'&&!e.repeat)$('camera').click();if(e.code==='Space'&&!e.repeat){jump=true;boy.userData.jumpQueuedAt=performance.now()};if((e.code==='KeyE'||e.code==='KeyF')&&!e.repeat)feed();if((e.code==='Enter'||e.code==='NumpadEnter')&&!e.repeat&&started&&!paused&&!win&&!endShown&&!cinematicRunning&&!e.target?.closest?.('input,textarea,select,[contenteditable]:not([contenteditable="false"])')){e.preventDefault();feed()}if(e.code==='KeyP'&&!e.repeat)togglePause()});document.addEventListener('keyup',e=>keys[e.code]=false);renderer.domElement.addEventListener('pointerdown',e=>{e.preventDefault();if(!started)return;if(e.pointerType==='mouse'){
  const locked=document.pointerLockElement===renderer.domElement||document.webkitPointerLockElement===renderer.domElement;
  if(e.button===0){if(locked&&!paused&&!cinematicRunning)feed();else requestDesktopMouseLock();return}
- if(e.button===2){if(locked&&!paused&&!cinematicRunning)jump=true;else requestDesktopMouseLock();return}
+ if(e.button===2){if(locked&&!paused&&!cinematicRunning){jump=true;boy.userData.jumpQueuedAt=performance.now()}else requestDesktopMouseLock();return}
  return
 }drag={id:e.pointerId,x:e.clientX,y:e.clientY};try{renderer.domElement.setPointerCapture(e.pointerId)}catch(_){}});renderer.domElement.addEventListener('pointermove',e=>{if(e.cancelable)e.preventDefault();const locked=document.pointerLockElement===renderer.domElement||document.webkitPointerLockElement===renderer.domElement;if(e.pointerType==='mouse'&&locked)return;if(drag?.id!==e.pointerId)return;const delta=e.clientX-drag.x;/* v165: touch keeps drag camera; desktop prefers pointer-lock mouse look with drag fallback. */yaw+=(e.pointerType==='touch'?-delta:delta)*.006;drag.x=e.clientX;drag.y=e.clientY});function endCameraDrag(e){if(drag?.id===e.pointerId)drag=null}renderer.domElement.addEventListener('pointerup',endCameraDrag);renderer.domElement.addEventListener('pointercancel',endCameraDrag);renderer.domElement.addEventListener('contextmenu',e=>e.preventDefault());const stickEl=$('stick'),nub=$('nub');function setStick(e){const r=stickEl.getBoundingClientRect(),dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2),len=Math.max(1,Math.hypot(dx,dy)),s=Math.min(1,len/52);stick.x=dx/len*s;stick.y=dy/len*s;nub.style.transform=`translate(${stick.x*43}px,${stick.y*43}px)`}stickEl.addEventListener('pointerdown',e=>{e.preventDefault();stickPointer=e.pointerId;try{stickEl.setPointerCapture(e.pointerId)}catch{}setStick(e)});stickEl.addEventListener('pointermove',e=>{if(e.cancelable)e.preventDefault();if(stickPointer===e.pointerId)setStick(e)});stickEl.addEventListener('lostpointercapture',resetStick);function resetStick(e){if(stickPointer===e.pointerId){stickPointer=null;stick.x=stick.y=0;nub.style.transform=''}}stickEl.addEventListener('pointerup',resetStick);stickEl.addEventListener('pointercancel',resetStick);addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});makePortal();
 const editable=e=>e.target?.closest?.('input,textarea,[contenteditable="true"]');
@@ -1177,6 +1177,8 @@ function runForageRoadAudit(){const issues=[],samples=[];for(const a of apples){
 window.__KABANCHIKI_FORAGE_ROAD_AUDIT__=runForageRoadAudit;
 function runForagePlacementAudit(){const issues=[],samples=[];for(const a of apples){if(a.done)continue;const gy=a.g?.position?.y??999;if(a.type==='mushroom'||a.type==='cabbage'||a.type==='berry'){const grounded=Math.abs(gy-terrainHeightAt(a.x,a.z))<.001;samples.push({type:a.type,y:+gy.toFixed(3),grounded,bonus:!!a.bonus});if(!grounded)issues.push(`forage-off-ground:${a.type}:${gy.toFixed(2)}`)}else if(a.type==='apple'){const onTree=appleOnBranch(a),aboveTimur=(a.y||0)>=2.05,reachable=(a.y||0)<=2.08;samples.push({type:'apple',y:+(a.y||0).toFixed(3),onTree,aboveTimur,reachable,bonus:!!a.bonus});if(!onTree)issues.push('apple-not-on-tree');if(!aboveTimur)issues.push(`apple-below-child-height:${(a.y||0).toFixed(2)}`);if(!reachable)issues.push(`apple-too-high:${(a.y||0).toFixed(2)}`)}}return {ok:issues.length===0,issues,samples,bonusChance:BONUS_FORAGE_CHANCE,berryBonusChance:BERRY_BONUS_CHANCE,level}}
 window.__KABANCHIKI_FORAGE_PLACEMENT_AUDIT__=runForagePlacementAudit;
+function runJumpSurfaceAudit(){const oldLevel=level,ox=boy.position.x,oy=boy.position.y,oz=boy.position.z,opy=py,ovy=vy,issues=[],samples=[];for(const sample of [{lv:1,x:0,z:8,name:'grass'},{lv:2,x:10,z:10,name:'lake-land'},{lv:3,x:0,z:8,name:'village'},{lv:4,x:0,z:riverCenterAt(0),name:'bridge'}]){level=sample.lv;const support=playerSupportHeightAt(sample.x,sample.z);py=support;vy=0;const grounded=Math.abs(py-support)<.13&&vy<=.12;samples.push({...sample,support:+support.toFixed(3),grounded});if(!grounded)issues.push('jump-support-'+sample.name);if(sample.name==='bridge'&&Math.abs(support-.28)>.02)issues.push('bridge-support')}level=oldLevel;boy.position.set(ox,oy,oz);py=opy;vy=ovy;return {ok:issues.length===0,issues,samples}}
+window.__KABANCHIKI_JUMP_SURFACE_AUDIT__=runJumpSurfaceAudit;
 function repairTreeApples(issues,repairs){
  for(const a of apples){if(a.done||a.type!=='apple'||a.y<=1)continue;if(appleOnBranch(a))continue;const n=nearestVisibleAppleBranch(a.x,a.z);if(!n){issues.push('apple-no-visible-branch');continue}const p=branchApplePoint(n.branch);if(!p){issues.push('apple-no-visible-branch');continue}a.g.position.set(p[0],p[2],p[1]);a.x=p[0];a.z=p[1];a.y=p[2];a.branch=p[3];a.tree=p[4];a.g.userData.appleBranch=p[3];a.g.userData.appleTree=p[4];repairs.push('apple-branch-anchor');if(!appleOnBranch(a))issues.push(`apple-off-branch:${a.x.toFixed(1)},${a.z.toFixed(1)}`);
  }
@@ -1866,11 +1868,13 @@ if(mountedFriend){
  // level, lift his feet onto the visible branch instead of leaving the model sunk through it.
  const branchTop=branchStepHeightAt(boy.position.x,boy.position.z);
  if(py<=.08&&vy<=.05&&branchTop>0){py=branchTop;vy=0;boy.position.y=py}
- const supportNow=playerSupportHeightAt(boy.position.x,boy.position.z),grounded=Math.abs(py-supportNow)<.08&&vy<=.05;
- if(jump&&grounded&&boarFormTime<=0){softEffectTone(240,.15,'sine',.018,0,370);if(waterAt(boy.position.x,boy.position.z))spawnWaterSplash(boy.position.x,boy.position.z,1.8);vy=7;jump=false}else if(jump&&boarFormTime>0)jump=false
+ const supportNow=playerSupportHeightAt(boy.position.x,boy.position.z),grounded=Math.abs(py-supportNow)<.13&&vy<=.12;
+ if(grounded){boy.userData.lastGroundedAt=now;if(Math.abs(py-supportNow)<.13&&vy<=.05){py=supportNow;boy.position.y=py}}
+ const jumpSupported=grounded||(now-(boy.userData.lastGroundedAt||0)<140);
+ if(jump&&now-(boy.userData.jumpQueuedAt||now)<220&&jumpSupported&&boarFormTime<=0){softEffectTone(240,.15,'sine',.018,0,370);if(waterAt(boy.position.x,boy.position.z))spawnWaterSplash(boy.position.x,boy.position.z,1.8);vy=7;jump=false}else if(jump&&boarFormTime>0)jump=false
  const prevPy=py;vy-=18*dt;let nextPy=py+vy*dt;const support=playerSupportHeightAt(boy.position.x,boy.position.z);
  // Land on the top surface only while descending from above; never teleport through a rock/roof from below.
- if(vy<=0&&prevPy>=support-.04&&nextPy<=support){if(vy<-2){if(waterAt(boy.position.x,boy.position.z))spawnWaterSplash(boy.position.x,boy.position.z,2.8);else effect('land');}py=support;vy=0}else{py=Math.max(0,nextPy);if(py===0)vy=0}
+ if(vy<=0&&prevPy>=support-.10&&nextPy<=support){if(vy<-2){if(waterAt(boy.position.x,boy.position.z))spawnWaterSplash(boy.position.x,boy.position.z,2.8);else effect('land');}py=support;vy=0}else{py=Math.max(0,nextPy);if(py===0)vy=0}
  boy.position.y=py;
  if(friend?.g&&!friend.flee&&py>.62&&py<2.35&&vy<=2.2&&Math.hypot(boy.position.x-friend.g.position.x,boy.position.z-friend.g.position.z)<1.95){mountFriendNow()}
 }
