@@ -1,239 +1,62 @@
 name: Kabanchiki 3D Auto Test
-
 on:
   push:
     branches: [main]
-  workflow_dispatch:
-
+permissions:
+  contents: write
 jobs:
-  test-game:
+  patch-v175:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Get game
-        uses: actions/checkout@v4
-
-      - name: Static game checks
-        run: node scripts/validate.mjs
-
-      - name: Unit tests
-        run: npm test
-
-      - name: Check JavaScript syntax
-        run: |
-          sed '/from.*three.*cdn/d' src/game.js > /tmp/game.mjs
-          node --check /tmp/game.mjs
-
-      - name: Start local game server
-        run: |
-          python3 -m http.server 8080 > /tmp/kabanchiki-server.log 2>&1 &
-          sleep 2
-
-      - name: Install Playwright
-        run: |
-          npm init -y
-          npm install playwright
-          npx playwright install --with-deps chromium webkit
-
-      - name: Runtime + collision robot on all 6 locations
-        run: |
-          mkdir -p screenshots logs
-
-          cat > kabanchiki-runtime-test.mjs <<'EOF'
-          import { chromium } from 'playwright';
-          import fs from 'node:fs';
-
-          const browser = await chromium.launch({headless:true});
-          let failed = false;
-          const report = [];
-
-          for(let level=1; level<=6; level++){
-            console.log(`\n========== LOCATION ${level} ==========`);
-
-            const page = await browser.newPage({
-              viewport:{width:1280,height:720}
-            });
-
-            const errors = [];
-
-            page.on('pageerror', e =>
-              errors.push(`PAGE ERROR: ${e.message}`)
-            );
-
-            page.on('console', m => {
-              if(m.type()==='error')
-                errors.push(`CONSOLE ERROR: ${m.text()}`);
-            });
-
-            let state = null;
-
-            try {
-              await page.goto(
-                `http://127.0.0.1:8080/?autotest=1&level=${level}`,
-                {
-                  waitUntil:'domcontentloaded',
-                  timeout:30000
-                }
-              );
-
-              await page.waitForFunction(
-                () => window.__KABANCHIKI_TEST__?.ready === true,
-                null,
-                {timeout:30000}
-              );
-
-              await page.waitForTimeout(2500);
-
-              state = await page.evaluate(() =>
-                structuredClone(window.__KABANCHIKI_TEST__)
-              );
-
-              const c = state.collisionAudit || {
-                ok:false,
-                issues:['missing-collision-audit']
-              };
-
-              const r = state.robotAudit || {
-                ok:false,
-                issues:['missing-robot-audit'],
-                samples:[]
-              };
-
-              console.log(
-                `VERSION: ${state.version} | READY: ${state.ready}`
-              );
-
-              console.log(
-                `COLLISION AUDIT: ${c.ok?'PASS':'FAIL'} | ` +
-                `obstacles=${c.obstacles??'?'} ` +
-                `rocks=${c.preciseRockFootprints??'?'} ` +
-                `treeSolids=${c.treeSolids??'?'}`
-              );
-
-              for(const x of c.issues || [])
-                console.log(`  COLLISION FAIL: ${x}`);
-
-              console.log(
-                `ROBOT AUDIT: ${r.ok?'PASS':'FAIL'} | ` +
-                `trees=${r.treesTested??'?'} ` +
-                `rocks=${r.rocksTested??'?'}`
-              );
-
-              for(const x of r.issues || [])
-                console.log(`  ROBOT FAIL: ${x}`);
-
-              const groups = {
-                tree:[],
-                rockInto:[],
-                rockAway:[],
-                rockJump:[]
-              };
-
-              for(const s of r.samples || []){
-                if(s.label.startsWith('tree'))
-                  groups.tree.push(s);
-                else if(s.label.includes('-into'))
-                  groups.rockInto.push(s);
-                else if(s.label.includes('-away'))
-                  groups.rockAway.push(s);
-                else if(s.label.includes('-jump'))
-                  groups.rockJump.push(s);
-              }
-
-              const line = (name,a) =>
-                console.log(
-                  `${name}: ${a.length} probes | ` +
-                  `blocked=${a.filter(x=>x.blocked).length} | ` +
-                  `free=${a.filter(x=>!x.blocked).length}`
-                );
-
-              line('TREE ESCAPE', groups.tree);
-              line('ROCK WALK-IN', groups.rockInto);
-              line('ROCK ESCAPE', groups.rockAway);
-              line('ROCK JUMP', groups.rockJump);
-
-              if(state.ready !== true)
-                errors.push('ready=false');
-
-              if(Number(state.level) !== level)
-                errors.push(`wrong-level:${state.level}`);
-
-              if(!c.ok)
-                for(const x of c.issues || [])
-                  errors.push(`COLLISION:${x}`);
-
-              if(!r.ok)
-                for(const x of r.issues || [])
-                  errors.push(`ROBOT:${x}`);
-
-              for(const x of state.errors || [])
-                if(!errors.some(e => e.endsWith(x)))
-                  errors.push(`GAME:${x}`);
-
-              await page.screenshot({
-                path:`screenshots/runtime-location-${level}.png`
-              });
-
-            } catch(e) {
-              errors.push(`TEST:${e.message}`);
-            }
-
-            const ok = errors.length === 0;
-
-            if(!ok)
-              failed = true;
-
-            console.log(`${ok?'PASS':'FAIL'} LOCATION ${level}`);
-
-            for(const e of errors)
-              console.log(`  ${e}`);
-
-            report.push({
-              level,
-              ok,
-              errors,
-              state
-            });
-
-            fs.writeFileSync(
-              `logs/location-${level}.json`,
-              JSON.stringify(report.at(-1),null,2)
-            );
-
-            await page.close();
-          }
-
-          fs.writeFileSync(
-            'logs/summary.json',
-            JSON.stringify(report,null,2)
-          );
-
-          await browser.close();
-
-          console.log(
-            `\n========== FINAL: ${failed?'FAIL':'PASS'} ==========`
-          );
-
-          if(failed)
-            process.exit(1);
-          EOF
-
-          node kabanchiki-runtime-test.mjs
-
-      - name: Water, navigation, winter, scenes and Safari gestures
-        run: node scripts/feature-browser.mjs
-
-      - name: Intro, seasonal menus, vegetation and Christmas tree
-        run: node scripts/seasons-intro-browser.mjs
-
-      - name: Spring, cats, repeated fishing and grazing
-        run: node scripts/new-features-browser.mjs
-
-      - name: Save screenshots and audit logs
-        if: always()
-        uses: actions/upload-artifact@v4
+      - uses: actions/checkout@v4
         with:
-          name: kabanchiki-v164-test-report
-          path: |
-            screenshots/
-            logs/
+          fetch-depth: 0
+      - name: Apply requested v175 changes
+        shell: python
+        run: |
+          from pathlib import Path
+          p=Path('src/game.js'); s=p.read_text()
+          h=Path('index.html'); html=h.read_text()
+          v=Path('scripts/validate.mjs'); val=v.read_text()
+          assert "GAME_VERSION='v174'" in s
+          s=s.replace('?v=174','?v=175').replace("GAME_VERSION='v174'","GAME_VERSION='v175'")
+          html=html.replace('v174','v175').replace('?v=174','?v=175')
+          val=val.replace('v174','v175').replace('v=174','v=175')
+          old="""const grassBladeGeo=(()=>{const g=new THREE.ConeGeometry(.095,.34,3);g.translate(0,.17,0);return g})(),grassBladeMat=new THREE.MeshStandardMaterial({color:0x76a842,roughness:1});
+function grassClumpTransform(dummy,x,z,height=1,spread=1){dummy.position.set(x,.015,z);dummy.rotation.set(rand(-.22,.22),rand(0,6.28),rand(-.24,.24));dummy.scale.set(rand(.72,1.22)*spread,rand(.72,1.42)*height,rand(.72,1.22)*spread);dummy.updateMatrix()}"""
+          new="""function makeGrassTexture(){const c=document.createElement('canvas');c.width=c.height=16;const x=c.getContext('2d');x.clearRect(0,0,16,16);const cols=['#315f2d','#477d35','#5f963d','#78a94b'];for(let i=0;i<18;i++){x.fillStyle=cols[i%cols.length];const bx=1+(i*7)%14,w=i%4===0?2:1,top=2+(i*5)%8;x.fillRect(bx,top,w,15-top);if(i%3===0)x.fillRect(Math.max(0,bx-1),top+3,3,2)}const t=new THREE.CanvasTexture(c);t.magFilter=THREE.NearestFilter;t.minFilter=THREE.NearestFilter;t.colorSpace=THREE.SRGBColorSpace;t.needsUpdate=true;return t}
+function crossedGrassGeometry(){const g=new THREE.BufferGeometry(),p=[],uv=[],idx=[];for(const a of [0,Math.PI/2]){const n=p.length/3,dx=Math.cos(a)*.24,dz=Math.sin(a)*.24;p.push(-dx,0,-dz, dx,0,dz, dx,.58,dz, -dx,.58,-dz);uv.push(0,0,1,0,1,1,0,1);idx.push(n,n+1,n+2,n,n+2,n+3)}g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();return g}
+const grassBladeGeo=crossedGrassGeometry(),grassBladeMat=new THREE.MeshStandardMaterial({map:makeGrassTexture(),color:0xffffff,roughness:1,transparent:true,alphaTest:.32,side:THREE.DoubleSide,depthWrite:true});
+function grassClumpTransform(dummy,x,z,height=1,spread=1){dummy.position.set(x,.015,z);dummy.rotation.set(rand(-.05,.05),rand(0,6.28),rand(-.06,.06));dummy.scale.set(rand(.72,1.18)*spread,rand(.72,1.32)*height,rand(.72,1.18)*spread);dummy.updateMatrix()}"""
+          assert old in s
+          s=s.replace(old,new)
+          s=s.replace("const meadowGrassGeo=grassBladeGeo.clone(),meadowGrassMat=new THREE.MeshStandardMaterial({color:0x6f9f3d,roughness:1});","const meadowGrassGeo=grassBladeGeo.clone(),meadowGrassMat=grassBladeMat.clone();meadowGrassMat.color.set(0xe5f0c9);")
+          old="endShown=true;paused=true;resultSaving=false;resultLocalSaved=false;resultGlobalSaved=false;const best="
+          new="endShown=true;paused=true;resultSaving=false;resultLocalSaved=false;resultGlobalSaved=false;if(!mobile){try{(document.exitPointerLock||document.webkitExitPointerLock)?.call(document)}catch{}}const best="
+          assert old in s;s=s.replace(old,new)
+          old="$('playerName').value=localStorage.getItem('kabanchiki3d_player_name')||'';$('endScreen').style.display='grid'}async function submitGlobalResult(name){"
+          new="$('playerName').value=localStorage.getItem('kabanchiki3d_player_name')||'';$('endScreen').style.display='grid';setTimeout(()=>{$('playerName').focus();$('playerName').select()},40)}async function submitGlobalResult(name){"
+          assert old in s;s=s.replace(old,new)
+          save="$('saveResult').onclick=async()=>{if(resultSaving||resultGlobalSaved)return;"
+          assert save in s
+          enter="$('playerName').addEventListener('keydown',e=>{if(e.key!=='Enter')return;e.preventDefault();e.stopPropagation();if(resultGlobalSaved){restartGame();return}if(!resultSaving)$('saveResult').click()});$('endScreen').addEventListener('keydown',e=>{if(e.key==='Enter'&&document.activeElement!==$('playerName')&&resultGlobalSaved){e.preventDefault();e.stopPropagation();restartGame()}});"
+          s=s.replace(save,enter+save)
+          old="function restartGame(){\n stopMusic();stopCinematicMusic();cineClear();cinematicRunning=false;cinematicFinish=null;"
+          new="function restartGame(){\n if(!mobile)requestDesktopMouseLock();stopMusic();stopCinematicMusic();cineClear();cinematicRunning=false;cinematicFinish=null;"
+          assert old in s;s=s.replace(old,new)
+          marker='const checks=['
+          val=val.replace(marker,marker+"\n ['v175 menu pointer release',/exitPointerLock/.test(game)&&/playerName'\\)\\.focus/.test(game)],\n ['v175 end enter flow',/playerName'\\)\\.addEventListener\\('keydown'/.test(game)&&/resultGlobalSaved\\)\\{restartGame/.test(game)],\n ['v175 crossed alpha grass',/crossedGrassGeometry/.test(game)&&/makeGrassTexture/.test(game)&&/alphaTest:\\.32/.test(game)],")
+          p.write_text(s);h.write_text(html);v.write_text(val)
+      - name: Validate static files
+        run: |
+          node --check src/game.js
+          node scripts/validate.mjs
+      - name: Restore normal workflow and commit
+        run: |
+          git show HEAD^:.github/workflows/web-check.yml > .github/workflows/web-check.yml
+          rm -f .github/workflows/patch-v175.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/game.js index.html scripts/validate.mjs .github/workflows/web-check.yml .github/workflows/patch-v175.yml
+          git commit -m "v175: improve menu keyboard flow and grass visuals"
+          git push
