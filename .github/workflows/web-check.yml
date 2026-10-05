@@ -1,9 +1,12 @@
 name: Kabanchiki 3D Auto Test
+
 on:
   push:
     branches: [main]
+
 permissions:
   contents: write
+
 jobs:
   patch:
     runs-on: ubuntu-latest
@@ -11,33 +14,16 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Patch game
+      - name: Apply patch
+        run: python3 scripts/patch-v175.py
+      - name: Validate
         run: |
-          cat > /tmp/patch.py <<'PY'
-          from pathlib import Path
-          p=Path('src/game.js'); s=p.read_text(); h=Path('index.html'); html=h.read_text(); v=Path('scripts/validate.mjs'); val=v.read_text()
-          assert "GAME_VERSION='v174'" in s
-          s=s.replace('?v=174','?v=175').replace("GAME_VERSION='v174'","GAME_VERSION='v175'");html=html.replace('v174','v175').replace('?v=174','?v=175');val=val.replace('v174','v175').replace('v=174','v=175')
-          old="""const grassBladeGeo=(()=>{const g=new THREE.ConeGeometry(.095,.34,3);g.translate(0,.17,0);return g})(),grassBladeMat=new THREE.MeshStandardMaterial({color:0x76a842,roughness:1});
-          function grassClumpTransform(dummy,x,z,height=1,spread=1){dummy.position.set(x,.015,z);dummy.rotation.set(rand(-.22,.22),rand(0,6.28),rand(-.24,.24));dummy.scale.set(rand(.72,1.22)*spread,rand(.72,1.42)*height,rand(.72,1.22)*spread);dummy.updateMatrix()}"""
-          new="""function makeGrassTexture(){const c=document.createElement('canvas');c.width=c.height=16;const x=c.getContext('2d');x.clearRect(0,0,16,16);const cols=['#315f2d','#477d35','#5f963d','#78a94b'];for(let i=0;i<18;i++){x.fillStyle=cols[i%cols.length];const bx=1+(i*7)%14,w=i%4===0?2:1,top=2+(i*5)%8;x.fillRect(bx,top,w,15-top);if(i%3===0)x.fillRect(Math.max(0,bx-1),top+3,3,2)}const t=new THREE.CanvasTexture(c);t.magFilter=THREE.NearestFilter;t.minFilter=THREE.NearestFilter;t.colorSpace=THREE.SRGBColorSpace;t.needsUpdate=true;return t}
-          function crossedGrassGeometry(){const g=new THREE.BufferGeometry(),p=[],uv=[],idx=[];for(const a of [0,Math.PI/2]){const n=p.length/3,dx=Math.cos(a)*.24,dz=Math.sin(a)*.24;p.push(-dx,0,-dz,dx,0,dz,dx,.58,dz,-dx,.58,-dz);uv.push(0,0,1,0,1,1,0,1);idx.push(n,n+1,n+2,n,n+2,n+3)}g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();return g}
-          const grassBladeGeo=crossedGrassGeometry(),grassBladeMat=new THREE.MeshStandardMaterial({map:makeGrassTexture(),color:0xffffff,roughness:1,transparent:true,alphaTest:.32,side:THREE.DoubleSide,depthWrite:true});
-          function grassClumpTransform(dummy,x,z,height=1,spread=1){dummy.position.set(x,.015,z);dummy.rotation.set(rand(-.05,.05),rand(0,6.28),rand(-.06,.06));dummy.scale.set(rand(.72,1.18)*spread,rand(.72,1.32)*height,rand(.72,1.18)*spread);dummy.updateMatrix()}"""
-          assert old in s;s=s.replace(old,new)
-          s=s.replace("const meadowGrassGeo=grassBladeGeo.clone(),meadowGrassMat=new THREE.MeshStandardMaterial({color:0x6f9f3d,roughness:1});","const meadowGrassGeo=grassBladeGeo.clone(),meadowGrassMat=grassBladeMat.clone();meadowGrassMat.color.set(0xe5f0c9);")
-          old="endShown=true;paused=true;resultSaving=false;resultLocalSaved=false;resultGlobalSaved=false;const best=";new="endShown=true;paused=true;resultSaving=false;resultLocalSaved=false;resultGlobalSaved=false;if(!mobile){try{(document.exitPointerLock||document.webkitExitPointerLock)?.call(document)}catch{}}const best=";assert old in s;s=s.replace(old,new)
-          old="$('playerName').value=localStorage.getItem('kabanchiki3d_player_name')||'';$('endScreen').style.display='grid'}async function submitGlobalResult(name){";new="$('playerName').value=localStorage.getItem('kabanchiki3d_player_name')||'';$('endScreen').style.display='grid';setTimeout(()=>{$('playerName').focus();$('playerName').select()},40)}async function submitGlobalResult(name){";assert old in s;s=s.replace(old,new)
-          save="$('saveResult').onclick=async()=>{if(resultSaving||resultGlobalSaved)return;";assert save in s;enter="$('playerName').addEventListener('keydown',e=>{if(e.key!=='Enter')return;e.preventDefault();e.stopPropagation();if(resultGlobalSaved){restartGame();return}if(!resultSaving)$('saveResult').click()});$('endScreen').addEventListener('keydown',e=>{if(e.key==='Enter'&&document.activeElement!==$('playerName')&&resultGlobalSaved){e.preventDefault();e.stopPropagation();restartGame()}});";s=s.replace(save,enter+save)
-          old="function restartGame(){\n stopMusic();stopCinematicMusic();cineClear();cinematicRunning=false;cinematicFinish=null;";new="function restartGame(){\n if(!mobile)requestDesktopMouseLock();stopMusic();stopCinematicMusic();cineClear();cinematicRunning=false;cinematicFinish=null;";assert old in s;s=s.replace(old,new)
-          marker='const checks=[';val=val.replace(marker,marker+"\n ['v175 menu pointer release',/exitPointerLock/.test(game)&&/playerName'\\)\\.focus/.test(game)],\n ['v175 end enter flow',/playerName'\\)\\.addEventListener\\('keydown'/.test(game)&&/resultGlobalSaved\\)\\{restartGame/.test(game)],\n ['v175 crossed alpha grass',/crossedGrassGeometry/.test(game)&&/makeGrassTexture/.test(game)&&/alphaTest:\\.32/.test(game)],")
-          p.write_text(s);h.write_text(html);v.write_text(val)
-          PY
-          python3 /tmp/patch.py
           node --check src/game.js
           node scripts/validate.mjs
-          git show HEAD^:.github/workflows/web-check.yml > .github/workflows/web-check.yml
-          rm -f .github/workflows/patch-v175.yml
+      - name: Commit
+        run: |
+          git show HEAD~4:.github/workflows/web-check.yml > .github/workflows/web-check.yml
+          rm -f .github/workflows/patch-v175.yml scripts/patch-v175.py
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
