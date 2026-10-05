@@ -1,17 +1,17 @@
 window.__gameLoadProgress?.(84);let __loadFinished=false;
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
-import { BOAR_MAX_WATER_DEPTH, attacksPlayer, shallowStepAllowed, capsuleAt, capsuleCircleContact, capsuleCapsuleContact } from './boar-physics.js?v=174';
-import { convexHull, polygonContact, FriendYield } from './movement-geometry.js?v=174';
-import { BOSS_HITS, riverCenterAt, riverDepthAt, onRiverBridge, lakeInletCenterAt, lakeInletHalfWidthAt, lakeInletDepthAt, bridgeRailBlocked, weatherDeadline, rainFillLimit, rainFillRate, WorldSurface, lakePointAt, lakeRadiusAt, lakeDepth } from './world-surface.js?v=174';
-import { Knockback } from './knockback.js?v=174';
-import { AdaptiveQuality, GRAPHICS_TIERS } from './adaptive-quality.js?v=174';
-import { AttemptProgress, seasonForAttempts } from './seasons.js?v=174';
-import { Soundscape } from './soundscape.js?v=174';
-import { introStagingAt } from './cinematic-staging.js?v=174';
-import { segmentHitsBox, findGridPath } from './navigation.js?v=174';
-import { CatLife } from './cat-life.js?v=174';
-import { BirdLife } from './bird-life.js?v=174';
-const GAME_VERSION='v174';
+import { BOAR_MAX_WATER_DEPTH, attacksPlayer, shallowStepAllowed, capsuleAt, capsuleCircleContact, capsuleCapsuleContact } from './boar-physics.js?v=175';
+import { convexHull, polygonContact, FriendYield } from './movement-geometry.js?v=175';
+import { BOSS_HITS, riverCenterAt, riverDepthAt, onRiverBridge, lakeInletCenterAt, lakeInletHalfWidthAt, lakeInletDepthAt, bridgeRailBlocked, weatherDeadline, rainFillLimit, rainFillRate, WorldSurface, lakePointAt, lakeRadiusAt, lakeDepth } from './world-surface.js?v=175';
+import { Knockback } from './knockback.js?v=175';
+import { AdaptiveQuality, GRAPHICS_TIERS } from './adaptive-quality.js?v=175';
+import { AttemptProgress, seasonForAttempts } from './seasons.js?v=175';
+import { Soundscape } from './soundscape.js?v=175';
+import { introStagingAt } from './cinematic-staging.js?v=175';
+import { segmentHitsBox, findGridPath } from './navigation.js?v=175';
+import { CatLife } from './cat-life.js?v=175';
+import { BirdLife } from './bird-life.js?v=175';
+const GAME_VERSION='v175';
 const attemptProgress=new AttemptProgress((()=>{try{return window.localStorage}catch{return null}})());let currentSeason=attemptProgress.season;
 let chosenSeason=null;try{chosenSeason=localStorage.getItem('kabanchiki3d_chosen_season')}catch{}
 function unlockedSeasons(){return attemptProgress.failed>=60?['summer','autumn','winter','spring']:attemptProgress.failed>=40?['summer','autumn','winter']:attemptProgress.failed>=20?['summer','autumn']:['summer']}
@@ -73,15 +73,17 @@ for(let i=0;i<(mobile?28:60);i++){const z=rand(-43,43),edge=(Math.random()<.5?-1
 
 // Visual Remaster #1 — Forest. Decorative layer is separate from gameplay/collisions.
 const forestVisual=new THREE.Group();scene.add(forestVisual);forestVisual.visible=true;
-const grassBladeGeo=(()=>{const g=new THREE.ConeGeometry(.095,.34,3);g.translate(0,.17,0);return g})(),grassBladeMat=new THREE.MeshStandardMaterial({color:0x76a842,roughness:1});
-function grassClumpTransform(dummy,x,z,height=1,spread=1){dummy.position.set(x,.015,z);dummy.rotation.set(rand(-.22,.22),rand(0,6.28),rand(-.24,.24));dummy.scale.set(rand(.72,1.22)*spread,rand(.72,1.42)*height,rand(.72,1.22)*spread);dummy.updateMatrix()}
+function makeGrassTexture(){const c=document.createElement('canvas');c.width=c.height=16;const x=c.getContext('2d');x.clearRect(0,0,16,16);const cols=['#315f2d','#477d35','#5f963d','#78a94b'];for(let i=0;i<18;i++){x.fillStyle=cols[i%cols.length];const bx=1+(i*7)%14,w=i%4===0?2:1,top=2+(i*5)%8;x.fillRect(bx,top,w,15-top);if(i%3===0)x.fillRect(Math.max(0,bx-1),top+3,3,2)}const t=new THREE.CanvasTexture(c);t.magFilter=THREE.NearestFilter;t.minFilter=THREE.NearestFilter;t.colorSpace=THREE.SRGBColorSpace;t.needsUpdate=true;return t}
+function crossedGrassGeometry(){const g=new THREE.BufferGeometry(),p=[],uv=[],idx=[];for(const a of [0,Math.PI/2]){const n=p.length/3,dx=Math.cos(a)*.24,dz=Math.sin(a)*.24;p.push(-dx,0,-dz,dx,0,dz,dx,.58,dz,-dx,.58,-dz);uv.push(0,0,1,0,1,1,0,1);idx.push(n,n+1,n+2,n,n+2,n+3)}g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();return g}
+const grassBladeGeo=crossedGrassGeometry(),grassBladeMat=new THREE.MeshStandardMaterial({map:makeGrassTexture(),color:0xffffff,roughness:1,transparent:true,alphaTest:.32,side:THREE.DoubleSide,depthWrite:true});
+function grassClumpTransform(dummy,x,z,height=1,spread=1){dummy.position.set(x,.015,z);dummy.rotation.set(rand(-.05,.05),rand(0,6.28),rand(-.06,.06));dummy.scale.set(rand(.72,1.18)*spread,rand(.72,1.32)*height,rand(.72,1.18)*spread);dummy.updateMatrix()}
 const grassCount=mobile?650:2400,grassBlades=new THREE.InstancedMesh(grassBladeGeo,grassBladeMat,grassCount),grassDummy=new THREE.Object3D();
 for(let i=0;i<grassCount;i++){const patch=i%5,px=((i*17)%23-11)*3.45,pz=((i*29)%23-11)*3.45;let x=px+rand(-2.7,2.7),z=pz+rand(-2.7,2.7);if(patch===0){x=rand(-43,43);z=rand(-43,43)}if(Math.abs(x)<3.2){x+=(x<0?-1:1)*rand(3.5,8)}
  grassClumpTransform(grassDummy,x,z,rand(.72,1.25),rand(.75,1.28));grassBlades.setMatrixAt(i,grassDummy.matrix);grassBlades.setColorAt(i,new THREE.Color().setHSL(.20+(i%5)*.012,.48,.25+(i%7)*.025))}
 grassBlades.instanceMatrix.needsUpdate=true;grassBlades.instanceColor.needsUpdate=true;grassBlades.receiveShadow=!mobile;forestVisual.add(grassBlades);
 // v168: decorative meadow grass for every green outdoor location, with taller lush banks around the river.
 const meadowGrassRoot=new THREE.Group();scene.add(meadowGrassRoot);
-const meadowGrassGeo=grassBladeGeo.clone(),meadowGrassMat=new THREE.MeshStandardMaterial({color:0x6f9f3d,roughness:1});
+const meadowGrassGeo=grassBladeGeo.clone(),meadowGrassMat=grassBladeMat.clone();meadowGrassMat.color.set(0xe5f0c9);
 const meadowGrassCount=mobile?900:3200,meadowGrass=new THREE.InstancedMesh(meadowGrassGeo,meadowGrassMat,meadowGrassCount),meadowDummy=new THREE.Object3D(),meadowLevels=new Float32Array(meadowGrassCount);
 for(let i=0;i<meadowGrassCount;i++){
  const lv=1+(i%4),x=rand(-43,43);let z=rand(-43,43),tall=1;
@@ -769,12 +771,12 @@ function playCinematic(kind,onDone,detail={}){
  const finish=()=>{if(!cinematicRunning)return;cinematicRunning=false;cinematicFinish=null;cineClear();stopCinematicMusic();$('cinematic').style.display='none';onDone?.()};cinematicFinish=finish;$('cinematicSkip').onclick=finish;cineLater(finish,kind==='intro'?18500:kind==='outro'?15500:kind==='storm'?6500:kind==='death'?4500:8500);
 }
 
-function showEnd(won){if(endShown)return;if(deathSceneActive&&!deathSceneFinished)return;if(!won&&!deathSceneActive&&lastDeathCause!=='wind'){deathSceneActive=true;life=0;playCinematic('death',()=>{deathSceneFinished=true;showEnd(false)},{cause:lastDeathCause,line:{boar:'Кабанчик сбил Тимура с ног. Приключение можно начать снова.',fire:'Тимур оказался слишком близко к огню.',water:'Тимур слишком долго пробыл под водой.',ice:'Тимур замёрз. Нужно успеть найти семью.'}[lastDeathCause]});return}if(!won){attemptProgress.lose();syncSeasonChoices();clearWorldFires();hasFlashlight=false;torch.intensity=0;playDeathMusic()}endShown=true;paused=true;resultSaving=false;resultLocalSaved=false;resultGlobalSaved=false;const best=(()=>{try{return JSON.parse(localStorage.getItem('kabanchiki3d_results')||'[]')}catch{return[]}})();$('endTitle').textContent=won?'🎉 Победа!':'💀 Игра окончена';$('endStats').innerHTML=`⏱ Время: <b>${formatTime(totalTime)}</b><br>🏆 Очки: <b>${score}</b><br>🍎 Кормлений: <b>${statsData.fed}</b><br>🌿 Собрано еды: <b>${statsData.forage}</b><br>🫐 Лечебных ягод: <b>${statsData.berries}</b><br>❤️ Получено урона: <b>${statsData.damage}</b><br>👨‍👩‍👦 Найдено семьи: <b>${familyFound}/4</b><br>🐗 Побеждено миньонов: <b>${statsData.minions}</b><br>👑 Ударов друга по боссу: <b>${statsData.bossHits}</b>`;$('playerName').value=localStorage.getItem('kabanchiki3d_player_name')||'';$('endScreen').style.display='grid'}async function submitGlobalResult(name){
+function showEnd(won){if(endShown)return;if(deathSceneActive&&!deathSceneFinished)return;if(!won&&!deathSceneActive&&lastDeathCause!=='wind'){deathSceneActive=true;life=0;playCinematic('death',()=>{deathSceneFinished=true;showEnd(false)},{cause:lastDeathCause,line:{boar:'Кабанчик сбил Тимура с ног. Приключение можно начать снова.',fire:'Тимур оказался слишком близко к огню.',water:'Тимур слишком долго пробыл под водой.',ice:'Тимур замёрз. Нужно успеть найти семью.'}[lastDeathCause]});return}if(!won){attemptProgress.lose();syncSeasonChoices();clearWorldFires();hasFlashlight=false;torch.intensity=0;playDeathMusic()}endShown=true;paused=true;resultSaving=false;resultLocalSaved=false;resultGlobalSaved=false;if(!mobile){try{(document.exitPointerLock||document.webkitExitPointerLock)?.call(document)}catch{}}const best=(()=>{try{return JSON.parse(localStorage.getItem('kabanchiki3d_results')||'[]')}catch{return[]}})();$('endTitle').textContent=won?'🎉 Победа!':'💀 Игра окончена';$('endStats').innerHTML=`⏱ Время: <b>${formatTime(totalTime)}</b><br>🏆 Очки: <b>${score}</b><br>🍎 Кормлений: <b>${statsData.fed}</b><br>🌿 Собрано еды: <b>${statsData.forage}</b><br>🫐 Лечебных ягод: <b>${statsData.berries}</b><br>❤️ Получено урона: <b>${statsData.damage}</b><br>👨‍👩‍👦 Найдено семьи: <b>${familyFound}/4</b><br>🐗 Побеждено миньонов: <b>${statsData.minions}</b><br>👑 Ударов друга по боссу: <b>${statsData.bossHits}</b>`;$('playerName').value=localStorage.getItem('kabanchiki3d_player_name')||'';$('endScreen').style.display='grid';setTimeout(()=>{$('playerName').focus();$('playerName').select()},40)}async function submitGlobalResult(name){
  // v121: completed and failed runs use the same existing leaderboard row schema.
  const payload={player_name:name,score:Math.max(0,Math.round(score)),play_time:Math.max(0,Math.round(totalTime)),difficulty:selectedDiff,family:Math.max(0,Math.min(4,familyFound)),game_version:GAME_VERSION};
  try{const r=await fetch(`${SUPABASE_URL}/rest/v1/leaderboard`,{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify(payload)});if(!r.ok)throw new Error(`HTTP ${r.status}`);return {ok:true}}catch(e){console.warn('Global leaderboard submit failed',e);return {ok:false,error:e}}
 }
-$('saveResult').onclick=async()=>{if(resultSaving||resultGlobalSaved)return;const name=($('playerName').value.trim()||'Аноним').slice(0,20);resultSaving=true;$('saveResult').disabled=true;$('saveMsg').textContent='💾 Сохраняю результат…';let localOk=resultLocalSaved;if(!resultLocalSaved){try{localStorage.setItem('kabanchiki3d_player_name',name);const a=JSON.parse(localStorage.getItem('kabanchiki3d_results')||'[]');a.unshift({name,score,time:Math.round(totalTime),win,level,difficulty:selectedDiff,family:familyFound,version:GAME_VERSION,date:new Date().toLocaleDateString()});localStorage.setItem('kabanchiki3d_results',JSON.stringify(a.slice(0,50)));resultLocalSaved=true;localOk=true}catch{localOk=false}}let global={ok:resultGlobalSaved};if(!resultGlobalSaved)global=await submitGlobalResult(name);if(global.ok){resultGlobalSaved=true;$('saveMsg').textContent='✅ Результат сохранён один раз — на устройстве и в 🌍 мировой таблице!'}else $('saveMsg').textContent=(localOk?'✅ Локально сохранено один раз. ':'⚠️ Локальное сохранение недоступно. ')+'🌍 Мировая таблица сейчас недоступна — можно повторить отправку.';resultSaving=false;$('saveResult').disabled=resultGlobalSaved};function clearWorldFires(){resetStormLocationState();for(const [tree,b] of burningTrees){tree.remove(b.light);tree.remove(b.flames);restoreStormObject(tree)}burningTrees.clear();}
+$('playerName').addEventListener('keydown',e=>{if(e.key!=='Enter')return;e.preventDefault();e.stopPropagation();if(resultGlobalSaved){restartGame();return}if(!resultSaving)$('saveResult').click()});$('endScreen').addEventListener('keydown',e=>{if(e.key==='Enter'&&document.activeElement!==$('playerName')&&resultGlobalSaved){e.preventDefault();e.stopPropagation();restartGame()}});$('saveResult').onclick=async()=>{if(resultSaving||resultGlobalSaved)return;const name=($('playerName').value.trim()||'Аноним').slice(0,20);resultSaving=true;$('saveResult').disabled=true;$('saveMsg').textContent='💾 Сохраняю результат…';let localOk=resultLocalSaved;if(!resultLocalSaved){try{localStorage.setItem('kabanchiki3d_player_name',name);const a=JSON.parse(localStorage.getItem('kabanchiki3d_results')||'[]');a.unshift({name,score,time:Math.round(totalTime),win,level,difficulty:selectedDiff,family:familyFound,version:GAME_VERSION,date:new Date().toLocaleDateString()});localStorage.setItem('kabanchiki3d_results',JSON.stringify(a.slice(0,50)));resultLocalSaved=true;localOk=true}catch{localOk=false}}let global={ok:resultGlobalSaved};if(!resultGlobalSaved)global=await submitGlobalResult(name);if(global.ok){resultGlobalSaved=true;$('saveMsg').textContent='✅ Результат сохранён один раз — на устройстве и в 🌍 мировой таблице!'}else $('saveMsg').textContent=(localOk?'✅ Локально сохранено один раз. ':'⚠️ Локальное сохранение недоступно. ')+'🌍 Мировая таблица сейчас недоступна — можно повторить отправку.';resultSaving=false;$('saveResult').disabled=resultGlobalSaved};function clearWorldFires(){resetStormLocationState();for(const [tree,b] of burningTrees){tree.remove(b.light);tree.remove(b.flames);restoreStormObject(tree)}burningTrees.clear();}
 function resetNewRun(){deathSceneActive=deathSceneFinished=false;lastDeathCause='boar';lastDeathBoar=null;
  attemptProgress.begin();currentSeason=unlockedSeasons().includes(chosenSeason)?chosenSeason:attemptProgress.season;
  clearWorldFires();
@@ -784,7 +786,7 @@ function resetNewRun(){deathSceneActive=deathSceneFinished=false;lastDeathCause=
  for(const shot of shots)scene.remove(shot.g);shots.length=0;throwCooldown=0;hurricaneCarry=0;underwaterTime=0;underwaterDamageCd=0;weatherBaseSky=null;
 }
 function restartGame(){
- stopMusic();stopCinematicMusic();cineClear();cinematicRunning=false;cinematicFinish=null;
+ if(!mobile)requestDesktopMouseLock();stopMusic();stopCinematicMusic();cineClear();cinematicRunning=false;cinematicFinish=null;
  $('cinematic').style.display='none';$('endScreen').style.display='none';$('pauseMenu').style.display='none';$('familyPopup').style.display='none';$('statsScreen').style.display='none';
  win=false;started=true;paused=false;endShown=false;resultSaving=false;resultLocalSaved=false;resultGlobalSaved=false;life=diffCfg().playerHP;food=diffCfg().foodMax;score=0;familyFound=0;friendHP=diffCfg().friendHP;bossHits=0;damage=0;totalTime=0;invuln=0;
  resetNewRun();boy.position.set(0,0,4);py=0;vy=0;loadLevel(1);startMusic();notice('🌲 Новая игра началась. Найди семью!');
