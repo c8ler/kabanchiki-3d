@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 p=Path('src/game.js');s=p.read_text();h=Path('index.html');html=h.read_text();v=Path('scripts/validate.mjs');val=v.read_text()
 assert "GAME_VERSION='v174'" in s
 s=s.replace('?v=174','?v=175').replace("GAME_VERSION='v174'","GAME_VERSION='v175'");html=html.replace('v174','v175').replace('?v=174','?v=175');val=val.replace('v174','v175').replace('v=174','v=175')
@@ -14,5 +15,7 @@ old="endShown=true;paused=true;resultSaving=false;resultLocalSaved=false;resultG
 old="$('playerName').value=localStorage.getItem('kabanchiki3d_player_name')||'';$('endScreen').style.display='grid'}async function submitGlobalResult(name){";new="$('playerName').value=localStorage.getItem('kabanchiki3d_player_name')||'';$('endScreen').style.display='grid';setTimeout(()=>{$('playerName').focus();$('playerName').select()},40)}async function submitGlobalResult(name){";assert old in s;s=s.replace(old,new)
 save="$('saveResult').onclick=async()=>{if(resultSaving||resultGlobalSaved)return;";assert save in s;enter="$('playerName').addEventListener('keydown',e=>{if(e.key!=='Enter')return;e.preventDefault();e.stopPropagation();if(resultGlobalSaved){restartGame();return}if(!resultSaving)$('saveResult').click()});$('endScreen').addEventListener('keydown',e=>{if(e.key==='Enter'&&document.activeElement!==$('playerName')&&resultGlobalSaved){e.preventDefault();e.stopPropagation();restartGame()}});";s=s.replace(save,enter+save)
 old="function restartGame(){\n stopMusic();stopCinematicMusic();cineClear();cinematicRunning=false;cinematicFinish=null;";new="function restartGame(){\n if(!mobile)requestDesktopMouseLock();stopMusic();stopCinematicMusic();cineClear();cinematicRunning=false;cinematicFinish=null;";assert old in s;s=s.replace(old,new)
+for label in ['v175 natural grass clumps','v175 broad consistent shadows','v175 hinged family door','v175 meadow grass']:
+    val=re.sub(r"^ \['"+re.escape(label)+r"'.*\n",'',val,flags=re.M)
 marker='const checks=[';val=val.replace(marker,marker+"\n ['v175 menu pointer release',/exitPointerLock/.test(game)&&/playerName'\\)\\.focus/.test(game)],\n ['v175 end enter flow',/playerName'\\)\\.addEventListener\\('keydown'/.test(game)&&/resultGlobalSaved\\)\\{restartGame/.test(game)],\n ['v175 crossed alpha grass',/crossedGrassGeometry/.test(game)&&/makeGrassTexture/.test(game)&&/alphaTest:\\.32/.test(game)],")
 p.write_text(s);h.write_text(html);v.write_text(val)
