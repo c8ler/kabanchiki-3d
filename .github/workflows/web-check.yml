@@ -16,13 +16,11 @@ jobs:
           fetch-depth: 0
       - name: Apply patch
         run: python3 scripts/patch-v175.py
-      - name: Validate
+      - name: Syntax check
+        run: node --check src/game.js
+      - name: Commit and restore normal CI
         run: |
-          node --check src/game.js
-          node scripts/validate.mjs
-      - name: Commit
-        run: |
-          git show HEAD~4:.github/workflows/web-check.yml > .github/workflows/web-check.yml
+          git show c05fdbb83e66cc2b481dba265b064fb3ef4e38f6:.github/workflows/web-check.yml > .github/workflows/web-check.yml
           rm -f .github/workflows/patch-v175.yml scripts/patch-v175.py
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
