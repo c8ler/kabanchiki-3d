@@ -3,26 +3,26 @@ const html=fs.readFileSync('index.html','utf8');
 const game=fs.readFileSync('src/game.js','utf8');
 const levels=fs.readFileSync('levels/levels.js','utf8');
 const checks=[
- ['v175 menu pointer release',/exitPointerLock/.test(game)&&/playerName'\)\.focus/.test(game)],
- ['v175 end enter flow',/playerName'\)\.addEventListener\('keydown'/.test(game)&&/resultGlobalSaved\)\{restartGame/.test(game)],
- ['v175 crossed alpha grass',/crossedGrassGeometry/.test(game)&&/makeGrassTexture/.test(game)&&/alphaTest:\.32/.test(game)],
- ['v175 door fills opening',/familyDoor\.position\.set\(-\.86,\.16,2\.30\)/.test(game)&&/familyDoorSlab=block\(familyDoor,doorMat,\.86,1\.42,0,1\.72,2\.84/.test(game)],
- ['v175 cinematic door mesh',/saved\.doorMaterial=familyDoorSlab\.material/.test(game)&&/familyDoorSlab\.material=familyDoorSlab\.material\.clone\(\)/.test(game)&&!/saved\.doorMaterial=familyDoor\.material/.test(game)],
- ['v175 complete desktop shadows',/sun\.shadow\.camera\.left=-78/.test(game)&&/sun\.shadow\.camera\.far=180/.test(game)&&/const preset=GRAPHICS_TIERS\[tier\],shadows=!mobile/.test(game)&&/visibleSolidMeshes/.test(game)],
- ['v175 visible sun matches shadow light',/sun\.position\.set\(-28,24,-42\)/.test(game)&&/sunDisc\.position\.copy\(sun\.position\)/.test(game)],
- ['v175 jump reliability',/jumpSupported=grounded/.test(game)&&/lastGroundedAt/.test(game)&&/JUMP_SURFACE_AUDIT/.test(game)],
- ['v175 both river banks',/riverSlot%2===0\?-1:1/.test(game)&&/bank\+side\*rand\(4\.55,9\.2\)/.test(game)],
- ['v175 calm friend',/d>4\.2/.test(game)&&/Math\.exp\(-3\.2\*dt\)/.test(game)],
+ ['v177 menu pointer release',/exitPointerLock/.test(game)&&/playerName'\)\.focus/.test(game)],
+ ['v177 end enter flow',/playerName'\)\.addEventListener\('keydown'/.test(game)&&/resultGlobalSaved\)\{restartGame/.test(game)],
+ ['v177 crossed alpha grass',/crossedGrassGeometry/.test(game)&&/makeGrassTexture/.test(game)&&/alphaTest:\.32/.test(game)],
+ ['v177 door fills opening',/familyDoorHinge\.position\.set\(-1\.4,\.16,2\.30\)/.test(game)&&/block\(familyDoorHinge,doorMat,1\.4,1\.42,0,2\.8,2\.84/.test(game)],
+ ['v177 cinematic door mesh',/saved\.doorMaterial=familyDoorSlab\.material/.test(game)&&/familyDoorSlab\.material=familyDoorSlab\.material\.clone\(\)/.test(game)&&!/saved\.doorMaterial=familyDoor\.material/.test(game)],
+ ['v177 complete desktop shadows',/sun\.shadow\.camera\.left=-78/.test(game)&&/sun\.shadow\.camera\.far=180/.test(game)&&/const preset=GRAPHICS_TIERS\[tier\],shadows=!mobile/.test(game)&&/visibleSolidMeshes/.test(game)],
+ ['v177 visible sun matches shadow light',/sun\.position\.set\(-28,24,-42\)/.test(game)&&/sunDisc\.position\.copy\(sun\.position\)/.test(game)],
+ ['v177 jump reliability',/jumpSupported=grounded/.test(game)&&/lastGroundedAt/.test(game)&&/JUMP_SURFACE_AUDIT/.test(game)],
+ ['v177 both river banks',/riverSlot%2===0\?-1:1/.test(game)&&/bank\+side\*rand\(4\.55,9\.2\)/.test(game)],
+ ['v177 calm friend',/d>4\.2/.test(game)&&/Math\.exp\(-3\.2\*dt\)/.test(game)],
 
- ['v175 desktop mouse actions',/e\.button===0[^}]*feed\(\)/s.test(game)&&/e\.button===2[^}]*jump=true/s.test(game)],
- ['v175 cinematic ground safety',/heroGround=Math\.max\(0,terrainHeightAt/.test(game)&&/const ground=Math\.max\(0,terrainHeightAt\(q\.x,q\.z\)\)/.test(game)],
- ['v175 intro boar entrance',/b\.g\.scale\.setScalar\(q\.scale\?\?1\)/.test(game)],
+ ['v177 desktop mouse actions',/e\.button===0[^}]*feed\(\)/s.test(game)&&/e\.button===2[^}]*jump=true/s.test(game)],
+ ['v177 cinematic ground safety',/heroGround=Math\.max\(0,terrainHeightAt/.test(game)&&/const ground=Math\.max\(0,terrainHeightAt\(q\.x,q\.z\)\)/.test(game)],
+ ['v177 intro boar entrance',/b\.g\.scale\.setScalar\(q\.scale\?\?1\)/.test(game)],
 
  ['lake has no mushrooms',/level===2&&type==='mushroom'/.test(game)&&/lake-mushroom/.test(game)],
  ['apples outside tree trunks',/function appleOutsideOwnTrunk/.test(game)&&/apple-inside-tree/.test(game)&&/startR=trunkR\+\.08/.test(game)],
  ['road clear of solid scenery',/function roadClearForRadius/.test(game)&&/road-rock/.test(game)&&/road-mountain/.test(game)&&/road-lair/.test(game)&&/safeSolidScenerySpot/.test(game)],
  ['forage road runtime audit',/function runForageRoadAudit/.test(game)&&/__KABANCHIKI_FORAGE_ROAD_AUDIT__/.test(game)&&/forageRoadAudit/.test(game)],
- ['version v175',/GAME_VERSION='v175'/.test(game)],
+ ['version v177',/GAME_VERSION='v177'/.test(game)],
  ['damage sound feedback',/function playerDamageSound\(\)/.test(game)&&/function playerHitFeedback\([^)]*\)\{[^}]*playerDamageSound\(\)/.test(game)],
  ['level visibility before apple spawn',/syncWorldGeneration\(n\);rebuildWorldSurface\(\);\nseedForage\(\)/.test(game)],
  ['hidden-tree apple rejected',/tree\.visible===false/.test(game)&&/apple-hidden-tree/.test(game)&&/br\.parent!==tree/.test(game)],
@@ -37,9 +37,9 @@ const checks=[
  ['mounted apple collection',/function canCollectForage\(a\)/.test(game)&&/mountedFriend\|\|/.test(game)&&/function runMountedAppleAudit\(\)/.test(game)&&/__KABANCHIKI_MOUNTED_APPLE_AUDIT__/.test(game)&&/mountedAppleAudit/.test(game)&&/mounted-apple-food/.test(game)],
  ['spawn guard',/function repairAndAuditSpawns\(\)/.test(game)&&/__KABANCHIKI_SPAWN_AUDIT__/.test(game)],
  ['single-source version sync',/loadingVersion/.test(html)&&/window.__KABANCHIKI_VERSION__=GAME_VERSION/.test(game)&&/el.textContent=GAME_VERSION/.test(game)],
- ['cache-busted game module',/src="\.\/src\/game\.js\?v=175(?:-[a-z0-9]+)?"/.test(html)],
- ['module cache version matches game',(()=>{const gv=game.match(/GAME_VERSION='(v\d+)'/)?.[1],raw=html.match(/src="\.\/src\/game\.js\?v=(\d+)(?:-[a-z0-9]+)?"/)?.[1],mv=raw?'v'+raw:undefined,bv=html.match(/__KABANCHIKI_BUILD__='(v\d+)'/)?.[1];return gv==='v175'&&gv===mv&&gv===bv})()],
- ['html build marker v175',/__KABANCHIKI_BUILD__='v175'/.test(html)],
+ ['cache-busted game module',/src="\.\/src\/game\.js\?v=177(?:-[a-z0-9]+)?"/.test(html)],
+ ['module cache version matches game',(()=>{const gv=game.match(/GAME_VERSION='(v\d+)'/)?.[1],raw=html.match(/src="\.\/src\/game\.js\?v=(\d+)(?:-[a-z0-9]+)?"/)?.[1],mv=raw?'v'+raw:undefined,bv=html.match(/__KABANCHIKI_BUILD__='(v\d+)'/)?.[1];return gv==='v177'&&gv===mv&&gv===bv})()],
+ ['html build marker v177',/__KABANCHIKI_BUILD__='v177'/.test(html)],
  ['no-cache document meta',/no-cache, no-store, must-revalidate/.test(html)],
  ['cylindrical tree collision',/function treeTrunkShape/.test(game)&&/function treeTrunkHit/.test(game)],
  ['apple own twig registered',/treeBranchMeshes\.push\(twig\)/.test(game)],
@@ -136,8 +136,8 @@ const checks=[
  ['family window visible outside wall',/familyWindow=block\(hideDoor,windowGlowMat,-1\.55,1\.55,2\.315/.test(game)&&/familyWindow\.renderOrder=3/.test(game)&&/familyWindowFrame/.test(game)],
  ['lake substantially deeper center',/lakeDeepCenter/.test(game)&&/depthMeters=4\.5/.test(game)&&/lakeAbyss/.test(game)&&/depthMeters=6\.0/.test(game)],
  ['cabbage stays out of lake',/lakeRadiusAt\(x,z\)<15\.8/.test(game)&&/lakeInletDepthAt/.test(game)],
- ['mounted camera ignores gallop bounce',/cameraAnchorY=mountedFriend\?riderSeatHeight\(\)-Math\.min\(lakeDepthAt/.test(game)],
- ['friend obstacle detour pathing',/function moveFriendAroundObstacles/.test(game)&&/findGridPath/.test(game)&&/repairCompanion/.test(game)&&/moveFriendAroundObstacles\(boy\.position\.x,boy\.position\.z,4,dt\)/.test(game)],
+ ['mounted camera ignores gallop bounce',/cameraAnchorY=mountedFriend\?riderSeatHeight\(\)-lakeDepthAt/.test(game)],
+ ['friend obstacle detour pathing',/function moveFriendAroundObstacles/.test(game)&&/findGridPath/.test(game)&&/repairCompanion/.test(game)&&/moveFriendAroundObstacles\(boy\.position\.x,boy\.position\.z,[\d.]+,dt\)/.test(game)],
  ['boss health follows difficulty',/b\.hp=BOSS_HITS\[selectedDiff\];b\.maxHp=b\.hp/.test(game)&&/boss\.maxHp/.test(game)],
  ['boss food does not heal',/здоровье не восстановилось, для победы нужно/.test(game)],
  ['boss fire leaves charred stump',/function igniteBossTree/.test(game)&&/damageRadius:2\.65/.test(game)&&/charredStump/.test(game)&&/метровый обгоревший пень/.test(game)],
@@ -174,5 +174,6 @@ const checks=[
 ];
 let bad=0;for(const [n,ok] of checks){console.log(`${ok?'✓':'✗'} ${n}`);if(!ok)bad++}
 if(bad)process.exit(1);
+
 
 

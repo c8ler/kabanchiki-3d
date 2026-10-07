@@ -16,7 +16,7 @@ export class WorldSurface {
     
     
     let weight = smooth((Math.abs(x) - 3.5) / 2);
-    if (this.level === 2) weight = Math.min(weight, smooth((lakeRadiusAt(x,z) - 17) / 2));
+    if (this.level === 2) {weight = Math.min(weight, smooth((lakeRadiusAt(x,z) - 17) / 2));if(x<=-20)weight=Math.min(weight,smooth((Math.abs(z-lakeInletCenterAt(x))-6.4)/2));}
     if (this.level === 4) weight = Math.min(weight, smooth((Math.abs(z - riverCenterAt(x)) - 6.4) / 2));
     for (const q of this.zones) {
       weight = Math.min(weight, smooth((Math.hypot(x - q.x, z - q.z) - q.r) / 2));
@@ -37,9 +37,10 @@ export function lakePointAt(angle,radius=13.6){const k=radius/13.6*shoreScale(an
 export function lakeRadiusAt(x,z){const dx=(x+18)/12.2,dz=(z+17)/20.2;return Math.hypot(dx,dz)/shoreScale(Math.atan2(dz,dx))*13.6}
 export function lakeDepth(x,z){const k=Math.max(0,1-lakeRadiusAt(x,z)/13.6);return Math.min(5.2,k*k*6.4)}
 
-export const lakeInletCenterAt=x=>{const t=Math.max(0,Math.min(1,(x+46)/24));return -29+Math.sin(t*Math.PI*1.6)*2.1+t*t*6};
-export const lakeInletHalfWidthAt=x=>{const t=Math.max(0,Math.min(1,(x+46)/24));return 1.25+.3*Math.sin(t*9)+1.6*t*t};
-export function lakeInletDepthAt(x,z){if(x<-46||x>-22)return 0;const k=Math.max(0,1-Math.abs(z-lakeInletCenterAt(x))/lakeInletHalfWidthAt(x));return .75*Math.sin(k*Math.PI/2)**2}
+// The lake tributary uses the same width, bends and cross section as the river.
+export const lakeInletCenterAt=x=>{const t=Math.max(0,Math.min(1,(x+46)/24));return -22+Math.sin((x+46)*.105)*2.3+t*3.5};
+export const lakeInletHalfWidthAt=x=>4.2;
+export function lakeInletDepthAt(x,z){if(x<-46||x>-22)return 0;const k=Math.max(0,1-Math.abs(z-lakeInletCenterAt(x))/4.2);return 3*k*k}
 export function bridgeRailBlocked(x,z,radius=.31){return Math.abs(z+14)<5.3+radius&&[-2.55,2.55].some(rail=>Math.abs(x-rail)<radius+.10)}
 export const weatherDeadline=(season,level,seconds)=>seconds<300||level===6?null:season==='winter'?'freeze':'carry';
 export const rainFillLimit=stage=>[0,.45,.95,1.55,2.1][stage]||0;

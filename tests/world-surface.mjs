@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { BOSS_HITS, riverCenterAt, riverDepthAt, WorldSurface, lakePointAt, lakeRadiusAt, lakeDepth, bridgeRailBlocked, weatherDeadline, rainFillLimit, rainFillRate, lakeInletCenterAt, lakeInletDepthAt } from '../src/world-surface.js';
+import { BOSS_HITS, riverCenterAt, riverDepthAt, WorldSurface, lakePointAt, lakeRadiusAt, lakeDepth, bridgeRailBlocked, weatherDeadline, rainFillLimit, rainFillRate, lakeInletCenterAt, lakeInletHalfWidthAt, lakeInletDepthAt } from '../src/world-surface.js';
 
 test('boss difficulty ranges from five to twenty hits', () => {
   assert.equal(BOSS_HITS.length, 5);
@@ -40,3 +40,5 @@ test('bridge rails block both sides but leave entrances and centre open',()=>{as
 test('five minute deadline never ends a boss fight in any season',()=>{for(const season of ['summer','autumn','winter'])assert.equal(weatherDeadline(season,6,900),null);assert.equal(weatherDeadline('winter',4,301),'freeze');assert.equal(weatherDeadline('summer',4,301),'carry');assert.equal(weatherDeadline('autumn',4,299),null)});
 test('rain increases basin capacity and fill speed at every stage',()=>{for(let i=1;i<=4;i++){assert.ok(rainFillLimit(i)>rainFillLimit(i-1));assert.ok(rainFillRate(i)>rainFillRate(i-1))}});
 test('lake inlet connects to the lake and river ends within world bounds',()=>{assert.ok(lakeInletDepthAt(-35,lakeInletCenterAt(-35))>.5);assert.ok(lakeDepth(-22,lakeInletCenterAt(-22))>.3);assert.equal(lakeInletDepthAt(-47,-27),0);assert.equal(riverDepthAt(47,riverCenterAt(47)),0)});
+
+test('lake tributary shares the river width and depth profile and has flat banks',()=>{const s=new WorldSurface(2);for(const x of [-45,-40,-35,-30,-25]){const z=lakeInletCenterAt(x);assert.equal(lakeInletHalfWidthAt(x),4.2);assert.equal(lakeInletDepthAt(x,z),3);for(const d of [0,1,2,3,4,4.2,5])assert.ok(Math.abs(lakeInletDepthAt(x,z+d)-3*Math.max(0,1-d/4.2)**2)<1e-10);assert.equal(s.height(x,z),0);assert.equal(s.height(x,z+5),0)}assert.ok(lakeDepth(-22,lakeInletCenterAt(-22))>.3)});
