@@ -1,18 +1,18 @@
 window.__gameLoadProgress?.(84);let __loadFinished=false;
 import * as THREE from '../vendor/three/three.module.min.js';
-import { BOAR_MAX_WATER_DEPTH, attacksPlayer, shallowStepAllowed, capsuleAt, capsuleCircleContact, capsuleCapsuleContact } from './boar-physics.js?v=185';
-import { convexHull, polygonContact, FriendYield } from './movement-geometry.js?v=185';
-import { BOSS_HITS, riverCenterAt, riverDepthAt, onRiverBridge, lakeInletCenterAt, lakeInletHalfWidthAt, lakeInletDepthAt, bridgeRailBlocked, weatherDeadline, rainFillLimit, rainFillRate, WorldSurface, lakePointAt, lakeRadiusAt, lakeDepth } from './world-surface.js?v=185';
-import { Knockback } from './knockback.js?v=185';
-import { AdaptiveQuality, GRAPHICS_TIERS } from './adaptive-quality.js?v=185';
-import { AttemptProgress, seasonForAttempts } from './seasons.js?v=185';
-import { Soundscape } from './soundscape.js?v=185';
-import { introStagingAt } from './cinematic-staging.js?v=185';
-import { segmentHitsBox, findGridPath } from './navigation.js?v=185';
-import { CatLife } from './cat-life.js?v=185';
-import { BirdLife } from './bird-life.js?v=185';
-import { CAT_BERRY_CHANCE, CAT_FORM_SECONDS, CAT_JUMP_SPEED, isCatBerryRoll, formTimeAfterStep } from './form-rules.js?v=185';
-const GAME_VERSION='v185';
+import { BOAR_MAX_WATER_DEPTH, attacksPlayer, shallowStepAllowed, capsuleAt, capsuleCircleContact, capsuleCapsuleContact } from './boar-physics.js?v=186';
+import { convexHull, polygonContact, FriendYield } from './movement-geometry.js?v=186';
+import { BOSS_HITS, riverCenterAt, riverDepthAt, onRiverBridge, lakeInletCenterAt, lakeInletHalfWidthAt, lakeInletDepthAt, bridgeRailBlocked, weatherDeadline, rainFillLimit, rainFillRate, WorldSurface, lakePointAt, lakeRadiusAt, lakeDepth } from './world-surface.js?v=186';
+import { Knockback } from './knockback.js?v=186';
+import { AdaptiveQuality, GRAPHICS_TIERS } from './adaptive-quality.js?v=186';
+import { AttemptProgress, seasonForAttempts } from './seasons.js?v=186';
+import { Soundscape } from './soundscape.js?v=186';
+import { introStagingAt } from './cinematic-staging.js?v=186';
+import { segmentHitsBox, findGridPath } from './navigation.js?v=186';
+import { CatLife } from './cat-life.js?v=186';
+import { BirdLife } from './bird-life.js?v=186';
+import { CAT_BERRY_CHANCE, CAT_FORM_SECONDS, CAT_JUMP_SPEED, isCatBerryRoll, formTimeAfterStep } from './form-rules.js?v=186';
+const GAME_VERSION='v186';
 const attemptProgress=new AttemptProgress((()=>{try{return window.localStorage}catch{return null}})());let currentSeason=attemptProgress.season;
 let chosenSeason=null;try{chosenSeason=localStorage.getItem('kabanchiki3d_chosen_season')}catch{}
 function unlockedSeasons(){return attemptProgress.failed>=60?['summer','autumn','winter','spring']:attemptProgress.failed>=40?['summer','autumn','winter']:attemptProgress.failed>=20?['summer','autumn']:['summer']}
@@ -512,7 +512,19 @@ function playDeathMusic(){
 }
 
 
-function makeBoar(x,z,friendly){const g=group(x,z);const b=new THREE.Group();g.add(b);const aura=new THREE.Mesh(new THREE.RingGeometry(1.05,1.28,20),new THREE.MeshBasicMaterial({color:friendly?0x4cff72:0xff4b4b,transparent:true,opacity:.18,side:THREE.DoubleSide}));aura.rotation.x=-Math.PI/2;aura.position.y=.04;g.add(aura);const bolt=block(g,mats.gold,0,2.15,0,.18,.55,.18);bolt.rotation.z=.45;bolt.visible=false;block(b,friendly?mats.boar2:mats.boar,0,.65,0,1.2,.85,1.7);block(b,friendly?mats.boar2:mats.boar,0,.85,.83,1.04,.9,.9);block(b,mats.pink,0,.67,1.35,.67,.4,.25);for(const xx of [-.18,.18])block(b,mats.black,xx,.69,1.49,.075,.075,.025);for(const xx of [-.55,.55]){block(b,mats.white,xx,.64,1.18,.19,.3,.18);block(b,mats.boar,xx,1.32,.5,.32,.46,.18)}const eyes=[];for(const xx of [-.34,.34]){block(b,mats.white,xx,.98,1.29,.15,.15,.1);const eye=block(b,mats.black,xx,1,1.36,.07,.07,.04);eyes.push(eye);block(b,mats.boar,xx,.24,-.5,.25,.46,.3);block(b,mats.boar,xx,.24,.58,.25,.46,.3);block(b,mats.boar,xx,1.44,.65,.28,.42,.25)}block(b,mats.boar,0,.83,-1.02,.2,.22,.5);if(friendly){const mark=new THREE.Mesh(new THREE.RingGeometry(.18,.28,16),new THREE.MeshBasicMaterial({color:0x65ff7b,side:THREE.DoubleSide}));mark.position.set(0,2.05,0);mark.rotation.x=Math.PI/2;g.add(mark)}else{}
+let pursuitBoltMaterial=null;
+function makePursuitBolt(){
+ if(!pursuitBoltMaterial){
+  const canvas=document.createElement('canvas');canvas.width=128;canvas.height=192;
+  const ctx=canvas.getContext('2d');ctx.lineJoin='round';ctx.lineWidth=10;ctx.strokeStyle='#493119';
+  ctx.beginPath();ctx.moveTo(78,14);ctx.lineTo(26,106);ctx.lineTo(62,106);ctx.lineTo(48,178);ctx.lineTo(108,76);ctx.lineTo(72,76);ctx.closePath();
+  const fill=ctx.createLinearGradient(0,14,0,178);fill.addColorStop(0,'#fff4a3');fill.addColorStop(1,'#ffbc26');ctx.fillStyle=fill;ctx.stroke();ctx.fill();
+  const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;
+  pursuitBoltMaterial=new THREE.SpriteMaterial({map:texture,transparent:true,depthWrite:false,toneMapped:false,fog:false});
+ }
+ const bolt=new THREE.Sprite(pursuitBoltMaterial);bolt.position.set(0,2.35,0);bolt.scale.set(.7,1.05,1);bolt.visible=false;bolt.userData.pursuitIndicator=true;return bolt;
+}
+function makeBoar(x,z,friendly){const g=group(x,z);const b=new THREE.Group();g.add(b);const aura=new THREE.Mesh(new THREE.RingGeometry(1.05,1.28,20),new THREE.MeshBasicMaterial({color:friendly?0x4cff72:0xff4b4b,transparent:true,opacity:.18,side:THREE.DoubleSide}));aura.rotation.x=-Math.PI/2;aura.position.y=.04;g.add(aura);const bolt=makePursuitBolt();g.add(bolt);block(b,friendly?mats.boar2:mats.boar,0,.65,0,1.2,.85,1.7);block(b,friendly?mats.boar2:mats.boar,0,.85,.83,1.04,.9,.9);block(b,mats.pink,0,.67,1.35,.67,.4,.25);for(const xx of [-.18,.18])block(b,mats.black,xx,.69,1.49,.075,.075,.025);for(const xx of [-.55,.55]){block(b,mats.white,xx,.64,1.18,.19,.3,.18);block(b,mats.boar,xx,1.32,.5,.32,.46,.18)}const eyes=[];for(const xx of [-.34,.34]){block(b,mats.white,xx,.98,1.29,.15,.15,.1);const eye=block(b,mats.black,xx,1,1.36,.07,.07,.04);eyes.push(eye);block(b,mats.boar,xx,.24,-.5,.25,.46,.3);block(b,mats.boar,xx,.24,.58,.25,.46,.3);block(b,mats.boar,xx,1.44,.65,.28,.42,.25)}block(b,mats.boar,0,.83,-1.02,.2,.22,.5);if(friendly){const mark=new THREE.Mesh(new THREE.RingGeometry(.18,.28,16),new THREE.MeshBasicMaterial({color:0x65ff7b,side:THREE.DoubleSide}));mark.position.set(0,2.05,0);mark.rotation.x=Math.PI/2;g.add(mark)}else{}
 const earMat=new THREE.MeshLambertMaterial({color:friendly?0x7a5638:0x5b3b2b}),tuskMat=new THREE.MeshLambertMaterial({color:0xf1e1bd}),hoofMat=new THREE.MeshLambertMaterial({color:0x2b211c});
 for(const sx of [-1,1]){const ear=new THREE.Mesh(new THREE.ConeGeometry(.19,.42,4),earMat);ear.position.set(sx*.52,1.52,.52);ear.rotation.z=sx*.34;ear.rotation.x=-.12;b.add(ear);const tusk=new THREE.Mesh(new THREE.ConeGeometry(.075,.30,6),tuskMat);tusk.position.set(sx*.35,.83,1.38);tusk.rotation.x=Math.PI/2;b.add(tusk)}
 for(const sx of [-1,1])for(const zz of [-.48,.48])block(b,hoofMat,sx*.52,.13,zz,.34,.25,.42);
@@ -1927,7 +1939,7 @@ bossBattleImpact((friend.g.position.x+target.g.position.x)/2,(friend.g.position.
 if(target.isBoss){target.hp--;bossHits++;statsData.bossHits++;bossRage=Math.min(2.35,bossRage+.12);moveBoarToward(target,target.g.position.x+ax/al*5,target.g.position.z+az/al*5,.95,1);target.stagger=Math.max(target.stagger||0,1.0);notice(`⚔️ Друг ударил босса, а босс отшвыривает друга! Осталось ${target.hp}/${target.maxHp}`);if(target.hp<=0){score+=diffScore(200);onBossDefeated(target)}}else if(target.isMinion){hitBossMinion(target,ax,az,al)}else{foes.splice(foes.indexOf(target),1);sendBoarAway(target,'defeated');levelBoarsDone++;statsData.minions++;score+=diffScore(25);softBoarDefeatSound();notice('💚 Побеждённый кабанчик испугался и убегает!')}friendHP--;if(friendHP<=0){scene.remove(friend.g);friend=null;notice('💔 Кабанчик-друг пал в бою')}}}else{const d=Math.hypot(friend.g.position.x-boy.position.x,friend.g.position.z-boy.position.z);if(d>4.2){moveFriendAroundObstacles(boy.position.x,boy.position.z,3.25,dt)}if(d<=3.6){const idleYaw=Math.atan2(boy.position.x-friend.g.position.x,boy.position.z-friend.g.position.z),idleTurn=Math.atan2(Math.sin(idleYaw-friend.g.rotation.y),Math.cos(idleYaw-friend.g.rotation.y));friend.g.rotation.y+=idleTurn*(1-Math.exp(-3.2*dt))}}}
 if(level<6&&questsComplete()){if(!portalObj.g.visible){effect('portal');softEffectTone(392,.34,'sine',.025,0,784)}portalObj.g.visible=true;portalObj.ring.rotation.z=0;portalObj.core.material.opacity=.42+Math.sin(now*.006)*.14;portalObj.glow.intensity=7+Math.sin(now*.008)*2;if(Math.hypot(boy.position.x,boy.position.z+42)<2.2){score+=Math.max(0,Math.round(120-levelTime));const hadFriend=!!friend;loadLevel(level+1);if(hadFriend)notice('💚 Кабанчик-друг прошёл через портал вместе с Тимуром!')}}
 if(level===6&&bossVictoryTimer!==null&&!win){bossVictoryTimer=Math.max(0,bossVictoryTimer-dt);bossFireworkTimer-=dt;if(bossFireworkTimer<=0){spawnVictoryFirework();bossFireworkTimer=.32}if(bossVictoryTimer<=0)finishBossVictory()}
-for(const f of foes){f.phase+=dt;f.stagger=Math.max(0,(f.stagger||0)-dt);if(f.isBoss){f.b.position.y=Math.sin(now*.004)*.035;f.b.rotation.z=Math.sin(now*.0032)*.018}const d=Math.hypot(f.g.position.x-boy.position.x,f.g.position.z-boy.position.z);f.bolt.visible=attacksPlayer(boarFormTime+catFormTime)&&d<13;if(boarShouldChasePlayer(f,d)){const chaseSpeed=(f.isBoss?f.baseSpeed*bossRage:1.65)*(.65+diffCfg().speedMult*.55);if(!(f.stagger>0))moveBoarToward(f,boy.position.x,boy.position.z,chaseSpeed,dt);f.g.rotation.y=Math.atan2(boy.position.x-f.g.position.x,boy.position.z-f.g.position.z)}else if(!f.isBoss){
+for(const f of foes){f.phase+=dt;f.stagger=Math.max(0,(f.stagger||0)-dt);if(f.isBoss){f.b.position.y=Math.sin(now*.004)*.035;f.b.rotation.z=Math.sin(now*.0032)*.018}const d=Math.hypot(f.g.position.x-boy.position.x,f.g.position.z-boy.position.z);const chasing=boarShouldChasePlayer(f,d);f.bolt.visible=!f.flee&&(chasing||(attacksPlayer(boarFormTime+catFormTime)&&d<=1.05));if(chasing){const chaseSpeed=(f.isBoss?f.baseSpeed*bossRage:1.65)*(.65+diffCfg().speedMult*.55);if(!(f.stagger>0))moveBoarToward(f,boy.position.x,boy.position.z,chaseSpeed,dt);f.g.rotation.y=Math.atan2(boy.position.x-f.g.position.x,boy.position.z-f.g.position.z)}else if(!f.isBoss){
   f.roamTimer=(f.roamTimer??0)-dt; f.roamPause=(f.roamPause??0)-dt; f.blinkTimer=(f.blinkTimer??rand(1,4))-dt;
   if(f.blinkTimer<=0){for(const e of (f.eyes||[]))e.scale.y=.012; f._blink=.12; f.blinkTimer=rand(2.4,6)}
   if(f._blink>0){f._blink-=dt;if(f._blink<=0)for(const e of (f.eyes||[]))e.scale.y=.07}
