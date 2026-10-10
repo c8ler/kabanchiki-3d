@@ -1,15 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 270" role="img" aria-labelledby="title desc">
-<title id="title">Кабанчики 3D</title><desc id="desc">Добрый кабанчик среди деревьев и надпись Кабанчики 3D</desc>
-<defs><linearGradient id="fur" x2="0" y2="1"><stop stop-color="#bd8250"/><stop offset="1" stop-color="#75432e"/></linearGradient><linearGradient id="snout" x2="0" y2="1"><stop stop-color="#ffb4a1"/><stop offset="1" stop-color="#e97972"/></linearGradient><linearGradient id="gold" x2="0" y2="1"><stop stop-color="#ffedb4"/><stop offset="1" stop-color="#e9bb69"/></linearGradient><filter id="shadow" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="0" dy="9" stdDeviation="5" flood-color="#091911" flood-opacity=".42"/></filter></defs>
-<g transform="translate(8,-8) scale(.86)" filter="url(#shadow)" stroke="#583622" stroke-width="9" stroke-linejoin="round">
-<path fill="#77442e" d="M43 105 24 31q-4-20 17-12l71 53m111 33 22-76q7-21 24-4l42 76"/><path fill="#ec9280" stroke-width="5" d="m57 89-7-39 39 37m141 0 14-42 19 34"/>
-<path fill="url(#fur)" d="M34 143q4-80 91-91 53-42 112 0 86 12 92 92 5 68-48 96-33 23-99 20-75 4-112-29-41-29-36-88Z"/>
-<path fill="#d19a63" stroke="none" d="M76 167q1-59 52-78 39-15 75 13-28 30-35 63-38-19-92 2m211-1q-2-59-52-78-38-15-74 13 28 30 35 63 38-19 91 2" opacity=".9"/>
-<path fill="#fff0cc" d="M91 204q-30-2-38 26 20 20 52 9l21-30m184-5q30-2 38 26-20 20-52 9l-21-30"/>
-<ellipse cx="137" cy="151" rx="17" ry="22" fill="#fff5d8" stroke-width="5"/><ellipse cx="255" cy="151" rx="17" ry="22" fill="#fff5d8" stroke-width="5"/><ellipse cx="143" cy="155" rx="8" ry="13" fill="#201b17" stroke="none"/><ellipse cx="249" cy="155" rx="8" ry="13" fill="#201b17" stroke="none"/><circle cx="146" cy="150" r="3.5" fill="white" stroke="none"/><circle cx="252" cy="150" r="3.5" fill="white" stroke="none"/>
-<path fill="url(#snout)" d="M70 207q8-38 54-39h72q47 1 56 39 5 31-24 49-37 24-67 17-31 8-67-16-30-19-24-50Z"/><ellipse cx="112" cy="222" rx="10" ry="13" fill="#733d3b" stroke="none"/><ellipse cx="210" cy="222" rx="10" ry="13" fill="#733d3b" stroke="none"/><path d="M137 259q23 18 48 0" fill="none" stroke="#733d3b" stroke-width="5"/>
-</g>
-<g fill="#f4dfae" opacity=".9"><path d="m324 53 6 15 16 6-16 5-6 16-6-16-16-5 16-6z"/><path d="m286 25 4 10 11 4-11 4-4 11-4-11-10-4 10-4z"/></g>
-<g font-family="Georgia,'Times New Roman',serif" font-weight="900" paint-order="stroke fill" stroke-linejoin="round"><text x="365" y="132" font-size="91" letter-spacing="-3" fill="#fff1ca" stroke="#183a2b" stroke-width="13">КАБАНЧИКИ</text><text x="372" y="209" font-size="48" letter-spacing="8" fill="#d7e3c2" stroke="#183a2b" stroke-width="9">БОЛЬШОЕ ПРИКЛЮЧЕНИЕ</text><text x="845" y="206" font-family="system-ui,sans-serif" font-size="88" font-style="italic" fill="url(#gold)" stroke="#183a2b" stroke-width="12">3D</text></g>
-<path d="M365 226h596" stroke="#e9bb69" stroke-width="4" stroke-linecap="round" opacity=".8"/>
+<title id="title">Кабанчики 3D</title><desc id="desc">Кабанчик из игры «Кабанчики 3D»</desc>
+<defs><linearGradient id="gold" x2="0" y2="1"><stop stop-color="#ffedb4"/><stop offset="1" stop-color="#e9bb69"/></linearGradient><filter id="shadow" x="-15%" y="-15%" width="130%" height="140%"><feDropShadow dx="0" dy="5" stdDeviation="4" flood-color="#091911" flood-opacity=".38"/></filter></defs>
+<image href="boar-mascot.png" x="12" y="8" width="254" height="254" preserveAspectRatio="xMidYMid meet"/>
+<g font-family="Georgia,'Times New Roman',serif" font-weight="900" paint-order="stroke fill" stroke-linejoin="round" filter="url(#shadow)">
+<text x="292" y="126" font-size="86" letter-spacing="-3" fill="#fff1ca" stroke="#183a2b" stroke-width="13">КАБАНЧИКИ</text>
+<text x="302" y="198" font-size="42" letter-spacing="5" fill="#d7e3c2" stroke="#183a2b" stroke-width="9">БОЛЬШОЕ ПРИКЛЮЧЕНИЕ</text>
+<text x="851" y="204" font-family="system-ui,sans-serif" font-size="83" font-style="italic" fill="url(#gold)" stroke="#183a2b" stroke-width="12">3D</text>
+</g><path d="M302 224h650" stroke="#e9bb69" stroke-width="4" stroke-linecap="round" opacity=".8"/>
 </svg>

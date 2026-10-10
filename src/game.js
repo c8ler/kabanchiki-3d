@@ -1,18 +1,18 @@
 window.__gameLoadProgress?.(84);let __loadFinished=false;
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
-import { BOAR_MAX_WATER_DEPTH, attacksPlayer, shallowStepAllowed, capsuleAt, capsuleCircleContact, capsuleCapsuleContact } from './boar-physics.js?v=180';
-import { convexHull, polygonContact, FriendYield } from './movement-geometry.js?v=180';
-import { BOSS_HITS, riverCenterAt, riverDepthAt, onRiverBridge, lakeInletCenterAt, lakeInletHalfWidthAt, lakeInletDepthAt, bridgeRailBlocked, weatherDeadline, rainFillLimit, rainFillRate, WorldSurface, lakePointAt, lakeRadiusAt, lakeDepth } from './world-surface.js?v=180';
-import { Knockback } from './knockback.js?v=180';
-import { AdaptiveQuality, GRAPHICS_TIERS } from './adaptive-quality.js?v=180';
-import { AttemptProgress, seasonForAttempts } from './seasons.js?v=180';
-import { Soundscape } from './soundscape.js?v=180';
-import { introStagingAt } from './cinematic-staging.js?v=180';
-import { segmentHitsBox, findGridPath } from './navigation.js?v=180';
-import { CatLife } from './cat-life.js?v=180';
-import { BirdLife } from './bird-life.js?v=180';
-import { CAT_BERRY_CHANCE, CAT_FORM_SECONDS, CAT_JUMP_SPEED, isCatBerryRoll, formTimeAfterStep } from './form-rules.js?v=180';
-const GAME_VERSION='v180';
+import { BOAR_MAX_WATER_DEPTH, attacksPlayer, shallowStepAllowed, capsuleAt, capsuleCircleContact, capsuleCapsuleContact } from './boar-physics.js?v=181';
+import { convexHull, polygonContact, FriendYield } from './movement-geometry.js?v=181';
+import { BOSS_HITS, riverCenterAt, riverDepthAt, onRiverBridge, lakeInletCenterAt, lakeInletHalfWidthAt, lakeInletDepthAt, bridgeRailBlocked, weatherDeadline, rainFillLimit, rainFillRate, WorldSurface, lakePointAt, lakeRadiusAt, lakeDepth } from './world-surface.js?v=181';
+import { Knockback } from './knockback.js?v=181';
+import { AdaptiveQuality, GRAPHICS_TIERS } from './adaptive-quality.js?v=181';
+import { AttemptProgress, seasonForAttempts } from './seasons.js?v=181';
+import { Soundscape } from './soundscape.js?v=181';
+import { introStagingAt } from './cinematic-staging.js?v=181';
+import { segmentHitsBox, findGridPath } from './navigation.js?v=181';
+import { CatLife } from './cat-life.js?v=181';
+import { BirdLife } from './bird-life.js?v=181';
+import { CAT_BERRY_CHANCE, CAT_FORM_SECONDS, CAT_JUMP_SPEED, isCatBerryRoll, formTimeAfterStep } from './form-rules.js?v=181';
+const GAME_VERSION='v181';
 const attemptProgress=new AttemptProgress((()=>{try{return window.localStorage}catch{return null}})());let currentSeason=attemptProgress.season;
 let chosenSeason=null;try{chosenSeason=localStorage.getItem('kabanchiki3d_chosen_season')}catch{}
 function unlockedSeasons(){return attemptProgress.failed>=60?['summer','autumn','winter','spring']:attemptProgress.failed>=40?['summer','autumn','winter']:attemptProgress.failed>=20?['summer','autumn']:['summer']}
