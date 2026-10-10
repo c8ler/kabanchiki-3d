@@ -1,18 +1,18 @@
 window.__gameLoadProgress?.(84);let __loadFinished=false;
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
-import { BOAR_MAX_WATER_DEPTH, attacksPlayer, shallowStepAllowed, capsuleAt, capsuleCircleContact, capsuleCapsuleContact } from './boar-physics.js?v=177';
-import { convexHull, polygonContact, FriendYield } from './movement-geometry.js?v=177';
-import { BOSS_HITS, riverCenterAt, riverDepthAt, onRiverBridge, lakeInletCenterAt, lakeInletHalfWidthAt, lakeInletDepthAt, bridgeRailBlocked, weatherDeadline, rainFillLimit, rainFillRate, WorldSurface, lakePointAt, lakeRadiusAt, lakeDepth } from './world-surface.js?v=177';
-import { Knockback } from './knockback.js?v=177';
-import { AdaptiveQuality, GRAPHICS_TIERS } from './adaptive-quality.js?v=177';
-import { AttemptProgress, seasonForAttempts } from './seasons.js?v=177';
-import { Soundscape } from './soundscape.js?v=177';
-import { introStagingAt } from './cinematic-staging.js?v=177';
-import { segmentHitsBox, findGridPath } from './navigation.js?v=177';
-import { CatLife } from './cat-life.js?v=177';
-import { BirdLife } from './bird-life.js?v=177';
-import { CAT_BERRY_CHANCE, CAT_FORM_SECONDS, CAT_JUMP_SPEED, isCatBerryRoll, formTimeAfterStep } from './form-rules.js?v=177';
-const GAME_VERSION='v177';
+import { BOAR_MAX_WATER_DEPTH, attacksPlayer, shallowStepAllowed, capsuleAt, capsuleCircleContact, capsuleCapsuleContact } from './boar-physics.js?v=178';
+import { convexHull, polygonContact, FriendYield } from './movement-geometry.js?v=178';
+import { BOSS_HITS, riverCenterAt, riverDepthAt, onRiverBridge, lakeInletCenterAt, lakeInletHalfWidthAt, lakeInletDepthAt, bridgeRailBlocked, weatherDeadline, rainFillLimit, rainFillRate, WorldSurface, lakePointAt, lakeRadiusAt, lakeDepth } from './world-surface.js?v=178';
+import { Knockback } from './knockback.js?v=178';
+import { AdaptiveQuality, GRAPHICS_TIERS } from './adaptive-quality.js?v=178';
+import { AttemptProgress, seasonForAttempts } from './seasons.js?v=178';
+import { Soundscape } from './soundscape.js?v=178';
+import { introStagingAt } from './cinematic-staging.js?v=178';
+import { segmentHitsBox, findGridPath } from './navigation.js?v=178';
+import { CatLife } from './cat-life.js?v=178';
+import { BirdLife } from './bird-life.js?v=178';
+import { CAT_BERRY_CHANCE, CAT_FORM_SECONDS, CAT_JUMP_SPEED, isCatBerryRoll, formTimeAfterStep } from './form-rules.js?v=178';
+const GAME_VERSION='v178';
 const attemptProgress=new AttemptProgress((()=>{try{return window.localStorage}catch{return null}})());let currentSeason=attemptProgress.season;
 let chosenSeason=null;try{chosenSeason=localStorage.getItem('kabanchiki3d_chosen_season')}catch{}
 function unlockedSeasons(){return attemptProgress.failed>=60?['summer','autumn','winter','spring']:attemptProgress.failed>=40?['summer','autumn','winter']:attemptProgress.failed>=20?['summer','autumn']:['summer']}
@@ -188,7 +188,7 @@ villageHouse(-27,-27,0,.08);villageHouse(-12,-29,1,-.08);
 // v131: family hideout uses separate geometry; never fade/hide the whole building.
 const familyHideout=group(30,-31);familyHideout.userData.enterable=true;familyHideout.userData.familyHideout=true;familyHideout.visible=false;houseObjects.push(familyHideout);
 const dadWallMat=wallCream.clone(),dadRoofMat=mats.roof.clone(),dadFloorMat=mats.wood.clone();
-const dadFrontL=block(familyHideout,dadWallMat,-2.05,1.5,2.18,1.3,3,.22),dadFrontR=block(familyHideout,dadWallMat,2.05,1.5,2.18,1.3,3,.22);
+const dadFrontL=block(familyHideout,dadWallMat,-1.9,1.5,2.18,1.6,3,.22),dadFrontR=block(familyHideout,dadWallMat,1.9,1.5,2.18,1.6,3,.22);
 const dadBack=block(familyHideout,dadWallMat,0,1.5,-2.18,5.4,3,.22),dadLeft=block(familyHideout,dadWallMat,-2.6,1.5,0,.22,3,4.2),dadRight=block(familyHideout,dadWallMat,2.6,1.5,0,.22,3,4.2);
 const dadRoof=block(familyHideout,dadRoofMat,0,3.25,0,5.9,.62,4.9),dadFloor=block(familyHideout,dadFloorMat,0,.08,0,5.15,.16,4.15);
 for(const q of [dadFrontL,dadFrontR])q.userData.dadSide='front';dadBack.userData.dadSide='back';dadLeft.userData.dadSide='left';dadRight.userData.dadSide='right';dadRoof.userData.dadRoof=true;dadFloor.userData.dadInterior=true;
@@ -203,10 +203,11 @@ const familyWindow=block(hideDoor,windowGlowMat,-1.55,1.55,2.315,.72,.76,.045);f
 const windowFrameMat=new THREE.MeshLambertMaterial({color:0x4b2b1d});
 for(const [x,y,w,h] of [[-1.55,1.98,.96,.10],[-1.55,1.12,.96,.10],[-2.03,1.55,.10,.96],[-1.07,1.55,.10,.96]]){const fr=block(hideDoor,windowFrameMat,x,y,2.325,w,h,.07);fr.userData.familyWindowFrame=true}
 const doorMat=new THREE.MeshLambertMaterial({color:0x75462f});
-const familyDoorHinge=new THREE.Group();familyDoorHinge.position.set(-1.4,.16,2.30);hideDoor.add(familyDoorHinge);const familyDoor=block(familyDoorHinge,doorMat,1.4,1.42,0,2.8,2.84,.12);familyDoor.rotation.y=0;familyDoor.userData.familyDoor=true;familyDoor.userData.closed=true;
-const familyDoorSlab=familyDoor;const doorTrimMat=new THREE.MeshLambertMaterial({color:0x4b2b1d});for(const [x,y,w,h] of [[-1.42,1.58,.12,3],[1.42,1.58,.12,3],[0,3.02,2.96,.12]]){const trim=block(hideDoor,doorTrimMat,x,y,2.315,w,h,.10);trim.userData.familyDoorFrame=true}
+const familyDoorHinge=new THREE.Group();familyDoorHinge.position.set(-1.1,.16,2.30);hideDoor.add(familyDoorHinge);const familyDoor=block(familyDoorHinge,doorMat,1.1,1.125,0,2.2,2.25,.12);familyDoor.rotation.y=0;familyDoor.userData.familyDoor=true;familyDoor.userData.closed=true;
+const familyDoorSlab=familyDoor;const doorTrimMat=new THREE.MeshLambertMaterial({color:0x4b2b1d});for(const [x,y,w,h] of [[-1.12,1.285,.12,2.25],[1.12,1.285,.12,2.25],[0,2.47,2.36,.12]]){const trim=block(hideDoor,doorTrimMat,x,y,2.315,w,h,.10);trim.userData.familyDoorFrame=true}
+const doorLintel=block(familyHideout,dadWallMat,0,2.76,2.18,2.2,.48,.22);doorLintel.userData.doorLintel=true;familyHideout.userData.cutawayWalls.front.push(doorLintel);
 const doorKnob=sphere(familyDoor,new THREE.MeshBasicMaterial({color:0xffd56a}),.36,.03,.075,.07);doorKnob.userData.familyDoor=true;
-const porchGlowMat=new THREE.MeshBasicMaterial({color:0xffe29a});const porchLamp=sphere(hideDoor,porchGlowMat,0,2.35,2.24,.16);porchLamp.userData.familyWindow=true;
+const porchGlowMat=new THREE.MeshBasicMaterial({color:0xffe29a});const porchLamp=sphere(hideDoor,porchGlowMat,0,2.70,2.35,.12);porchLamp.userData.familyWindow=true;
 const hideDoorGlow=new THREE.PointLight(0xffc45c,14,20,1.35);hideDoorGlow.position.set(0,2.15,1.7);familyHideout.add(hideDoorGlow);hideDoorGlow.visible=false;
 const dadInteriorGlow=new THREE.PointLight(0xffd58a,7,11,1.45);dadInteriorGlow.position.set(0,1.7,-.35);familyHideout.add(dadInteriorGlow);dadInteriorGlow.visible=false;
 const houseFurnishings=new THREE.Group();familyHideout.add(houseFurnishings);
@@ -1085,7 +1086,7 @@ function playerSupportHeightAt(x,z){
   if(e.n<1)top=Math.max(top,e.q.top);
  }
  // Each roof section supports only its own physical footprint.
- top=Math.max(top,roofHeightAt(x,z));
+ const roofTop=roofHeightAt(x,z);if(py>=roofTop-.10)top=Math.max(top,roofTop);
  return top;
 }
 function depenetratePlayer(){
@@ -1193,7 +1194,7 @@ function runOcclusionVisibilityAudit(){
  const candidates=[treeObjects.find(o=>o?.visible),rockPositions.find(q=>q[3]?.visible)?.[3],houseObjects.find(o=>o?.visible),ridgeObjects.find(o=>o?.visible)].filter(Boolean);
  for(const root of candidates){let mesh=null;root.traverse?.(o=>{if(!mesh&&o.isMesh&&!o.userData.familyWindow)mesh=o});if(root.isMesh)mesh=root;if(!mesh)continue;setObjectCameraFade(root,true);const faded=mesh.material.opacity<.5;setObjectCameraFade(root,false);const restored=mesh.material.opacity>.75;samples.push({faded,restored});if(!faded)issues.push('camera-occluder-not-faded');if(!restored)issues.push('camera-occluder-not-restored')}
  if(level===3&&familyHideout?.visible){
-  const old=insideFamilyHouse;setDadHouseCutaway(true);const cp=familyHideout.userData.cutawayWalls;const hiddenWalls=['front','back','left','right'].flatMap(k=>cp[k]).filter(m=>!m.visible).length;if(hiddenWalls<1||hiddenWalls>2)issues.push('dad-house-cutaway-wrong-wall-count');if(!cp.roof||cp.roof.visible)issues.push('dad-house-roof-not-cutaway');if(!familyWindow?.visible||familyWindow.material.opacity<.9)issues.push('dad-window-not-bright');if(!hideDoorGlow?.visible||hideDoorGlow.intensity<10||!dadInteriorGlow?.visible)issues.push('dad-house-light-off');setDadHouseCutaway(old);
+  const old=insideFamilyHouse;setDadHouseCutaway(true);const cp=familyHideout.userData.cutawayWalls;const hiddenWalls=['front','back','left','right'].flatMap(k=>cp[k]).filter(m=>!m.visible).length;if(hiddenWalls<1||hiddenWalls>Math.max(...['front','back','left','right'].map(k=>cp[k].length)))issues.push('dad-house-cutaway-wrong-wall-count');if(!cp.roof||cp.roof.visible)issues.push('dad-house-roof-not-cutaway');if(!familyWindow?.visible||familyWindow.material.opacity<.9)issues.push('dad-window-not-bright');if(!hideDoorGlow?.visible||hideDoorGlow.intensity<10||!dadInteriorGlow?.visible)issues.push('dad-house-light-off');setDadHouseCutaway(old);
  }
  return {ok:issues.length===0,issues,samples,level};
 }
@@ -1531,7 +1532,7 @@ function boarsInContact(a,b,padding=0){const body=boarBody(a);body.r+=padding;re
 function boarShouldChasePlayer(f,d){return attacksPlayer(boarFormTime+catFormTime)&&d<13&&d>1.05}
 function boarAttackDistance(f){return 1.65*boarScale(f)+playerBodyRadius()+.18}
 let wallCacheEpoch=-1,wallCache=[];
-function wallGeometry(){if(wallCacheEpoch!==worldEpoch){wallCacheEpoch=worldEpoch;wallCache=[];if(level===3)for(const h of houseObjects){const walls=h.userData.cutawayWalls,objects=walls?[...walls.front,...walls.back,...walls.left,...walls.right,...(h===familyHideout?houseFurnishings.children:[])]:[h];for(const o of objects){o.updateWorldMatrix(true,true);const box=new THREE.Box3().setFromObject(o);wallCache.push({root:h,box,polygon:[{x:box.min.x,z:box.min.z},{x:box.max.x,z:box.min.z},{x:box.max.x,z:box.max.z},{x:box.min.x,z:box.max.z}]})}}}const result=wallCache.filter(q=>q.root.visible);if(level===3&&familyHideout.visible&&familyDoor.userData.closed){const box=new THREE.Box3().setFromObject(familyDoor);result.push({root:familyHideout,box,polygon:[{x:box.min.x,z:box.min.z},{x:box.max.x,z:box.min.z},{x:box.max.x,z:box.max.z},{x:box.min.x,z:box.max.z}]})}return result}
+function wallGeometry(){if(wallCacheEpoch!==worldEpoch){wallCacheEpoch=worldEpoch;wallCache=[];if(level===3)for(const h of houseObjects){const walls=h.userData.cutawayWalls,objects=walls?[...walls.front,...walls.back,...walls.left,...walls.right,...(h===familyHideout?houseFurnishings.children:[])]:[h];for(const o of objects){if(o.userData.doorLintel)continue;o.updateWorldMatrix(true,true);const box=new THREE.Box3().setFromObject(o);wallCache.push({root:h,box,polygon:[{x:box.min.x,z:box.min.z},{x:box.max.x,z:box.min.z},{x:box.max.x,z:box.max.z},{x:box.min.x,z:box.max.z}]})}}}const result=wallCache.filter(q=>q.root.visible);if(level===3&&familyHideout.visible&&familyDoor.userData.closed){const box=new THREE.Box3().setFromObject(familyDoor);result.push({root:familyHideout,box,polygon:[{x:box.min.x,z:box.min.z},{x:box.max.x,z:box.min.z},{x:box.max.x,z:box.max.z},{x:box.min.x,z:box.max.z}]})}return result}
 function clearWallLine(a,b){const start={x:a.x,y:a.y??.8,z:a.z},end={x:b.x,y:b.y??.8,z:b.z};if(wallGeometry().some(w=>segmentHitsBox(start,end,w.box)))return false;if(level===3&&familyHideout.visible&&familyDoor.userData.closed){const box=new THREE.Box3().setFromObject(familyDoor);if(segmentHitsBox(start,end,box))return false}return true}
 function boarWallContacts(f,x=f.g.position.x,z=f.g.position.z,yaw=f.g.rotation.y){const body=boarBody(f,x,z,yaw),contacts=[];for(const w of wallGeometry())for(const [px,pz] of [[body.ax,body.az],[(body.ax+body.bx)/2,(body.az+body.bz)/2],[body.bx,body.bz]]){const hit=polygonContact(w.polygon,px,pz,body.r+.04);if(hit)contacts.push(hit)}return contacts}
 const companionChecks={checks:0,repairs:0,replans:0};
@@ -1749,10 +1750,12 @@ window.__KABANCHIKI_V156_AUDIT__=runV156Audit;
 if(__autoTest)window.__KABANCHIKI_QA__={
  v165Snapshot(kind){this.season(kind==='winter'?40:0);this.load(kind==='house'||kind==='cats'?3:2);paused=true;if(kind==='house'){boy.position.set(30,.16,-31);camera.position.set(35,5,-23);camera.lookAt(30,1,-31);setDadHouseCutaway(true)}else if(kind==='cats'){camera.position.set(-33,6,-20);camera.lookAt(-27,3,-27)}else{camera.position.set(-38,22,-3);camera.lookAt(-31,0,-21)}renderer.render(scene,camera);return renderer.domElement.toDataURL('image/png')},
  v165Pause(){paused=true;return this.state()},
+ v178HouseStand(z=-31){this.season(0);this.load(3);mountedFriend=false;boarFormTime=catFormTime=0;py=vy=0;keys={};stick.x=stick.y=0;jump=act=false;invuln=100;foes.forEach(f=>f.flee=true);familyMembers.forEach(f=>f.done=true);boy.position.set(30,0,z);paused=false;updateFamilyHouseReveal();return true},
+ v178HouseMotion(){return {py,vy,y:boy.position.y,support:playerSupportHeightAt(boy.position.x,boy.position.z)}},
  v165Doors(){this.season(0);this.load(3);paused=true;const results=[];const originalFriend=friend;friend=null;for(const mode of ['foot','ride','tallRide','cat'])for(const offset of (mode==='foot'?[-.6,0,.6]:[0])){mountedFriend=mode==='ride'||mode==='tallRide';boarFormTime=0;catFormTime=mode==='cat'?30:0;if(mountedFriend){friend=makeBoar(30,-25,true);if(mode==='tallRide')friend.g.scale.y=1.5}py=vy=0;boy.position.set(30+offset,0,-24);boy.rotation.y=Math.PI;familyDoor.userData.closed=true;for(let i=0;i<120;i++){if(friend){friend.g.position.x=boy.position.x;friend.g.position.z=boy.position.z}movePlayerCollision(0,-.055)}const entered=boy.position.z<-30.3&&Math.abs(boy.position.x-30)<1.1,insideX=boy.position.x;boy.rotation.y=0;for(let i=0;i<150;i++){if(friend){friend.g.position.x=boy.position.x;friend.g.position.z=boy.position.z}movePlayerCollision(0,.055)}const exited=boy.position.z>-25;results.push({mode,offset,entered,exited,insideX,x:boy.position.x,z:boy.position.z});if(friend){scene.remove(friend.g);friend=null}}mountedFriend=false;catFormTime=0;friend=originalFriend;py=vy=0;boy.position.set(30,0,-24);updateFamilyHouseReveal();return {results,wallBlocked:houseBlockAt(32.6,-31,.43),furniture:houseFurnishings.children.map(g=>g.userData.furniture)}},
  v165Cats(seconds=240){this.season(0);this.load(3);paused=true;const issues=[],states=new Set();let checks=0;for(let i=0;i<seconds*20;i++){birdLife.update(.05,terrainHeightAt);catLife.update(.05,birdLife);for(const c of catLife.cats){states.add(c.state);if(!c.g.visible)issues.push('invisible');if(c.jump||c.state==='ride')continue;const p=catLife.point(c),h=catLife.houses[c.home],expected=['roof','hide'].includes(c.state)?h.y:terrainHeightAt(p.x,p.z);if(Math.abs(p.y-expected)>.005)issues.push('floating');if(['roof','hide'].includes(c.state)&&(Math.abs(p.x-h.x)>h.w*.31||Math.abs(p.z-h.z)>h.d*.31))issues.push('outside-roof');checks++}}const c=catLife.cats[1],ground=catLife.safeGround({x:4,z:10});c.jump=null;c.state='play';c.g.position.set(ground.x,ground.y,ground.z);const before=c.g.position.clone();for(let i=0;i<20;i++)catLife.avoidPlayer(ground.x-.4,ground.z,ground.y,.05);const yields=c.g.position.distanceTo(before)>.4,blocks=catLife.blocks(c.g.position.x,c.g.position.z,c.g.position.y);const b=makeBoar(c.g.position.x+2,c.g.position.z,true);b.g.position.y=terrainHeightAt(b.g.position.x,b.g.position.z);c.gameTimer=0;for(let i=0;i<220;i++)catLife.update(.05,{nearest:()=>null,scare(){}},[b]);scene.remove(b.g);return {...catLife.inspect(),issues:[...new Set(issues)],checks,states:[...states],yields,blocks}},
  v165CatStart(location=3){this.season(0);this.load(location);paused=false;boarFormTime=0;catFormTime=0;mountedFriend=false;py=vy=0;boy.position.set(0,0,10);keys={};stick.x=stick.y=0;jump=act=false;life=diffCfg().playerHP;invuln=0;startCatForm();return {seconds:catFormTime,protected:!attacksPlayer(boarFormTime+catFormTime),model:catFormModel.g.visible,chance:CAT_BERRY_CHANCE}},
- v177CatAttack(){const f=makeBoar(boy.position.x,boy.position.z+.9,false);f.attackLeap=.6;foes.push(f);invuln=0;return life},
+ v178CatAttack(){const f=makeBoar(boy.position.x,boy.position.z+.9,false);f.attackLeap=.6;foes.push(f);invuln=0;return life},
  v165CatInspect(){return {time:catFormTime,py,y:boy.position.y,protected:!attacksPlayer(boarFormTime+catFormTime),visible:catFormModel?.g.visible,life,leaps:foes.filter(f=>f.attackLeap>0).length,food,shots:shots.length,sceneCats:catLife.inspect().count}},
  v165CatFeed(){paused=false;throwCooldown=0;food=3;yellowAppleStock=yellowMushroomStock=fishStock=0;feed();paused=true;return {food,shot:shots.at(-1)?.type,protected:!attacksPlayer(boarFormTime+catFormTime)}},
  v165CatExpire(){updateCatForm(31,performance.now());return this.v165CatInspect()},
