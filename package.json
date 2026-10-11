@@ -1,10 +1,10 @@
 {
   "name": "kabanchiki-3d",
-  "version": "1.8.7",
+  "version": "1.8.8",
   "private": true,
   "type": "module",
   "scripts": {
     "validate": "node scripts/validate.mjs",
-    "test": "node --test tests/boar-physics.mjs tests/movement-geometry.mjs tests/adaptive-quality.mjs tests/knockback.mjs tests/world-surface.mjs tests/seasons.mjs tests/cinematic-staging.mjs tests/navigation.mjs tests/bird-life.mjs tests/form-rules.mjs"
+    "test": "node --test tests/boar-physics.mjs tests/movement-geometry.mjs tests/adaptive-quality.mjs tests/knockback.mjs tests/world-surface.mjs tests/seasons.mjs tests/cinematic-staging.mjs tests/navigation.mjs tests/bird-life.mjs tests/form-rules.mjs tests/opening-adventure.mjs"
   }
 }
