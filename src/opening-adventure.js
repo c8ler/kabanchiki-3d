@@ -1,6 +1,6 @@
 // A short, action-led first encounter; stages advance on player actions, never timers alone.
 export class OpeningAdventure{
- constructor(){this.stage='move';this.elapsed=0;this.chasing=false;this.hit=false;this.rode=false;this.rescued=false;this.refills=0}
+ constructor(){this.stage='move';this.elapsed=0;this.chasing=false;this.hit=false;this.rode=false;this.rescued=false;this.refills=0;this.passageTime=0;this.passageStarted=false;this.passageOpen=false}
  update({dt=0,distance=0,friend=false,mounted=false,rescued=false}={}){
   this.elapsed+=dt;
   if(distance>2||this.elapsed>=8)this.chasing=true;
@@ -8,6 +8,11 @@ export class OpeningAdventure{
   if(rescued)this.rescued=true;
   this.stage=this.rescued?'complete':this.rode&&friend?'rescue':friend?'ride':this.chasing?'feed':'move';
   return this.stage;
+ }
+ updatePassage(dt,{near=false,friend=false}={}){
+  if(this.rescued&&near&&friend)this.passageStarted=true;
+  if(this.passageStarted){this.passageTime=Math.min(2.4,this.passageTime+Math.max(0,dt));this.passageOpen=this.passageTime>=2.4}
+  return this.passageTime/2.4;
  }
  get canRescue(){return this.rode}
  get complete(){return this.rescued}

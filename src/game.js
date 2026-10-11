@@ -1,20 +1,20 @@
 window.__gameLoadProgress?.(84);let __loadFinished=false;
 import * as THREE from '../vendor/three/three.module.min.js';
-import { BOAR_MAX_WATER_DEPTH, attacksPlayer, shallowStepAllowed, capsuleAt, capsuleCircleContact, capsuleCapsuleContact } from './boar-physics.js?v=188';
-import { convexHull, polygonContact, FriendYield } from './movement-geometry.js?v=188';
-import { BOSS_HITS, riverCenterAt, riverDepthAt, onRiverBridge, lakeInletCenterAt, lakeInletHalfWidthAt, lakeInletDepthAt, bridgeRailBlocked, weatherDeadline, rainFillLimit, rainFillRate, WorldSurface, lakePointAt, lakeRadiusAt, lakeDepth } from './world-surface.js?v=188';
-import { Knockback } from './knockback.js?v=188';
-import { AdaptiveQuality, GRAPHICS_TIERS } from './adaptive-quality.js?v=188';
-import { AttemptProgress, seasonForAttempts } from './seasons.js?v=188';
-import { Soundscape } from './soundscape.js?v=188';
-import { BufferedMusic, gameScore, cinematicScore } from './music-player.js?v=188';
-import { OpeningAdventure, openingStreamDepth } from './opening-adventure.js?v=188';
-import { introStagingAt } from './cinematic-staging.js?v=188';
-import { segmentHitsBox, findGridPath } from './navigation.js?v=188';
-import { CatLife } from './cat-life.js?v=188';
-import { BirdLife } from './bird-life.js?v=188';
-import { CAT_BERRY_CHANCE, CAT_FORM_SECONDS, CAT_JUMP_SPEED, isCatBerryRoll, formTimeAfterStep } from './form-rules.js?v=188';
-const GAME_VERSION='v188';
+import { BOAR_MAX_WATER_DEPTH, attacksPlayer, shallowStepAllowed, capsuleAt, capsuleCircleContact, capsuleCapsuleContact } from './boar-physics.js?v=189';
+import { convexHull, polygonContact, FriendYield } from './movement-geometry.js?v=189';
+import { BOSS_HITS, riverCenterAt, riverDepthAt, onRiverBridge, lakeInletCenterAt, lakeInletHalfWidthAt, lakeInletDepthAt, bridgeRailBlocked, weatherDeadline, rainFillLimit, rainFillRate, WorldSurface, lakePointAt, lakeRadiusAt, lakeDepth } from './world-surface.js?v=189';
+import { Knockback } from './knockback.js?v=189';
+import { AdaptiveQuality, GRAPHICS_TIERS } from './adaptive-quality.js?v=189';
+import { AttemptProgress, seasonForAttempts } from './seasons.js?v=189';
+import { Soundscape } from './soundscape.js?v=189';
+import { BufferedMusic, gameScore, cinematicScore } from './music-player.js?v=189';
+import { OpeningAdventure, openingStreamDepth } from './opening-adventure.js?v=189';
+import { introStagingAt } from './cinematic-staging.js?v=189';
+import { segmentHitsBox, findGridPath } from './navigation.js?v=189';
+import { CatLife } from './cat-life.js?v=189';
+import { BirdLife } from './bird-life.js?v=189';
+import { CAT_BERRY_CHANCE, CAT_FORM_SECONDS, CAT_JUMP_SPEED, isCatBerryRoll, formTimeAfterStep } from './form-rules.js?v=189';
+const GAME_VERSION='v189';
 const attemptProgress=new AttemptProgress((()=>{try{return window.localStorage}catch{return null}})());let currentSeason=attemptProgress.season;
 let chosenSeason=null;try{chosenSeason=localStorage.getItem('kabanchiki3d_chosen_season')}catch{}
 function unlockedSeasons(){return attemptProgress.failed>=60?['summer','autumn','winter','spring']:attemptProgress.failed>=40?['summer','autumn','winter']:attemptProgress.failed>=20?['summer','autumn']:['summer']}
@@ -729,7 +729,7 @@ if(fd<2.25){
 }
 score+=diffScore(20);sound(740,.22);notice(`🐗 Кабан съел ${label} и стал другом!`)}hud()}
 function prepareOpeningClearing(){
- const inRoute=(x,z)=>Math.abs(x)<9&&z>-25&&z<29;
+ const inRoute=(x,z)=>Math.abs(x)<9&&z>-43&&z<29;
  for(const tree of treeObjects)if(inRoute(tree.position.x,tree.position.z))tree.visible=false;
  for(const [x,z,,mesh] of rockPositions)if(inRoute(x,z))mesh.visible=false;
  for(const log of logObstacles)if(inRoute(log.x,log.z))log.g.visible=false;
@@ -748,16 +748,29 @@ function setupOpeningProps(){
   block(openingProps,mats.wood,-2.9,.16,24.3,1,.25,.7);for(const [x,z] of [[-3.1,24.15],[-2.7,24.15],[-2.9,24.45]])makeFoodModel('apple',openingProps,x,.46,z);
   for(const z of [12,0,-12]){block(openingProps,mats.wood,3.1,.6,z,.09,1.2,.09);const flag=block(openingProps,mats.gold,3.35,1.03,z,.5,.25,.045);flag.rotation.z=-.15;}
   const marker=new THREE.Sprite(new THREE.SpriteMaterial({map:openingLabel('МАМА'),transparent:true,depthWrite:false,toneMapped:false,fog:false}));marker.scale.set(4,1,1);openingProps.add(marker);openingProps.userData.marker=marker;
+  const exit=new THREE.Group();exit.position.set(0,0,-39);openingProps.add(exit);openingProps.userData.exit=exit;
+  for(const x of [-5.8,5.8]){block(exit,mats.wood,x,2,0,.65,4,.65);sphere(exit,mats.leaf,x,4,0,2.6)}
+  const trunk=new THREE.Group();trunk.position.set(0,.72,4);exit.add(trunk);openingProps.userData.trunk=trunk;
+  const bark=new THREE.Mesh(new THREE.CylinderGeometry(.64,.78,10.5,9),mats.wood);bark.rotation.z=Math.PI/2;trunk.add(bark);
+  for(const x of [-3,1,3.8]){const branch=block(trunk,mats.wood,x,.65,0,.28,1.5,.28);branch.rotation.z=.5}
+  block(exit,mats.wood,3.6,1.25,2,.14,2.5,.14);block(exit,mats.wood,3.6,2.15,2,2.5,.75,.12);
+  const sign=new THREE.Sprite(new THREE.SpriteMaterial({map:openingLabel('К ОЗЕРУ →'),transparent:true,depthWrite:false}));sign.position.set(3.6,2.17,2.1);sign.scale.set(2.6,.65,1);exit.add(sign);
  }
- openingProps.visible=true;openingProps.userData.label='';
+ openingProps.visible=true;openingProps.userData.label='';openingProps.userData.trunk.position.set(0,.72,4);openingProps.userData.trunk.rotation.set(0,0,0);
  const brook=openingProps.userData.brook;brook.position.y=Math.max(.04,terrainHeightAt(0,-5)+.025);brook.material=currentSeason==='winter'?iceWaterMaterial:openingProps.userData.waterMaterial;
 }
 function updateOpeningAdventure(dt){
  if(level!==1||!opening)return;
  const previous=opening.stage;opening.update({dt,distance:Math.hypot(boy.position.x,boy.position.z-24),friend:!!friend,mounted:mountedFriend,rescued:levelFamilyDone>0});
  if(opening.stage==='feed'&&food===0&&shots.length===0&&throwCooldown<=0&&opening.elapsed-(opening.lastRefill||0)>4){food=1;opening.refills++;opening.lastRefill=opening.elapsed;notice('🍎 В кармане нашлось ещё яблоко. Попробуй покормить кабанчика!');}
+ const wasStarted=opening.passageStarted,wasOpen=opening.passageOpen;
+ const progress=opening.updatePassage(dt,{near:Math.hypot(boy.position.x,boy.position.z+33)<1.3,friend:!!friend&&(mountedFriend||Math.hypot(friend.g.position.x,friend.g.position.z+32)<5)});
+ if(openingProps){const trunk=openingProps.userData.trunk;const ease=progress*progress*(3-2*progress);trunk.position.x=11*ease;trunk.position.z=4-2*ease;trunk.rotation.z=-progress*.65;trunk.rotation.y=progress*.3;}
+ if(!wasStarted&&opening.passageStarted){notice('🐗 Друг упёрся в ствол и освобождает тропу!');guideRefresh();effect('jump')}
+ if(!wasOpen&&opening.passageOpen){notice('💚 Друг открыл дорогу! Идите по тропе к озеру.');guideRefresh();}
  if(previous!==opening.stage)hud();
 }
+function guideRefresh(){$('openingGuide').dataset.stage=''}
 function syncOpeningGuide(){
  const guide=$('openingGuide');if(!guide)return;
  guide.hidden=!(started&&level===1&&opening&&!paused&&!cinematicRunning&&!endShown&&!win);if(guide.hidden)return;
@@ -769,12 +782,12 @@ function syncOpeningGuide(){
    feed:['2/4 · ПОГОНЯ','Угости кабанчика!',mobile?'Нажми «Кормить». Еда уже есть в кармане.':'Enter или левая кнопка мыши — бросить яблоко.'],
    ride:['3/4 · НОВЫЙ ДРУГ','Теперь он на твоей стороне',mobile?'Подойди к другу и нажми «Прыжок», чтобы сесть.':'Подойди к другу. Пробел — сесть верхом.'],
    rescue:['4/4 · СПАСЕНИЕ','Поезжайте к маме!',mobile?'Езжай по меткам. «Прыжок» — спрыгнуть.':'Езжай по дорожке к метке «МАМА». Пробел — спрыгнуть.'],
-   complete:['ПЕРВОЕ ПРИКЛЮЧЕНИЕ ПРОЙДЕНО','Мама спасена!','Езжай в портал к озеру. Дальше, в деревне, ждёт братик.']
+   complete:['ПЕРВОЕ ПРИКЛЮЧЕНИЕ ПРОЙДЕНО','Мама спасена!',opening.passageOpen?'Тропа свободна! Езжай прямо к озеру.':opening.passageStarted?'Друг отодвигает дерево. Ещё немного!':'Езжай с другом к поваленному дереву. Он поможет открыть тропу.']
   }[stage];$('openingStep').textContent=copy[0];$('openingTitle').textContent=copy[1];$('openingHint').textContent=copy[2];
   action.hidden=!['feed','ride'].includes(stage);action.textContent=stage==='feed'?'🍎 Угостить кабанчика':'🏇 Сесть на друга';
  }
  action.disabled=stage==='ride'&&(!friend||Math.hypot(boy.position.x-friend.g.position.x,boy.position.z-friend.g.position.z)>2.65);
- const mother=familyMembers.find(f=>f.role===0&&!f.done),enemy=foes.find(f=>f.openingBoar),target=stage==='feed'?enemy?.g:stage==='ride'?friend?.g:stage==='complete'?portalObj?.g:mother?.g;
+ const mother=familyMembers.find(f=>f.role===0&&!f.done),enemy=foes.find(f=>f.openingBoar),target=stage==='feed'?enemy?.g:stage==='ride'?friend?.g:stage==='complete'?openingProps?.userData.exit:mother?.g;
  if(openingProps&&target){const marker=openingProps.userData.marker;marker.visible=true;marker.position.copy(target.position);marker.position.y+=stage==='complete'?5:3.4;const label={feed:'КАБАНЧИК',ride:'ТВОЙ ДРУГ',complete:'К ОЗЕРУ'}[stage]||'МАМА';if(openingProps.userData.label!==label){marker.material.map?.dispose();marker.material.map=openingLabel(label);openingProps.userData.label=label}}
 }
 $('openingAction').onclick=()=>{if(level!==1||!opening||paused)return;if(opening.stage==='feed')feed();else if(opening.stage==='ride'&&friend&&Math.hypot(boy.position.x-friend.g.position.x,boy.position.z-friend.g.position.z)<2.65)mountFriendNow()};
@@ -794,7 +807,7 @@ $('familyTitle').textContent=`${icons[i]} Тимур нашёл ${names[i]}!`;
 $('familyText').textContent=`❤️ Здоровье и еда восстановлены.\n\n${line}`;
 $('familyText').style.whiteSpace='pre-line';
 playCinematic('family',()=>{familyPopupOpen=false;paused=false;startMusic()},{role,member,line})
-}$('familyOk').onclick=()=>{familyPopupOpen=false;$('familyPopup').style.display='none';paused=false};function formatTime(sec){const m=Math.floor(sec/60),s=Math.floor(sec%60);return `${m}:${String(s).padStart(2,'0')}`}function questsComplete(){if(level===6)return !foes.some(f=>f.isBoss);return levelBoarsDone>=levelBoarsTotal&&levelFamilyDone>=levelFamilyTotal}function questState(){if(level===1&&opening)return {move:'👩 Мама впереди — иди по дорожке',feed:'🍎 Кабанчик догоняет! Брось ему яблоко',ride:'💚 Друг рядом — сядь на него',rescue:'🏇 Езжай к маме по дорожке',complete:'👩 Мама спасена! Через портал — к озеру и братику'}[opening.stage];if(level===6){const boss=foes.find(f=>f.isBoss);if(boss)return `👑 Босс: ${boss.hp}/${boss.maxHp} · Подружи миньона и помоги ему победить босса`;return '🎉 Босс побеждён!'}const boarsLeft=Math.max(0,levelBoarsTotal-levelBoarsDone),familyLeft=Math.max(0,levelFamilyTotal-levelFamilyDone);if(boarsLeft>0&&familyLeft>0)return `🐗 Накорми кабанов: ${levelBoarsDone}/${levelBoarsTotal} · 👨‍👩‍👦 Найди родных: ${levelFamilyDone}/${levelFamilyTotal}`;if(boarsLeft>0)return `🐗 Накорми кабанов: ${levelBoarsDone}/${levelBoarsTotal}`;if(familyLeft>0)return `👨‍👩‍👦 Найди родных: ${levelFamilyDone}/${levelFamilyTotal}`;return '🌀 Задание выполнено — иди в портал!' }
+}$('familyOk').onclick=()=>{familyPopupOpen=false;$('familyPopup').style.display='none';paused=false};function formatTime(sec){const m=Math.floor(sec/60),s=Math.floor(sec%60);return `${m}:${String(s).padStart(2,'0')}`}function questsComplete(){if(level===6)return !foes.some(f=>f.isBoss);return levelBoarsDone>=levelBoarsTotal&&levelFamilyDone>=levelFamilyTotal}function questState(){if(level===1&&opening)return {move:'👩 Мама впереди — иди по дорожке',feed:'🍎 Кабанчик догоняет! Брось ему яблоко',ride:'💚 Друг рядом — сядь на него',rescue:'🏇 Езжай к маме по дорожке',complete:opening.passageOpen?'💚 Тропа открыта — вперёд к озеру!':'🪵 Езжай с другом к дереву — открой дорогу к озеру'}[opening.stage];if(level===6){const boss=foes.find(f=>f.isBoss);if(boss)return `👑 Босс: ${boss.hp}/${boss.maxHp} · Подружи миньона и помоги ему победить босса`;return '🎉 Босс побеждён!'}const boarsLeft=Math.max(0,levelBoarsTotal-levelBoarsDone),familyLeft=Math.max(0,levelFamilyTotal-levelFamilyDone);if(boarsLeft>0&&familyLeft>0)return `🐗 Накорми кабанов: ${levelBoarsDone}/${levelBoarsTotal} · 👨‍👩‍👦 Найди родных: ${levelFamilyDone}/${levelFamilyTotal}`;if(boarsLeft>0)return `🐗 Накорми кабанов: ${levelBoarsDone}/${levelBoarsTotal}`;if(familyLeft>0)return `👨‍👩‍👦 Найди родных: ${levelFamilyDone}/${levelFamilyTotal}`;return '🌀 Задание выполнено — иди в портал!' }
 let cinematicRunning=false,cinematicTimers=[],cinematicFinish=null,movie=null;const movieRoot=new THREE.Group();scene.add(movieRoot);
 window.addEventListener('keydown',e=>{if(cinematicRunning&&['Escape','Space','Enter'].includes(e.code)){e.preventDefault();cinematicFinish?.()}});
 function cineClear(){for(const t of cinematicTimers)clearTimeout(t);cinematicTimers=[];if(movie){if(movie.saved.doorMaterial){familyDoorSlab.material.dispose();familyDoorSlab.material=movie.saved.doorMaterial}for(const [o,visible] of movie.saved.visibility)o.visible=visible;scene.background.copy(movie.saved.sky);scene.fog.color.copy(movie.saved.fog);sun.intensity=movie.saved.sun;hemi.intensity=movie.saved.hemi;camera.fov=movie.saved.fov;camera.updateProjectionMatrix();for(const g of movie.privateGeometries||[])g.dispose();for(const m of movie.privateMaterials||[])m.dispose();movie=null}movieRoot.clear();}
@@ -1133,6 +1146,7 @@ function solidCircles(){
 }
 function playerWorldBlocked(x,z,pad=0){
  if(x<-43.15||x>43.15||z<-43.15||z>43.15)return true;
+ if(level===1&&opening&&!opening.passageOpen&&Math.abs(x)<5.9&&z<-33.2&&z>-36.8)return true;
  const rr=PLAYER_RADIUS+pad;
  // v165: on foot the bridge rail blocks at deck height, but a normal jump can clear it.
  if(level===4&&(mountedFriend||py<.62)&&bridgeRailBlocked(x,z,mountedFriend?.86:rr))return true;
@@ -1862,7 +1876,7 @@ if(__autoTest||__autoParams.get('openingtest')==='1')window.__KABANCHIKI_QA__={
  v161Fire(seconds=0){this.load(1);paused=true;const tree=treeObjects.find(t=>t.visible);igniteStormTarget(tree);const b=stormBurning.get(tree);b.time-=seconds;updateLivingFire(tree,b,performance.now());boy.position.set(tree.position.x,0,tree.position.z+5);yaw=Math.PI;camMode=3;return {time:b.time,emissive:b.materials[0].mesh.material.emissive?.getHex(),color:b.materials[0].mesh.material.color.getHex()}},
  revision(){return {entry:[boy.position.x,boy.position.z],heading:yaw,topHeight:camera.position.y-boy.position.y,movie:movie?{people:movie.people.map(p=>p.visible),hero:movie.hero.visible,blanket:movie.picnic?.visible,carZ:movie.car?.position.z}:null,vortices:false,waves:lakeWaves.length}},
 
- openingInspect(){return {stage:opening?.stage,elapsed:opening?.elapsed,chasing:opening?.chasing,hit:opening?.hit,rode:opening?.rode,rescued:opening?.rescued,refills:opening?.refills,life,food,mounted:mountedFriend,position:boy.position.toArray(),heading:yaw,friend:friend?.g.position.toArray(),enemy:foes.map(f=>({position:f.g.position.toArray(),bolt:f.bolt.visible,opening:f.openingBoar})),family:familyMembers.map(f=>({role:f.role,done:f.done,position:f.g.position.toArray()})),completed:levelFamilyDone,total:levelFamilyTotal,cinematic:cinematicRunning,propsVisible:openingProps?.visible,portalVisible:portalObj?.g.visible,guideHidden:$('openingGuide').hidden}},
+ openingInspect(){return {stage:opening?.stage,elapsed:opening?.elapsed,chasing:opening?.chasing,hit:opening?.hit,rode:opening?.rode,rescued:opening?.rescued,refills:opening?.refills,life,food,mounted:mountedFriend,position:boy.position.toArray(),heading:yaw,friend:friend?.g.position.toArray(),enemy:foes.map(f=>({position:f.g.position.toArray(),bolt:f.bolt.visible,opening:f.openingBoar})),family:familyMembers.map(f=>({role:f.role,done:f.done,position:f.g.position.toArray()})),completed:levelFamilyDone,total:levelFamilyTotal,cinematic:cinematicRunning,propsVisible:openingProps?.visible,portalVisible:portalObj?.g.visible,passageOpen:opening?.passageOpen,passageStarted:opening?.passageStarted,passageTime:opening?.passageTime,guideHidden:$('openingGuide').hidden}},
  state(){return {season:currentSeason,failedAttempts:attemptProgress.failed,camMode,level,version:GAME_VERSION,flashlight:hasFlashlight,friend:!!friend,apples:yellowAppleStock,mushrooms:yellowMushroomStock,form:boarFormTime,basins:puddleObjects.length,boss:foes.find(f=>f.isBoss)?.maxHp,redTrees:treeObjects.filter(t=>{let red=false;t.traverse(m=>{if(m.material?.emissive?.getHex())red=true});return red}).length}},
  prepareRestart(){hasFlashlight=true;yellowAppleStock=2;yellowMushroomStock=2;boarFormTime=30;const t=treeObjects.find(t=>t.visible);if(t)igniteBossTree(t);friend=makeBoar(3,6,true);mountedFriend=true;return this.state()},
  restart(){restartGame();return this.state()},
@@ -1985,7 +1999,8 @@ if(friend&&!mountedFriend&&!friendYieldActive&&!friendKnockbackActive&&!friend.k
 const ax=target.g.position.x-friend.g.position.x,az=target.g.position.z-friend.g.position.z,al=Math.max(.01,Math.hypot(ax,az));if(target.isBoss)bossRepelsFriend(target,friend);else{friend.g.position.x-=ax/al*.16;friend.g.position.z-=az/al*.16}
 bossBattleImpact((friend.g.position.x+target.g.position.x)/2,(friend.g.position.z+target.g.position.z)/2);sound(target.isBoss?105:145,.18,'triangle');
 if(target.isBoss){target.hp--;bossHits++;statsData.bossHits++;bossRage=Math.min(2.35,bossRage+.12);moveBoarToward(target,target.g.position.x+ax/al*5,target.g.position.z+az/al*5,.95,1);target.stagger=Math.max(target.stagger||0,1.0);notice(`⚔️ Друг ударил босса, а босс отшвыривает друга! Осталось ${target.hp}/${target.maxHp}`);if(target.hp<=0){score+=diffScore(200);onBossDefeated(target)}}else if(target.isMinion){hitBossMinion(target,ax,az,al)}else{foes.splice(foes.indexOf(target),1);sendBoarAway(target,'defeated');levelBoarsDone++;statsData.minions++;score+=diffScore(25);softBoarDefeatSound();notice('💚 Побеждённый кабанчик испугался и убегает!')}friendHP--;if(friendHP<=0){scene.remove(friend.g);friend=null;notice('💔 Кабанчик-друг пал в бою')}}}else{const d=Math.hypot(friend.g.position.x-boy.position.x,friend.g.position.z-boy.position.z);if(d>4.2){moveFriendAroundObstacles(boy.position.x,boy.position.z,3.25,dt)}if(d<=3.6){const idleYaw=Math.atan2(boy.position.x-friend.g.position.x,boy.position.z-friend.g.position.z),idleTurn=Math.atan2(Math.sin(idleYaw-friend.g.rotation.y),Math.cos(idleYaw-friend.g.rotation.y));friend.g.rotation.y+=idleTurn*(1-Math.exp(-3.2*dt))}}}
-if(level<6&&questsComplete()){if(!portalObj.g.visible){effect('portal');softEffectTone(392,.34,'sine',.025,0,784)}portalObj.g.visible=true;portalObj.ring.rotation.z=0;portalObj.core.material.opacity=.42+Math.sin(now*.006)*.14;portalObj.glow.intensity=7+Math.sin(now*.008)*2;if(Math.hypot(boy.position.x,boy.position.z+42)<2.2){score+=Math.max(0,Math.round(120-levelTime));const hadFriend=!!friend;loadLevel(level+1);if(hadFriend)notice('💚 Кабанчик-друг прошёл через портал вместе с Тимуром!')}}
+if(level===1){portalObj.g.visible=false;if(opening?.passageOpen&&Math.abs(boy.position.x)<3.5&&boy.position.z<-41){score+=Math.max(0,Math.round(120-levelTime));loadLevel(2);notice('🌊 Вы вышли к озеру. Друг кабанчик идёт с Тимуром!')}}
+else if(level<6&&questsComplete()){if(!portalObj.g.visible){effect('portal');softEffectTone(392,.34,'sine',.025,0,784)}portalObj.g.visible=true;portalObj.ring.rotation.z=0;portalObj.core.material.opacity=.42+Math.sin(now*.006)*.14;portalObj.glow.intensity=7+Math.sin(now*.008)*2;if(Math.hypot(boy.position.x,boy.position.z+42)<2.2){score+=Math.max(0,Math.round(120-levelTime));const hadFriend=!!friend;loadLevel(level+1);if(hadFriend)notice('💚 Кабанчик-друг прошёл через портал вместе с Тимуром!')}}
 if(level===6&&bossVictoryTimer!==null&&!win){bossVictoryTimer=Math.max(0,bossVictoryTimer-dt);bossFireworkTimer-=dt;if(bossFireworkTimer<=0){spawnVictoryFirework();bossFireworkTimer=.32}if(bossVictoryTimer<=0)finishBossVictory()}
 for(const f of foes){f.phase+=dt;f.stagger=Math.max(0,(f.stagger||0)-dt);if(f.isBoss){f.b.position.y=Math.sin(now*.004)*.035;f.b.rotation.z=Math.sin(now*.0032)*.018}const d=Math.hypot(f.g.position.x-boy.position.x,f.g.position.z-boy.position.z);const chasing=boarShouldChasePlayer(f,d);f.bolt.visible=!f.flee&&(chasing||(attacksPlayer(boarFormTime+catFormTime)&&d<=1.05));if(chasing){const chaseSpeed=(f.openingBoar&&opening?1.4:f.isBoss?f.baseSpeed*bossRage:1.65)*(.65+diffCfg().speedMult*.55);if(!(f.stagger>0))moveBoarToward(f,boy.position.x,boy.position.z,chaseSpeed,dt);f.g.rotation.y=Math.atan2(boy.position.x-f.g.position.x,boy.position.z-f.g.position.z)}else if(!f.isBoss){
   f.roamTimer=(f.roamTimer??0)-dt; f.roamPause=(f.roamPause??0)-dt; f.blinkTimer=(f.blinkTimer??rand(1,4))-dt;
