@@ -1,20 +1,20 @@
 window.__gameLoadProgress?.(84);let __loadFinished=false;
 import * as THREE from '../vendor/three/three.module.min.js';
-import { BOAR_MAX_WATER_DEPTH, attacksPlayer, shallowStepAllowed, capsuleAt, capsuleCircleContact, capsuleCapsuleContact } from './boar-physics.js?v=190';
-import { convexHull, polygonContact, FriendYield } from './movement-geometry.js?v=190';
-import { BOSS_HITS, riverCenterAt, riverDepthAt, onRiverBridge, lakeInletCenterAt, lakeInletHalfWidthAt, lakeInletDepthAt, bridgeRailBlocked, weatherDeadline, rainFillLimit, rainFillRate, WorldSurface, lakePointAt, lakeRadiusAt, lakeDepth } from './world-surface.js?v=190';
-import { Knockback } from './knockback.js?v=190';
-import { AdaptiveQuality, GRAPHICS_TIERS } from './adaptive-quality.js?v=190';
-import { AttemptProgress, seasonForAttempts } from './seasons.js?v=190';
-import { Soundscape } from './soundscape.js?v=190';
-import { BufferedMusic, gameScore, cinematicScore } from './music-player.js?v=190';
-import { OpeningAdventure, openingStreamDepth } from './opening-adventure.js?v=190';
-import { introStagingAt } from './cinematic-staging.js?v=190';
-import { segmentHitsBox, findGridPath } from './navigation.js?v=190';
-import { CatLife } from './cat-life.js?v=190';
-import { BirdLife } from './bird-life.js?v=190';
-import { CAT_BERRY_CHANCE, CAT_FORM_SECONDS, CAT_JUMP_SPEED, isCatBerryRoll, formTimeAfterStep } from './form-rules.js?v=190';
-const GAME_VERSION='v190';
+import { BOAR_MAX_WATER_DEPTH, attacksPlayer, shallowStepAllowed, capsuleAt, capsuleCircleContact, capsuleCapsuleContact } from './boar-physics.js?v=191';
+import { convexHull, polygonContact, FriendYield } from './movement-geometry.js?v=191';
+import { BOSS_HITS, riverCenterAt, riverDepthAt, onRiverBridge, lakeInletCenterAt, lakeInletHalfWidthAt, lakeInletDepthAt, bridgeRailBlocked, weatherDeadline, rainFillLimit, rainFillRate, WorldSurface, lakePointAt, lakeRadiusAt, lakeDepth } from './world-surface.js?v=191';
+import { Knockback } from './knockback.js?v=191';
+import { AdaptiveQuality, GRAPHICS_TIERS } from './adaptive-quality.js?v=191';
+import { AttemptProgress, seasonForAttempts } from './seasons.js?v=191';
+import { Soundscape } from './soundscape.js?v=191';
+import { BufferedMusic, gameScore, cinematicScore } from './music-player.js?v=191';
+import { OpeningAdventure, openingStreamDepth } from './opening-adventure.js?v=191';
+import { introStagingAt } from './cinematic-staging.js?v=191';
+import { segmentHitsBox, findGridPath } from './navigation.js?v=191';
+import { CatLife } from './cat-life.js?v=191';
+import { BirdLife } from './bird-life.js?v=191';
+import { CAT_BERRY_CHANCE, CAT_FORM_SECONDS, CAT_JUMP_SPEED, isCatBerryRoll, formTimeAfterStep } from './form-rules.js?v=191';
+const GAME_VERSION='v191';
 const attemptProgress=new AttemptProgress((()=>{try{return window.localStorage}catch{return null}})());let currentSeason=attemptProgress.season;
 let chosenSeason=null;try{chosenSeason=localStorage.getItem('kabanchiki3d_chosen_season')}catch{}
 function unlockedSeasons(){return attemptProgress.failed>=60?['summer','autumn','winter','spring']:attemptProgress.failed>=40?['summer','autumn','winter']:attemptProgress.failed>=20?['summer','autumn']:['summer']}
@@ -733,6 +733,8 @@ function prepareOpeningClearing(){
  for(const tree of treeObjects)if(inRoute(tree.position.x,tree.position.z))tree.visible=false;
  for(const [x,z,,mesh] of rockPositions)if(inRoute(x,z))mesh.visible=false;
  for(const log of logObstacles)if(inRoute(log.x,log.z))log.g.visible=false;
+ // Clear both rows of border scenery so the trail visibly continues beyond the map.
+ for(const decor of boundaryDecor)if(Math.abs(decor.position.x)<10&&decor.position.z<-40)decor.visible=false;
  const log=logObstacles[0];if(log){log.x=0;log.z=5;log.len=3.4;log.yaw=0;log.g.position.set(0,.13,5);log.g.visible=true;log.mesh.scale.y=3.4;log.mesh.rotation.y=0;log.top=.13+log.r;}
 }
 function openingLabel(text){
@@ -749,6 +751,11 @@ function setupOpeningProps(){
   for(const z of [12,0,-12]){block(openingProps,mats.wood,3.1,.6,z,.09,1.2,.09);const flag=block(openingProps,mats.gold,3.35,1.03,z,.5,.25,.045);flag.rotation.z=-.15;}
   const marker=new THREE.Sprite(new THREE.SpriteMaterial({map:openingLabel('МАМА'),transparent:true,depthWrite:false,toneMapped:false,fog:false}));marker.scale.set(4,1,1);openingProps.add(marker);openingProps.userData.marker=marker;
   const exit=new THREE.Group();exit.position.set(0,0,-39);openingProps.add(exit);openingProps.userData.exit=exit;
+  const trail=new THREE.Mesh(new THREE.PlaneGeometry(6.2,22),new THREE.MeshLambertMaterial({color:0xc3ab79,side:THREE.DoubleSide}));trail.rotation.x=-Math.PI/2;trail.position.set(0,.025,-7);exit.add(trail);
+  const shore=new THREE.Mesh(new THREE.PlaneGeometry(23,18),new THREE.MeshLambertMaterial({color:0xb4c281,side:THREE.DoubleSide}));shore.rotation.x=-Math.PI/2;shore.position.set(0,-.015,-21);exit.add(shore);
+  const distantLake=new THREE.Mesh(new THREE.CircleGeometry(1,40),new THREE.MeshPhongMaterial({color:0x68aec1,shininess:80,side:THREE.DoubleSide}));distantLake.rotation.x=-Math.PI/2;distantLake.scale.set(10,6,1);distantLake.position.set(0,.04,-23);exit.add(distantLake);openingProps.userData.distantLake=distantLake;openingProps.userData.distantWater=distantLake.material;
+  for(const [x,z] of [[-4,0],[4,0],[-4.6,-4],[4.6,-4],[-5.2,-9],[5.2,-9],[-8,-16],[8,-16]]){block(exit,mats.wood,x,2.1,z,.55,4.2,.55);sphere(exit,mats.leaf,x,4.1,z,2.25)}
+
   for(const x of [-5.8,5.8]){block(exit,mats.wood,x,2,0,.65,4,.65);sphere(exit,mats.leaf,x,4,0,2.6)}
   const trunk=new THREE.Group();trunk.position.set(0,.72,4);exit.add(trunk);openingProps.userData.trunk=trunk;
   const bark=new THREE.Mesh(new THREE.CylinderGeometry(.64,.78,10.5,9),mats.wood);bark.rotation.z=Math.PI/2;trunk.add(bark);
@@ -758,7 +765,7 @@ function setupOpeningProps(){
   block(exit,mats.wood,3.6,1.25,2,.14,2.5,.14);block(exit,mats.wood,3.6,2.15,2,2.5,.75,.12);
   const sign=new THREE.Sprite(new THREE.SpriteMaterial({map:openingLabel('К ОЗЕРУ →'),transparent:true,depthWrite:false}));sign.position.set(3.6,2.17,2.1);sign.scale.set(2.6,.65,1);exit.add(sign);
  }
- openingProps.visible=true;openingProps.userData.label='';openingProps.userData.trunk.position.set(0,.72,4);openingProps.userData.trunk.rotation.set(0,0,0);openingProps.userData.trunk.visible=true;openingProps.userData.debris.visible=false;for(const fruit of openingProps.userData.crateFruit)fruit.visible=true;
+ openingProps.visible=true;openingProps.userData.label='';openingProps.userData.trunk.position.set(0,.72,4);openingProps.userData.trunk.rotation.set(0,0,0);openingProps.userData.trunk.visible=true;openingProps.userData.debris.visible=false;openingProps.userData.distantLake.material=currentSeason==='winter'?iceWaterMaterial:openingProps.userData.distantWater;for(const fruit of openingProps.userData.crateFruit)fruit.visible=true;
  const brook=openingProps.userData.brook;brook.position.y=Math.max(.04,terrainHeightAt(0,-5)+.025);brook.material=currentSeason==='winter'?iceWaterMaterial:openingProps.userData.waterMaterial;
 }
 function updateOpeningAdventure(dt){
@@ -1881,7 +1888,7 @@ if(__autoTest||__autoParams.get('openingtest')==='1')window.__KABANCHIKI_QA__={
  revision(){return {entry:[boy.position.x,boy.position.z],heading:yaw,topHeight:camera.position.y-boy.position.y,movie:movie?{people:movie.people.map(p=>p.visible),hero:movie.hero.visible,blanket:movie.picnic?.visible,carZ:movie.car?.position.z}:null,vortices:false,waves:lakeWaves.length}},
 
  openingScenario(kind){keys={};stick.x=stick.y=0;jump=act=false;paused=false;invuln=100;if(kind==='crate'){food=0;boy.position.set(-2.9,0,24.3)}if(kind==='mother'){const m=familyMembers.find(f=>f.role===0);boy.position.set(m.x,0,m.z)}if(kind==='break'){const f=foes.find(f=>f.openingBoar);if(f)resolveMeat({g:new THREE.Group(),foe:f,type:'apple'});mountedFriend=true;setRiderPose(true);boy.position.set(0,1.18,-32.5);friend.g.position.set(0,0,-32.5);boy.rotation.y=yaw=Math.PI}return this.openingInspect()},
- openingInspect(){return {stage:opening?.stage,elapsed:opening?.elapsed,chasing:opening?.chasing,hit:opening?.hit,rode:opening?.rode,rescued:opening?.rescued,refills:opening?.refills,life,food,mounted:mountedFriend,position:boy.position.toArray(),heading:yaw,friend:friend?.g.position.toArray(),enemy:foes.map(f=>({position:f.g.position.toArray(),bolt:f.bolt.visible,opening:f.openingBoar})),family:familyMembers.map(f=>({role:f.role,done:f.done,position:f.g.position.toArray()})),completed:levelFamilyDone,total:levelFamilyTotal,cinematic:cinematicRunning,propsVisible:openingProps?.visible,portalVisible:portalObj?.g.visible,passageOpen:opening?.passageOpen,passageStarted:opening?.passageStarted,passageTime:opening?.passageTime,passageBroken:opening?.passageBroken,crateApples:opening?.crateApples,trunkVisible:openingProps?.userData.trunk.visible,debrisVisible:openingProps?.userData.debris.visible,guideHidden:$('openingGuide').hidden}},
+ openingInspect(){return {stage:opening?.stage,elapsed:opening?.elapsed,chasing:opening?.chasing,hit:opening?.hit,rode:opening?.rode,rescued:opening?.rescued,refills:opening?.refills,life,food,mounted:mountedFriend,position:boy.position.toArray(),heading:yaw,friend:friend?.g.position.toArray(),enemy:foes.map(f=>({position:f.g.position.toArray(),bolt:f.bolt.visible,opening:f.openingBoar})),family:familyMembers.map(f=>({role:f.role,done:f.done,position:f.g.position.toArray()})),completed:levelFamilyDone,total:levelFamilyTotal,cinematic:cinematicRunning,propsVisible:openingProps?.visible,portalVisible:portalObj?.g.visible,passageOpen:opening?.passageOpen,passageStarted:opening?.passageStarted,passageTime:opening?.passageTime,passageBroken:opening?.passageBroken,crateApples:opening?.crateApples,trunkVisible:openingProps?.userData.trunk.visible,debrisVisible:openingProps?.userData.debris.visible,exitBlockedDecor:boundaryDecor.filter(o=>o.visible&&Math.abs(o.position.x)<10&&o.position.z<-40).length,exitLakeVisible:openingProps?.userData.distantLake.visible,guideHidden:$('openingGuide').hidden}},
  state(){return {season:currentSeason,failedAttempts:attemptProgress.failed,camMode,level,version:GAME_VERSION,flashlight:hasFlashlight,friend:!!friend,apples:yellowAppleStock,mushrooms:yellowMushroomStock,form:boarFormTime,basins:puddleObjects.length,boss:foes.find(f=>f.isBoss)?.maxHp,redTrees:treeObjects.filter(t=>{let red=false;t.traverse(m=>{if(m.material?.emissive?.getHex())red=true});return red}).length}},
  prepareRestart(){hasFlashlight=true;yellowAppleStock=2;yellowMushroomStock=2;boarFormTime=30;const t=treeObjects.find(t=>t.visible);if(t)igniteBossTree(t);friend=makeBoar(3,6,true);mountedFriend=true;return this.state()},
  restart(){restartGame();return this.state()},
