@@ -1,22 +1,23 @@
 window.__gameLoadProgress?.(84);let __loadFinished=false;
 import * as THREE from '../vendor/three/three.module.min.js';
-import { BOAR_MAX_WATER_DEPTH, attacksPlayer, shallowStepAllowed, capsuleAt, capsuleCircleContact, capsuleCapsuleContact } from './boar-physics.js?v=196';
-import { convexHull, polygonContact, FriendYield } from './movement-geometry.js?v=196';
-import { BOSS_HITS, riverCenterAt, riverDepthAt, onRiverBridge, lakeInletCenterAt, lakeInletHalfWidthAt, lakeInletDepthAt, bridgeRailBlocked, weatherDeadline, rainFillLimit, rainFillRate, WorldSurface, lakePointAt, lakeRadiusAt, lakeDepth } from './world-surface.js?v=196';
-import { Knockback } from './knockback.js?v=196';
-import { AdaptiveQuality, GRAPHICS_TIERS } from './adaptive-quality.js?v=196';
-import { AttemptProgress, seasonForAttempts } from './seasons.js?v=196';
-import { Soundscape } from './soundscape.js?v=196';
-import { BufferedMusic, gameScore, cinematicScore } from './music-player.js?v=196';
-import { lightBudget, selectEffectLights, OcclusionSchedule } from './render-budget.js?v=196';
-import { LocationExit, LOCATION_EXITS } from './location-exits.js?v=196';
-import { OpeningAdventure, openingStreamDepth, forestExitBlocked } from './opening-adventure.js?v=196';
-import { introStagingAt } from './cinematic-staging.js?v=196';
-import { segmentHitsBox, findGridPath } from './navigation.js?v=196';
-import { CatLife } from './cat-life.js?v=196';
-import { BirdLife } from './bird-life.js?v=196';
-import { CAT_BERRY_CHANCE, CAT_FORM_SECONDS, CAT_JUMP_SPEED, isCatBerryRoll, formTimeAfterStep } from './form-rules.js?v=196';
-const GAME_VERSION='v196';
+import { BOAR_MAX_WATER_DEPTH, attacksPlayer, shallowStepAllowed, capsuleAt, capsuleCircleContact, capsuleCapsuleContact } from './boar-physics.js?v=197';
+import { convexHull, polygonContact, FriendYield } from './movement-geometry.js?v=197';
+import { BOSS_HITS, riverCenterAt, riverDepthAt, onRiverBridge, lakeInletCenterAt, lakeInletHalfWidthAt, lakeInletDepthAt, bridgeRailBlocked, weatherDeadline, rainFillLimit, rainFillRate, WorldSurface, lakePointAt, lakeRadiusAt, lakeDepth } from './world-surface.js?v=197';
+import { Knockback } from './knockback.js?v=197';
+import { AdaptiveQuality, GRAPHICS_TIERS } from './adaptive-quality.js?v=197';
+import { AttemptProgress, seasonForAttempts } from './seasons.js?v=197';
+import { Soundscape } from './soundscape.js?v=197';
+import { BufferedMusic, gameScore, cinematicScore } from './music-player.js?v=197';
+import { StaticSceneryBatches } from './static-batching.js?v=197';
+import { lightBudget, selectEffectLights, OcclusionSchedule } from './render-budget.js?v=197';
+import { LocationExit, LOCATION_EXITS } from './location-exits.js?v=197';
+import { OpeningAdventure, openingStreamDepth, forestExitBlocked } from './opening-adventure.js?v=197';
+import { introStagingAt } from './cinematic-staging.js?v=197';
+import { segmentHitsBox, findGridPath } from './navigation.js?v=197';
+import { CatLife } from './cat-life.js?v=197';
+import { BirdLife } from './bird-life.js?v=197';
+import { CAT_BERRY_CHANCE, CAT_FORM_SECONDS, CAT_JUMP_SPEED, isCatBerryRoll, formTimeAfterStep } from './form-rules.js?v=197';
+const GAME_VERSION='v197';
 const attemptProgress=new AttemptProgress((()=>{try{return window.localStorage}catch{return null}})());let currentSeason=attemptProgress.season;
 let chosenSeason=null;try{chosenSeason=localStorage.getItem('kabanchiki3d_chosen_season')}catch{}
 function unlockedSeasons(){return attemptProgress.failed>=60?['summer','autumn','winter','spring']:attemptProgress.failed>=40?['summer','autumn','winter']:attemptProgress.failed>=20?['summer','autumn']:['summer']}
@@ -49,12 +50,15 @@ const softGlowTexture=visualOnly(glowTexture);
 const fireballAssets=visualOnly(()=>({coreGeometry:new THREE.SphereGeometry(.32,10,8),flameGeometry:new THREE.SphereGeometry(.52,10,8),coreMaterial:new THREE.MeshBasicMaterial({color:0xfff0a0}),flameMaterial:new THREE.MeshBasicMaterial({color:0xff4a00,transparent:true,opacity:.72})}));
 const renderLights=visualOnly(()=>Array.from({length:6},()=>{const l=new THREE.PointLight(0xffffff,0,10);scene.add(l);return l}));
 let selectedRenderLights=[],lastLightSelection=-Infinity,lightSelectionEpoch=-1;
+let sceneryBatches=null,sceneryEpoch=-1,scenerySeason=null;
+function ensureSceneryBatches(){if(sceneryEpoch===worldEpoch&&scenerySeason===currentSeason)return;sceneryBatches?.dispose();const candidates=[],seen=new Set();const add=root=>{if(!root||burningTrees.has(root)||stormBurning.has(root))return;root.traverse(mesh=>{if(mesh.isMesh&&!seen.has(mesh)){seen.add(mesh);candidates.push({mesh,owner:root})}})};for(const root of treeObjects)add(root);for(const root of boundaryDecor)add(root);for(const root of biomeObjects)add(root);for(const rock of rockPositions)add(rock[3]);sceneryBatches=visualOnly(()=>new StaticSceneryBatches(scene,candidates));sceneryEpoch=worldEpoch;scenerySeason=currentSeason;}
 function renderWithLightBudget(now){
+ ensureSceneryBatches();
  const budget=lightBudget(adaptiveGraphics.tier);
  if(now-lastLightSelection>=100||lightSelectionEpoch!==worldEpoch){lastLightSelection=now;lightSelectionEpoch=worldEpoch;effectLights=effectLights.filter(l=>{let root=l;while(root.parent)root=root.parent;return root===scene});const candidates=[];for(const source of effectLights){if(!source.visible||source.intensity<=0)continue;let visible=true;for(let p=source.parent;p;p=p.parent)if(!p.visible){visible=false;break}if(!visible)continue;const position=source.getWorldPosition(new THREE.Vector3());candidates.push({source,intensity:source.intensity,distanceSquared:position.distanceToSquared(boy.position),primary:!!source.userData.primary&&!cinematicRunning})}selectedRenderLights=selectEffectLights(candidates,budget)}
  for(let i=0;i<renderLights.length;i++){const light=renderLights[i],source=selectedRenderLights[i]?.source;light.visible=i<budget;if(!source||!source.parent){light.intensity=0;continue}source.getWorldPosition(light.position);light.color.copy(source.color);light.intensity=source.intensity;light.distance=source.distance;light.decay=source.decay}
  const visibility=effectLights.map(l=>l.visible);effectLights.forEach(l=>l.visible=false);const fogCulled=[];for(const root of boundaryDecor)if(root.visible&&Math.hypot(root.position.x-camera.position.x,root.position.z-camera.position.z)>scene.fog.far+8){root.visible=false;fogCulled.push(root)}
- try{renderer.render(scene,camera)}finally{effectLights.forEach((l,i)=>l.visible=visibility[i]);for(const root of fogCulled)root.visible=true}
+ try{sceneryBatches.begin(camera,root=>burningTrees.has(root)||stormBurning.has(root)||root.userData.stormBlackened);renderer.render(scene,camera)}finally{sceneryBatches.end();effectLights.forEach((l,i)=>l.visible=visibility[i]);for(const root of fogCulled)root.visible=true}
 }
 
 const mats={grass:new THREE.MeshLambertMaterial({color:0x6aa84d}),soil:new THREE.MeshLambertMaterial({color:0x92714d}),path:new THREE.MeshLambertMaterial({color:0xb7a06d}),leaf:new THREE.MeshLambertMaterial({color:0x39834b}),leaf2:new THREE.MeshLambertMaterial({color:0x4d9854}),wood:new THREE.MeshLambertMaterial({color:0x765239}),stone:new THREE.MeshLambertMaterial({color:0x8b9a9d}),skin:new THREE.MeshLambertMaterial({color:0xf2ba83}),hair:new THREE.MeshLambertMaterial({color:0x65402b}),shirt:new THREE.MeshLambertMaterial({color:0x3776bc}),pants:new THREE.MeshLambertMaterial({color:0x35465b}),boar:new THREE.MeshLambertMaterial({color:0x80513c}),boar2:new THREE.MeshLambertMaterial({color:0xa87955}),pink:new THREE.MeshLambertMaterial({color:0xe4a5a0}),white:new THREE.MeshLambertMaterial({color:0xf8f1df}),black:new THREE.MeshLambertMaterial({color:0x211c1c}),red:new THREE.MeshLambertMaterial({color:0xd23c37}),gold:new THREE.MeshLambertMaterial({color:0xffd55e}),roof:new THREE.MeshLambertMaterial({color:0xb65c43})};
@@ -1951,7 +1955,7 @@ if(__autoTest||__autoParams.get('openingtest')==='1')window.__KABANCHIKI_QA__={
  revision(){return {entry:[boy.position.x,boy.position.z],heading:yaw,topHeight:camera.position.y-boy.position.y,movie:movie?{people:movie.people.map(p=>p.visible),hero:movie.hero.visible,blanket:movie.picnic?.visible,carZ:movie.car?.position.z}:null,vortices:false,waves:lakeWaves.length}},
 
  performanceScenario(){this.load(6,3);adaptiveGraphics.setTier(0,performance.now());hasFlashlight=true;torch.intensity=42;invuln=999;boy.position.set(0,0,9);yaw=boy.rotation.y=Math.PI;camMode=1;const boss=foes.find(f=>f.isBoss);boss.g.position.set(0,0,-3);boss.hp=999;bossSummon=0;if(friend)scene.remove(friend.g);friend=makeBoar(3,0,true);friendHP=999;friend.g.position.set(3,0,-3);mountedFriend=false;py=vy=0;keys={};stick.x=stick.y=0;paused=false;for(const tree of treeObjects.filter(t=>t.visible&&Math.hypot(t.position.x,t.position.z-9)>8).sort((a,b)=>Math.hypot(a.position.x,a.position.z)-Math.hypot(b.position.x,b.position.z)).slice(0,4))igniteBossTree(tree);performanceFrames.length=0;return true},
- performanceInspect(){return {frames:performanceFrames.length,cpu:performanceFrames.reduce((s,f)=>s+f.cpu,0)/Math.max(1,performanceFrames.length),render:performanceFrames.reduce((s,f)=>s+f.render,0)/Math.max(1,performanceFrames.length),calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,lightSlots:lightBudget(adaptiveGraphics.tier),activeLights:selectedRenderLights.length,shadowEnabled:renderer.shadowMap.enabled,shadows:renderer.shadowMap.enabled,tier:adaptiveGraphics.tier,fps:fpsValue,fire:burningTrees.size,projectiles:fireballs.length,boars:foes.length,bossHits,bossAlive:!!foes.find(f=>f.isBoss),friend:!!friend,life}},
+ performanceInspect(){return {batchGroups:sceneryBatches?.groups.length,batchInstances:sceneryBatches?.drawn,hiddenOriginals:sceneryBatches?.hidden.length,frames:performanceFrames.length,cpu:performanceFrames.reduce((s,f)=>s+f.cpu,0)/Math.max(1,performanceFrames.length),render:performanceFrames.reduce((s,f)=>s+f.render,0)/Math.max(1,performanceFrames.length),calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,lightSlots:lightBudget(adaptiveGraphics.tier),activeLights:selectedRenderLights.length,shadowEnabled:renderer.shadowMap.enabled,shadows:renderer.shadowMap.enabled,tier:adaptiveGraphics.tier,fps:fpsValue,fire:burningTrees.size,projectiles:fireballs.length,boars:foes.length,bossHits,bossAlive:!!foes.find(f=>f.isBoss),friend:!!friend,life}},
  locationExitScenario(n){this.load(n);invuln=100;keys={};stick.x=stick.y=0;jump=act=false;paused=false;boy.position.set(0,mountedFriend?1.18:0,-35);yaw=boy.rotation.y=Math.PI;return this.locationExitInspect()},
  locationExitModes(){const saved={mounted:mountedFriend,py};const modes=[];for(const riding of [false,true])for(const height of [0,4]){mountedFriend=riding;py=height;modes.push({riding,height,blocked:[-42,0,42].map(x=>playerWorldBlocked(x,-39))})}mountedFriend=saved.mounted;py=saved.py;return modes},
  locationExitFamily(){const m=familyMembers.find(f=>!f.done);if(m){boy.position.set(m.x,0,m.z);mountedFriend=false;py=vy=0;setRiderPose(false)}return !!m},
