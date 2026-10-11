@@ -19,3 +19,9 @@ export class OpeningAdventure{
  get complete(){return this.rescued}
 }
 export function openingStreamDepth(x,z){const r=(x/4.6)**2+((z+5)/1.9)**2;return r<1?.08*(1-r):0}
+
+// A continuous thicket closes the forest edge; only its central opening is cleared.
+export function forestExitBlocked(x,z,radius=0,open=false){
+ if(!open)return z-radius<-33.2;
+ return Math.abs(x)+radius>5.5&&z-radius<-33.2&&z+radius>-36.8;
+}

@@ -1,20 +1,20 @@
 window.__gameLoadProgress?.(84);let __loadFinished=false;
 import * as THREE from '../vendor/three/three.module.min.js';
-import { BOAR_MAX_WATER_DEPTH, attacksPlayer, shallowStepAllowed, capsuleAt, capsuleCircleContact, capsuleCapsuleContact } from './boar-physics.js?v=191';
-import { convexHull, polygonContact, FriendYield } from './movement-geometry.js?v=191';
-import { BOSS_HITS, riverCenterAt, riverDepthAt, onRiverBridge, lakeInletCenterAt, lakeInletHalfWidthAt, lakeInletDepthAt, bridgeRailBlocked, weatherDeadline, rainFillLimit, rainFillRate, WorldSurface, lakePointAt, lakeRadiusAt, lakeDepth } from './world-surface.js?v=191';
-import { Knockback } from './knockback.js?v=191';
-import { AdaptiveQuality, GRAPHICS_TIERS } from './adaptive-quality.js?v=191';
-import { AttemptProgress, seasonForAttempts } from './seasons.js?v=191';
-import { Soundscape } from './soundscape.js?v=191';
-import { BufferedMusic, gameScore, cinematicScore } from './music-player.js?v=191';
-import { OpeningAdventure, openingStreamDepth } from './opening-adventure.js?v=191';
-import { introStagingAt } from './cinematic-staging.js?v=191';
-import { segmentHitsBox, findGridPath } from './navigation.js?v=191';
-import { CatLife } from './cat-life.js?v=191';
-import { BirdLife } from './bird-life.js?v=191';
-import { CAT_BERRY_CHANCE, CAT_FORM_SECONDS, CAT_JUMP_SPEED, isCatBerryRoll, formTimeAfterStep } from './form-rules.js?v=191';
-const GAME_VERSION='v191';
+import { BOAR_MAX_WATER_DEPTH, attacksPlayer, shallowStepAllowed, capsuleAt, capsuleCircleContact, capsuleCapsuleContact } from './boar-physics.js?v=192';
+import { convexHull, polygonContact, FriendYield } from './movement-geometry.js?v=192';
+import { BOSS_HITS, riverCenterAt, riverDepthAt, onRiverBridge, lakeInletCenterAt, lakeInletHalfWidthAt, lakeInletDepthAt, bridgeRailBlocked, weatherDeadline, rainFillLimit, rainFillRate, WorldSurface, lakePointAt, lakeRadiusAt, lakeDepth } from './world-surface.js?v=192';
+import { Knockback } from './knockback.js?v=192';
+import { AdaptiveQuality, GRAPHICS_TIERS } from './adaptive-quality.js?v=192';
+import { AttemptProgress, seasonForAttempts } from './seasons.js?v=192';
+import { Soundscape } from './soundscape.js?v=192';
+import { BufferedMusic, gameScore, cinematicScore } from './music-player.js?v=192';
+import { OpeningAdventure, openingStreamDepth, forestExitBlocked } from './opening-adventure.js?v=192';
+import { introStagingAt } from './cinematic-staging.js?v=192';
+import { segmentHitsBox, findGridPath } from './navigation.js?v=192';
+import { CatLife } from './cat-life.js?v=192';
+import { BirdLife } from './bird-life.js?v=192';
+import { CAT_BERRY_CHANCE, CAT_FORM_SECONDS, CAT_JUMP_SPEED, isCatBerryRoll, formTimeAfterStep } from './form-rules.js?v=192';
+const GAME_VERSION='v192';
 const attemptProgress=new AttemptProgress((()=>{try{return window.localStorage}catch{return null}})());let currentSeason=attemptProgress.season;
 let chosenSeason=null;try{chosenSeason=localStorage.getItem('kabanchiki3d_chosen_season')}catch{}
 function unlockedSeasons(){return attemptProgress.failed>=60?['summer','autumn','winter','spring']:attemptProgress.failed>=40?['summer','autumn','winter']:attemptProgress.failed>=20?['summer','autumn']:['summer']}
@@ -751,11 +751,12 @@ function setupOpeningProps(){
   for(const z of [12,0,-12]){block(openingProps,mats.wood,3.1,.6,z,.09,1.2,.09);const flag=block(openingProps,mats.gold,3.35,1.03,z,.5,.25,.045);flag.rotation.z=-.15;}
   const marker=new THREE.Sprite(new THREE.SpriteMaterial({map:openingLabel('МАМА'),transparent:true,depthWrite:false,toneMapped:false,fog:false}));marker.scale.set(4,1,1);openingProps.add(marker);openingProps.userData.marker=marker;
   const exit=new THREE.Group();exit.position.set(0,0,-39);openingProps.add(exit);openingProps.userData.exit=exit;
-  const trail=new THREE.Mesh(new THREE.PlaneGeometry(6.2,22),new THREE.MeshLambertMaterial({color:0xc3ab79,side:THREE.DoubleSide}));trail.rotation.x=-Math.PI/2;trail.position.set(0,.025,-7);exit.add(trail);
+  const trail=new THREE.Mesh(new THREE.PlaneGeometry(6.2,9),new THREE.MeshLambertMaterial({color:0xc3ab79,side:THREE.DoubleSide}));trail.rotation.x=-Math.PI/2;trail.position.set(0,.05,-13.5);exit.add(trail);openingProps.userData.trail=trail;
   const shore=new THREE.Mesh(new THREE.PlaneGeometry(23,18),new THREE.MeshLambertMaterial({color:0xb4c281,side:THREE.DoubleSide}));shore.rotation.x=-Math.PI/2;shore.position.set(0,-.015,-21);exit.add(shore);
   const distantLake=new THREE.Mesh(new THREE.CircleGeometry(1,40),new THREE.MeshPhongMaterial({color:0x68aec1,shininess:80,side:THREE.DoubleSide}));distantLake.rotation.x=-Math.PI/2;distantLake.scale.set(10,6,1);distantLake.position.set(0,.04,-23);exit.add(distantLake);openingProps.userData.distantLake=distantLake;openingProps.userData.distantWater=distantLake.material;
   for(const [x,z] of [[-4,0],[4,0],[-4.6,-4],[4.6,-4],[-5.2,-9],[5.2,-9],[-8,-16],[8,-16]]){block(exit,mats.wood,x,2.1,z,.55,4.2,.55);sphere(exit,mats.leaf,x,4.1,z,2.25)}
 
+  for(const side of [-1,1]){block(exit,mats.wood,side*26.75,1.65,4,42.5,3.3,2.4);for(let x=6.5;x<48;x+=2.4){const crown=sphere(exit,mats.leaf,side*x,2.6,4,1.8);crown.scale.set(1,1.1,1);const branch=block(exit,mats.wood,side*x,2.7,4.2,.22,2.8,.22);branch.rotation.z=side*.55;}}
   for(const x of [-5.8,5.8]){block(exit,mats.wood,x,2,0,.65,4,.65);sphere(exit,mats.leaf,x,4,0,2.6)}
   const trunk=new THREE.Group();trunk.position.set(0,.72,4);exit.add(trunk);openingProps.userData.trunk=trunk;
   const bark=new THREE.Mesh(new THREE.CylinderGeometry(.64,.78,10.5,9),mats.wood);bark.rotation.z=Math.PI/2;trunk.add(bark);
@@ -1157,7 +1158,7 @@ function solidCircles(){
 }
 function playerWorldBlocked(x,z,pad=0){
  if(x<-43.15||x>43.15||z<-43.15||z>43.15)return true;
- if(level===1&&opening&&!opening.passageOpen&&Math.abs(x)<5.9&&z<-33.2&&z>-36.8)return true;
+ if(level===1&&opening&&forestExitBlocked(x,z,mountedFriend?.7:PLAYER_RADIUS+pad,opening.passageOpen))return true;
  const rr=PLAYER_RADIUS+pad;
  // v165: on foot the bridge rail blocks at deck height, but a normal jump can clear it.
  if(level===4&&(mountedFriend||py<.62)&&bridgeRailBlocked(x,z,mountedFriend?.86:rr))return true;
@@ -1190,6 +1191,7 @@ function playerSupportHeightAt(x,z){
  return top;
 }
 function depenetratePlayer(){
+ if(level===1&&opening&&!opening.passageOpen)boy.position.z=Math.max(boy.position.z,-33.2+(mountedFriend?.7:PLAYER_RADIUS));
  if(mountedFriend||boarFormTime>0)resolveBoarClearance(playerBoarBody(),false);
  // Never leave Timur trapped inside a rock/tree after a level change, jump or knockback.
  for(let pass=0;pass<(mountedFriend?14:6);pass++){
@@ -1638,8 +1640,9 @@ function boarWallContacts(f,x=f.g.position.x,z=f.g.position.z,yaw=f.g.rotation.y
 const companionChecks={checks:0,repairs:0,replans:0};
 function companionValid(f,x=f.g.position.x,z=f.g.position.z,yaw=f.g.rotation.y){return !boarSceneryBlockedAt(f,x,z,yaw)}
 function repairCompanion(f,force=false){if(!f?.g||f.flee)return;const now=performance.now();if(!force&&now-(f.g.userData.lastRecoveryAt||0)<200)return;f.g.userData.lastRecoveryAt=now;companionChecks.checks++;if(companionValid(f)){f.lastSafe={x:f.g.position.x,z:f.g.position.z,yaw:f.g.rotation.y};return}const current={x:f.g.position.x,z:f.g.position.z};let safe=null;for(let r=.15;r<5&&!safe;r+=.25)for(let i=0;i<24;i++){const a=i/24*Math.PI*2,x=current.x+Math.sin(a)*r,z=current.z+Math.cos(a)*r;if(companionValid(f,x,z)){safe={x,z};break}}if(!safe&&f.lastSafe&&companionValid(f,f.lastSafe.x,f.lastSafe.z,f.lastSafe.yaw))safe=f.lastSafe;if(safe){f.g.position.x=safe.x;f.g.position.z=safe.z;f.navigation=null;companionChecks.repairs++}}
-function companionNavBlocked(f){const scale=boarScale(f),radius=.88*scale,trees=treeObjects.filter(t=>t.visible).map(t=>{const m=t.children.find(m=>m.userData.treeSolid);return m?treeTrunkShape(m):null}).filter(Boolean),rocks=rockPositions.filter(q=>q[3]?.visible!==false&&q[3]?.parent?.visible!==false).map(q=>rockShape(q[3])),walls=wallGeometry(),mountains=level===5?mountainObstacles.filter(q=>q[3]?.parent?.visible!==false).map(q=>mountainFootprint(q[3])):[];return (x,z)=>{if(Math.abs(x)>42||Math.abs(z)>42||(level!==2&&!controlledSwimmer(f)&&boarWaterDepth(f,x,z)>BOAR_MAX_WATER_DEPTH))return true;if(trees.some(t=>Math.hypot(x-t.x,z-t.z)<t.r+radius))return true;if(rocks.some(q=>{const dx=x-q.cx,dz=z-q.cz,c=Math.cos(q.yaw),sn=Math.sin(q.yaw),lx=dx*c-dz*sn,lz=dx*sn+dz*c;return lx*lx/(q.ax+radius)**2+lz*lz/(q.az+radius)**2<1}))return true;return walls.some(w=>polygonContact(w.polygon,x,z,radius))||mountains.some(poly=>polygonContact(poly,x,z,radius))}}
+function companionNavBlocked(f){const scale=boarScale(f),radius=.88*scale,trees=treeObjects.filter(t=>t.visible).map(t=>{const m=t.children.find(m=>m.userData.treeSolid);return m?treeTrunkShape(m):null}).filter(Boolean),rocks=rockPositions.filter(q=>q[3]?.visible!==false&&q[3]?.parent?.visible!==false).map(q=>rockShape(q[3])),walls=wallGeometry(),mountains=level===5?mountainObstacles.filter(q=>q[3]?.parent?.visible!==false).map(q=>mountainFootprint(q[3])):[];return (x,z)=>{if(level===1&&opening&&forestExitBlocked(x,z,radius,opening.passageOpen))return true;if(Math.abs(x)>42||Math.abs(z)>42||(level!==2&&!controlledSwimmer(f)&&boarWaterDepth(f,x,z)>BOAR_MAX_WATER_DEPTH))return true;if(trees.some(t=>Math.hypot(x-t.x,z-t.z)<t.r+radius))return true;if(rocks.some(q=>{const dx=x-q.cx,dz=z-q.cz,c=Math.cos(q.yaw),sn=Math.sin(q.yaw),lx=dx*c-dz*sn,lz=dx*sn+dz*c;return lx*lx/(q.ax+radius)**2+lz*lz/(q.az+radius)**2<1}))return true;return walls.some(w=>polygonContact(w.polygon,x,z,radius))||mountains.some(poly=>polygonContact(poly,x,z,radius))}}
 function boarSceneryBlockedAt(f,x,z,yaw=f.g.rotation.y){
+ if(level===1&&opening&&forestExitBlocked(x,z,.7*boarScale(f),opening.passageOpen))return true;
  if(Math.abs(x)>43.1||Math.abs(z)>43.1||boarTreeContacts(f,x,z,yaw).length||!boarLakeStepAllowed(f,x,z))return true;
  if(boarWallContacts(f,x,z,yaw).length)return true;
  const body=boarBody(f,x,z,yaw);
@@ -1649,6 +1652,7 @@ function boarSceneryBlockedAt(f,x,z,yaw=f.g.rotation.y){
  return level===6&&lairObstacles.some(([px,pz,r,g])=>g.visible&&Math.hypot(x-px,z-pz)<r+body.r);
 }
 function resolveBoarClearance(f,protectPlayer=true){
+ if(level===1&&opening&&!opening.passageOpen)f.g.position.z=Math.max(f.g.position.z,-33.2+.7*boarScale(f));
  if(f.flee){for(let pass=0;pass<4;pass++){const contacts=boarWallContacts(f);if(!contacts.length)break;for(const hit of contacts){f.g.position.x+=hit.nx*(hit.depth+.004);f.g.position.z+=hit.nz*(hit.depth+.004)}}return}
  for(let pass=0;pass<4;pass++){
   const contacts=[...boarTreeContacts(f),...boarWallContacts(f)];const playerHit=protectPlayer?boarPlayerContact(f):null;if(playerHit)contacts.push(playerHit);
@@ -1887,6 +1891,7 @@ if(__autoTest||__autoParams.get('openingtest')==='1')window.__KABANCHIKI_QA__={
  v161Fire(seconds=0){this.load(1);paused=true;const tree=treeObjects.find(t=>t.visible);igniteStormTarget(tree);const b=stormBurning.get(tree);b.time-=seconds;updateLivingFire(tree,b,performance.now());boy.position.set(tree.position.x,0,tree.position.z+5);yaw=Math.PI;camMode=3;return {time:b.time,emissive:b.materials[0].mesh.material.emissive?.getHex(),color:b.materials[0].mesh.material.color.getHex()}},
  revision(){return {entry:[boy.position.x,boy.position.z],heading:yaw,topHeight:camera.position.y-boy.position.y,movie:movie?{people:movie.people.map(p=>p.visible),hero:movie.hero.visible,blanket:movie.picnic?.visible,carZ:movie.car?.position.z}:null,vortices:false,waves:lakeWaves.length}},
 
+ openingGateAudit(){const positions=[-42,-20,-6,0,6,20,42],closed=positions.map(x=>({x,blocked:playerWorldBlocked(x,-35)}));const actor=friend||foes[0],boars=positions.map(x=>({x,blocked:boarSceneryBlockedAt(actor,x,-35)}));return {closed,boars,extensionNearZ:-39+openingProps.userData.trail.position.z+openingProps.userData.trail.geometry.parameters.height/2,roadEndZ:-48}},
  openingScenario(kind){keys={};stick.x=stick.y=0;jump=act=false;paused=false;invuln=100;if(kind==='crate'){food=0;boy.position.set(-2.9,0,24.3)}if(kind==='mother'){const m=familyMembers.find(f=>f.role===0);boy.position.set(m.x,0,m.z)}if(kind==='break'){const f=foes.find(f=>f.openingBoar);if(f)resolveMeat({g:new THREE.Group(),foe:f,type:'apple'});mountedFriend=true;setRiderPose(true);boy.position.set(0,1.18,-32.5);friend.g.position.set(0,0,-32.5);boy.rotation.y=yaw=Math.PI}return this.openingInspect()},
  openingInspect(){return {stage:opening?.stage,elapsed:opening?.elapsed,chasing:opening?.chasing,hit:opening?.hit,rode:opening?.rode,rescued:opening?.rescued,refills:opening?.refills,life,food,mounted:mountedFriend,position:boy.position.toArray(),heading:yaw,friend:friend?.g.position.toArray(),enemy:foes.map(f=>({position:f.g.position.toArray(),bolt:f.bolt.visible,opening:f.openingBoar})),family:familyMembers.map(f=>({role:f.role,done:f.done,position:f.g.position.toArray()})),completed:levelFamilyDone,total:levelFamilyTotal,cinematic:cinematicRunning,propsVisible:openingProps?.visible,portalVisible:portalObj?.g.visible,passageOpen:opening?.passageOpen,passageStarted:opening?.passageStarted,passageTime:opening?.passageTime,passageBroken:opening?.passageBroken,crateApples:opening?.crateApples,trunkVisible:openingProps?.userData.trunk.visible,debrisVisible:openingProps?.userData.debris.visible,exitBlockedDecor:boundaryDecor.filter(o=>o.visible&&Math.abs(o.position.x)<10&&o.position.z<-40).length,exitLakeVisible:openingProps?.userData.distantLake.visible,guideHidden:$('openingGuide').hidden}},
  state(){return {season:currentSeason,failedAttempts:attemptProgress.failed,camMode,level,version:GAME_VERSION,flashlight:hasFlashlight,friend:!!friend,apples:yellowAppleStock,mushrooms:yellowMushroomStock,form:boarFormTime,basins:puddleObjects.length,boss:foes.find(f=>f.isBoss)?.maxHp,redTrees:treeObjects.filter(t=>{let red=false;t.traverse(m=>{if(m.material?.emissive?.getHex())red=true});return red}).length}},
