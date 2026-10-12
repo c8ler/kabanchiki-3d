@@ -5,3 +5,12 @@ export class OcclusionSchedule{
  due(now,epoch,x,z,cx,cz){const changed=epoch!==this.epoch||Math.hypot(x-this.x,z-this.z)>1.5||Math.hypot(cx-this.cx,cz-this.cz)>2;
   if(!changed&&now-this.last<100)return false;this.last=now;this.epoch=epoch;this.x=x;this.z=z;this.cx=cx;this.cz=cz;return true}
 }
+
+// Only idle, distant actors use a slower clock. Collision sweeps still run for
+// every movement step, and nearby actors immediately return to the frame clock.
+export function distantActorDt(actor,dt,distant){
+ if(!distant){actor._distantDt=0;return dt}
+ actor._distantDt=(actor._distantDt||0)+dt;
+ if(actor._distantDt<.15)return 0;
+ const elapsed=actor._distantDt;actor._distantDt=0;return elapsed;
+}
