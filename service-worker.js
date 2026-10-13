@@ -1,4 +1,4 @@
-const CACHE_NAME='kabanchiki-pwa-v201';
+const CACHE_NAME='kabanchiki-pwa-v201-exits';
 const APP_ROOT=new URL('./',self.registration.scope);
 const CORE=[APP_ROOT.href,new URL('manifest.webmanifest?v=201',APP_ROOT).href,new URL('assets/icons/favicon-192.png?v=201',APP_ROOT).href,new URL('assets/icons/favicon-512.png?v=201',APP_ROOT).href,new URL('assets/icons/apple-touch-icon.png?v=201',APP_ROOT).href,new URL('vendor/three/three.module.min.js',APP_ROOT).href,new URL('vendor/three/three.core.min.js',APP_ROOT).href,new URL('src/music-player.js?v=201',APP_ROOT).href,new URL('src/opening-adventure.js?v=201',APP_ROOT).href,new URL('src/location-exits.js?v=201',APP_ROOT).href,new URL('src/static-batching.js?v=201',APP_ROOT).href,new URL('src/home-construction.js?v=201',APP_ROOT).href,new URL('src/cheat-codes.js?v=201',APP_ROOT).href,new URL('src/render-budget.js?v=201',APP_ROOT).href];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting())));
