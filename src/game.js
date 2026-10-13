@@ -823,7 +823,7 @@ function updateExitBreaker(props,dt,z){
  if(d.breakerTime>=.85){d.breakerDone=true;f.exitBreaking=false;f.b.rotation.x=0;f.b.position.y=0;
   if(f!==friend){scene.remove(f.g);d.breaker=null;}
  }
- return d.breakerDone;
+ return !!d.breakerDone;
 }
 
 function setupLakeExit(){
