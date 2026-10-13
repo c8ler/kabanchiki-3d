@@ -5,7 +5,7 @@ export function riverDepthAt(x, z) {
   if (Math.abs(x)>46||onRiverBridge(x, z)) return 0;
   const distance = Math.abs(z - riverCenterAt(x));
   if (distance >= 4.2) return 0;
-  const depth = 3.0 * (1 - distance / 4.2) ** 2;
+  const depth = 1.35 * (1 - distance / 4.2) ** 2;
   return Math.abs(x - 28) < 3 ? Math.min(.2, depth) : depth;
 }
 const smooth = n => { n = Math.max(0, Math.min(1, n)); return n * n * (3 - 2 * n); };
@@ -35,12 +35,12 @@ export const LAKE_CENTER={x:-18,z:-17};
 const shoreScale=a=>1+.08*Math.sin(a*3)+.045*Math.cos(a*5);
 export function lakePointAt(angle,radius=13.6){const k=radius/13.6*shoreScale(angle);return {x:-18+Math.cos(angle)*12.2*k,z:-17+Math.sin(angle)*20.2*k}}
 export function lakeRadiusAt(x,z){const dx=(x+18)/12.2,dz=(z+17)/20.2;return Math.hypot(dx,dz)/shoreScale(Math.atan2(dz,dx))*13.6}
-export function lakeDepth(x,z){const k=Math.max(0,1-lakeRadiusAt(x,z)/13.6);return Math.min(5.2,k*k*6.4)}
+export function lakeDepth(x,z){const k=Math.max(0,1-lakeRadiusAt(x,z)/13.6);return 2.4*k*k}
 
 // The lake tributary uses the same width, bends and cross section as the river.
 export const lakeInletCenterAt=x=>{const t=Math.max(0,Math.min(1,(x+46)/24));return -22+Math.sin((x+46)*.105)*2.3+t*3.5};
 export const lakeInletHalfWidthAt=x=>4.2;
-export function lakeInletDepthAt(x,z){if(x<-46||x>-22)return 0;const k=Math.max(0,1-Math.abs(z-lakeInletCenterAt(x))/4.2);return 3*k*k}
+export function lakeInletDepthAt(x,z){if(x<-46||x>-22)return 0;const k=Math.max(0,1-Math.abs(z-lakeInletCenterAt(x))/4.2);return 1.35*k*k}
 export function bridgeRailBlocked(x,z,radius=.31){return Math.abs(z+14)<5.3+radius&&[-2.55,2.55].some(rail=>Math.abs(x-rail)<radius+.10)}
 export const weatherDeadline=(season,level,seconds)=>seconds<300||level===6?null:season==='winter'?'freeze':'carry';
 export const rainFillLimit=stage=>[0,.45,.95,1.55,2.1][stage]||0;
