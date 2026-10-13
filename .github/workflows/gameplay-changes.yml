@@ -2,7 +2,7 @@ name: Gameplay changes checks
 on:
   pull_request:
   push:
-    branches: [fix/boar-exits-and-minions]
+    branches: [fix/v202-signs-retry-fence]
 jobs:
   gameplay:
     runs-on: ubuntu-latest
@@ -12,3 +12,11 @@ jobs:
       - run: npm test
       - run: node --test tests/boar-exit-regressions.mjs
       - run: node scripts/validate.mjs
+      - name: Install browser
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Browser regression checks
+        run: |
+          python3 -m http.server 8080 > /tmp/kabanchiki-server.log 2>&1 &
+          node scripts/v202-browser.mjs
