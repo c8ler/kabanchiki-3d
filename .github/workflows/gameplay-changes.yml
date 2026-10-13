@@ -19,10 +19,10 @@ jobs:
       - name: Browser regression checks
         run: |
           python3 -m http.server 8080 > /tmp/kabanchiki-server.log 2>&1 &
+          node scripts/v205-browser.mjs
           node scripts/v202-browser.mjs
           node scripts/v203-browser.mjs
           node scripts/v204-browser.mjs
-          node scripts/v205-browser.mjs
       - name: First person screenshots
         if: always()
         uses: actions/upload-artifact@v4

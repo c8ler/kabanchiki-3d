@@ -800,7 +800,7 @@ function buildBreakableExit(props,z){
 }
 function resetExitBreaker(props){
  const d=props.userData;if(d.breaker&&d.breaker!==friend){exitHelpers.delete(d.breaker);scene.remove(d.breaker.g);}
- d.breaker=null;d.breakerTime=0;d.breakerHit=false;d.breakerDone=false;
+ d.breaker=null;d.approachX=null;d.approachCooldown=0;d.breakerTime=0;d.breakerHit=false;d.breakerDone=false;
  animateBreakableExit(props,0);
 }
 function animateBreakableExit(props,p){
@@ -812,16 +812,17 @@ function updateExitBreaker(props,dt,z){
  const d=props.userData;if(d.breakerDone)return true;
  if(!d.breaker){
   if(mountedFriend){mountedFriend=false;setRiderPose(false);py=vy=0;boy.position.y=0;}
-  d.breaker=friend&&!friend.flee?friend:(()=>{const q=nearestSafeSpawn(8,z+8,1.8)||[8,z+8];const helper=makeBoar(q[0],q[1],true);helper.exitHelper=true;exitHelpers.add(helper);return helper})();
-  d.breaker.exitBreaking=true;d.breaker.graze=0;
+  d.breaker=friend&&!friend.flee?friend:(()=>{let q=nearestSafeSpawn(8,z+8,1.8)||[8,z+8];if(Math.hypot(q[0]-boy.position.x,q[1]-boy.position.z)<3.2)q=nearestSafeSpawn(-8,z+8,1.8)||[-8,z+8];const helper=makeBoar(q[0],q[1],true);helper.exitHelper=true;exitHelpers.add(helper);return helper})();
+  d.breaker.exitBreaking=true;d.breaker.graze=0;d.approachX=boy.position.x>0?-2.5:2.5;
   notice('🐗 Друг бежит разбить преграду!');
  }
  const f=d.breaker;
  if(!d.breakerHit){
-  const moved=moveBoarToward(f,0,z+3.6,5.5,dt);f.breakStride=(f.breakStride||0)+(moved?dt:0);
+  d.approachCooldown=Math.max(0,(d.approachCooldown||0)-dt);if(f.route?.stuck>.8&&d.approachCooldown<=0&&Math.hypot((d.approachX??0)-boy.position.x,z+3.6-boy.position.z)<2.2){d.approachX=-(d.approachX||2.5);d.approachCooldown=4;f.route=null;}
+  const moved=moveBoarToward(f,d.approachX??0,z+3.6,5.5,dt);f.breakStride=(f.breakStride||0)+(moved?dt:0);
   f.b.position.y=moved?Math.abs(Math.sin(f.breakStride*16))*.08:0;
   if(Math.abs(f.g.position.x)>3.3||f.g.position.z>z+4.3||f.g.position.z<z+2.4)return false;
-  d.breakerHit=true;f.b.rotation.x=-.3;bossBattleImpact(0,z+1.8);effect('woodBreak');
+  d.breakerHit=true;f.b.rotation.x=-.3;bossBattleImpact(f.g.position.x,z+1.8);effect('woodBreak');
   notice('💥 Хрясь! Друг разбил преграду!');
  }
  d.breakerTime+=dt;animateBreakableExit(props,d.breakerTime/.85);
@@ -2080,7 +2081,7 @@ if(__autoTest||__autoParams.get('openingtest')==='1')window.__KABANCHIKI_QA__={
  return {level:n,withFriend,registered,collision,ready:n===1?opening.passageOpen:n===2?lakeExitReady():locationExitReady(),hit:props.userData.breakerHit,maxTurn,maxStep,position:helper.g.position.toArray(),plans:helper.route?.plans,playerStayed:Math.hypot(boy.position.x-hold.x,boy.position.z-hold.z)<.01};
  },
  v205Sign(){this.load(1);paused=true;py=0;const board=signBoards.find(b=>b.parent===openingProps.userData.exit),p=board.getWorldPosition(new THREE.Vector3());boy.position.set(p.x,0,p.z);for(let i=0;i<20;i++)updateFallingSigns(.05);const fell=board.userData.fallen,angle=Math.hypot(board.rotation.x,board.rotation.z),label=board.children.find(c=>c.userData.fixedSign);this.load(1);return {fell,angle,labelAttached:label.parent===board,reset:!board.userData.fallen&&board.rotation.x===0&&board.rotation.z===0};},
- v205Food(type='apple',yellow=false){this.load(3);paused=false;camMode=9;pitch=0;food=3;fishStock=type==='fish'?2:0;yellowMushroomStock=yellow&&type==='mushroom'?2:0;yellowAppleStock=yellow&&type==='apple'?2:0;nextRegularFood=type;throwCooldown=0;mountedFriend=false;boarFormTime=catFormTime=0;boy.position.set(0,0,20);yaw=0;foes.forEach(f=>f.flee=true);const target=makeBoar(0,26,false);foes.push(target);return {next:nextFoodKind(),before:shots.length};},
+ v205Food(type='apple',yellow=false){this.load(3);paused=false;camMode=9;pitch=0;food=3;fishStock=type==='fish'?2:0;yellowMushroomStock=yellow&&type==='mushroom'?2:0;yellowAppleStock=yellow&&type==='apple'?2:0;nextRegularFood=type;foodView.throwTime=0;throwCooldown=0;mountedFriend=false;boarFormTime=catFormTime=0;boy.position.set(0,0,20);yaw=0;foes.forEach(f=>f.flee=true);const target=makeBoar(0,26,false);foes.push(target);return {next:nextFoodKind(),before:shots.length};},
  v205FoodInspect(){return {cameraMode:camMode,eye:camera.position.toArray(),player:boy.position.toArray(),bodyVisible:boy.visible,preview:foodView.inspect(),next:nextFoodKind(),last:shots.at(-1)?.type,viewCount:10};},
  v205Throw(){const next=nextFoodKind();throwCooldown=0;feed();paused=true;return {shown:next,thrown:shots.at(-1)?.type,gold:shots.at(-1)?.specialYellow||shots.at(-1)?.specialYellowApple,next:nextFoodKind(),throwTime:foodView.throwTime};},
 
