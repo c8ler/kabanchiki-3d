@@ -1821,7 +1821,7 @@ function bossBattleImpact(x,z){
  if(f.flee){let vx=ux,vz=uz;if(level===3&&Math.abs(ox)<41&&Math.abs(oz)<41&&((f.fleePath?.length>0)||Array.from({length:20},(_,i)=>boarWallContacts(f,ox+ux*(i+1),oz+uz*(i+1),Math.atan2(ux,uz)).length).some(Boolean))){const blocked=(x,z)=>boarWallContacts(f,x,z,Math.atan2(vx,vz)).length>0;if(!f.fleePath||f.fleePathAge<=0){f.fleePath=findGridPath({x:ox,z:oz},{x:Math.max(-42,Math.min(42,ox+ux*20)),z:Math.max(-42,Math.min(42,oz+uz*20))},blocked,{step:.8,bound:43,maxNodes:15000});f.fleePathAge=1.5}f.fleePathAge-=dt;while(f.fleePath.length&&Math.hypot(f.fleePath[0].x-ox,f.fleePath[0].z-oz)<.5)f.fleePath.shift();if(f.fleePath.length){const q=f.fleePath[0],len=Math.max(.01,Math.hypot(q.x-ox,q.z-oz));vx=(q.x-ox)/len;vz=(q.z-oz)/len}if(boarWallContacts(f,ox+vx*step,oz+vz*step,Math.atan2(vx,vz)).length)return false}f.g.position.x+=vx*step;f.g.position.z+=vz*step;f.g.rotation.y=smoothHeading(f.g.rotation.y,Math.atan2(vx,vz),dt);return true}
 
  if(f.waterEscaping)return moveBoarOutOfWater(f,tx,tz,Math.max(speed,5.5),dt);
- f.route??=new StableRoute();const point={x:ox,z:oz},goal={x:tx,z:tz},navBlocked=companionNavBlocked(f);
+ f.route??=new StableRoute();const point={x:ox,z:oz},goal={x:tx,z:tz};let navGeometry;const navBlocked=(x,z)=>(navGeometry??=companionNavBlocked(f))(x,z);
  const target=f.route.next(point,goal,navBlocked,dt,{epoch:worldEpoch,step:level===3?.5:.8});
  if(!target){f.route.record(0,dt);return false;}
  const vx=target.x-ox,vz=target.z-oz,len=Math.hypot(vx,vz),desired=Math.atan2(vx,vz),heading=smoothHeading(f.g.rotation.y,desired,dt),stepSize=Math.min(speed*dt,len);
@@ -1834,7 +1834,7 @@ function bossBattleImpact(x,z){
 function moveBoarOutOfWater(f,tx,tz,speed,dt){
  const x=f.g.position.x,z=f.g.position.z,depth=boarWaterDepth(f),a=Math.atan2(tx-x,tz-z),step=Math.min(speed*dt,Math.hypot(tx-x,tz-z));
  for(const turn of [0,.35,-.35,.7,-.7,1.4,-1.4]){const heading=a+turn,nx=x+Math.sin(heading)*step,nz=z+Math.cos(heading)*step;
- if(boarWaterDepth(f,nx,nz)<=depth+1e-5&&!boarTreeContacts(f,nx,nz,heading).length&&!boarWallContacts(f,nx,nz,heading).length&&!blockedByBoar(nx,nz,f,.78,heading)&&!catLife.blocksBoar(boarBody(f,nx,nz,heading),-lakeDepthAt(nx,nz))){f.g.position.x=nx;f.g.position.z=nz;f.g.rotation.y=smoothHeading(f.g.rotation.y,heading,dt);return true;}}
+ if(lakeDepthAt(nx,nz)<=lakeDepthAt(x,z)+1e-5&&!boarTreeContacts(f,nx,nz,heading).length&&!boarWallContacts(f,nx,nz,heading).length&&!blockedByBoar(nx,nz,f,.78,heading)&&!catLife.blocksBoar(boarBody(f,nx,nz,heading),-lakeDepthAt(nx,nz))){f.g.position.x=nx;f.g.position.z=nz;f.g.rotation.y=smoothHeading(f.g.rotation.y,heading,dt);return true;}}
  return false;
 }
 function updateBoarWater(dt){
