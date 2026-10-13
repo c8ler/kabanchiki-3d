@@ -73,5 +73,5 @@ setTimeout(()=>{if(!document.querySelector('canvas')){const hint=document.getEle
  matchMedia('(display-mode: standalone)').addEventListener('change',sync);
  if('serviceWorker'in navigator)navigator.serviceWorker.register('./service-worker.js?v=201',{scope:'./'}).catch(error=>{console.warn('Регистрация приложения:',error);});
 })();
-</script><script type="module" src="./src/game.js?v=201" onerror="window.__showGameError('Не удалось загрузить игру','Проверьте подключение к интернету и обновите страницу.')"></script></body></html>
+</script><script type="module" src="./src/game.js?v=201-exits" onerror="window.__showGameError('Не удалось загрузить игру','Проверьте подключение к интернету и обновите страницу.')"></script></body></html>
 

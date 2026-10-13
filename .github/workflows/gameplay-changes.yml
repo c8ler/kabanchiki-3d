@@ -1,0 +1,14 @@
+name: Gameplay changes checks
+on:
+  pull_request:
+  push:
+    branches: [fix/boar-exits-and-minions]
+jobs:
+  gameplay:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: node --check src/game.js
+      - run: npm test
+      - run: node --test tests/boar-exit-regressions.mjs
+      - run: node scripts/validate.mjs
