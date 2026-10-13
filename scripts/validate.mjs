@@ -37,7 +37,7 @@ const checks=[
  ['mounted apple collection',/function canCollectForage\(a\)/.test(game)&&/mountedFriend\|\|/.test(game)&&/function runMountedAppleAudit\(\)/.test(game)&&/__KABANCHIKI_MOUNTED_APPLE_AUDIT__/.test(game)&&/mountedAppleAudit/.test(game)&&/mounted-apple-food/.test(game)],
  ['spawn guard',/function repairAndAuditSpawns\(\)/.test(game)&&/__KABANCHIKI_SPAWN_AUDIT__/.test(game)],
  ['single-source version sync',/loadingVersion/.test(html)&&/window.__KABANCHIKI_VERSION__=GAME_VERSION/.test(game)&&/el.textContent=GAME_VERSION/.test(game)],
- ['cache-busted game module',/src="\.\/src\/game\.js\?v=201(?:-[a-z0-9]+)?"/.test(html)],
+ ['cache-busted game module',/src="\.\/src\/game\.js\?v=202(?:-[a-z0-9]+)?"/.test(html)],
  ['module cache version matches game',(()=>{const gv=game.match(/GAME_VERSION='(v\d+)'/)?.[1],raw=html.match(/src="\.\/src\/game\.js\?v=(\d+)(?:-[a-z0-9]+)?"/)?.[1],mv=raw?'v'+raw:undefined,bv=html.match(/__KABANCHIKI_BUILD__='(v\d+)'/)?.[1];return gv==='v202'&&gv===mv&&gv===bv})()],
  ['html build marker v202',/__KABANCHIKI_BUILD__='v202'/.test(html)],
  ['no-cache document meta',/no-cache, no-store, must-revalidate/.test(html)],
