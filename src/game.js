@@ -1,25 +1,25 @@
-import { HomeConstruction, HOME_SITE, WOOD_PILES } from './home-construction.js?v=201';
-import { parseCheatCode } from './cheat-codes.js?v=201';
+import { HomeConstruction, HOME_SITE, WOOD_PILES } from './home-construction.js?v=202';
+import { parseCheatCode } from './cheat-codes.js?v=202';
 window.__gameLoadProgress?.(84);let __loadFinished=false;
 import * as THREE from '../vendor/three/three.module.min.js';
-import { BOAR_MAX_WATER_DEPTH, attacksPlayer, shallowStepAllowed, capsuleAt, capsuleCircleContact, capsuleCapsuleContact } from './boar-physics.js?v=201';
-import { convexHull, polygonContact, FriendYield } from './movement-geometry.js?v=201';
-import { BOSS_HITS, riverCenterAt, riverDepthAt, onRiverBridge, lakeInletCenterAt, lakeInletHalfWidthAt, lakeInletDepthAt, bridgeRailBlocked, weatherDeadline, rainFillLimit, rainFillRate, WorldSurface, lakePointAt, lakeRadiusAt, lakeDepth } from './world-surface.js?v=201';
-import { Knockback } from './knockback.js?v=201';
-import { AdaptiveQuality, GRAPHICS_TIERS } from './adaptive-quality.js?v=201';
-import { AttemptProgress, seasonForAttempts } from './seasons.js?v=201';
-import { Soundscape } from './soundscape.js?v=201';
-import { BufferedMusic, gameScore, cinematicScore } from './music-player.js?v=201';
-import { StaticSceneryBatches } from './static-batching.js?v=201';
-import { lightBudget, selectEffectLights, OcclusionSchedule, distantActorDt } from './render-budget.js?v=201';
-import { LocationExit, LOCATION_EXITS } from './location-exits.js?v=201';
-import { OpeningAdventure, openingStreamDepth, forestExitBlocked } from './opening-adventure.js?v=201';
-import { introStagingAt, outroStagingAt } from './cinematic-staging.js?v=201';
-import { segmentHitsBox, findGridPath } from './navigation.js?v=201';
-import { CatLife } from './cat-life.js?v=201';
-import { BirdLife } from './bird-life.js?v=201';
-import { CAT_BERRY_CHANCE, CAT_FORM_SECONDS, CAT_JUMP_SPEED, isCatBerryRoll, formTimeAfterStep } from './form-rules.js?v=201';
-const GAME_VERSION='v201';
+import { BOAR_MAX_WATER_DEPTH, attacksPlayer, shallowStepAllowed, capsuleAt, capsuleCircleContact, capsuleCapsuleContact } from './boar-physics.js?v=202';
+import { convexHull, polygonContact, FriendYield } from './movement-geometry.js?v=202';
+import { BOSS_HITS, riverCenterAt, riverDepthAt, onRiverBridge, lakeInletCenterAt, lakeInletHalfWidthAt, lakeInletDepthAt, bridgeRailBlocked, weatherDeadline, rainFillLimit, rainFillRate, WorldSurface, lakePointAt, lakeRadiusAt, lakeDepth } from './world-surface.js?v=202';
+import { Knockback } from './knockback.js?v=202';
+import { AdaptiveQuality, GRAPHICS_TIERS } from './adaptive-quality.js?v=202';
+import { AttemptProgress, seasonForAttempts } from './seasons.js?v=202';
+import { Soundscape } from './soundscape.js?v=202';
+import { BufferedMusic, gameScore, cinematicScore } from './music-player.js?v=202';
+import { StaticSceneryBatches } from './static-batching.js?v=202';
+import { lightBudget, selectEffectLights, OcclusionSchedule, distantActorDt } from './render-budget.js?v=202';
+import { LocationExit, LOCATION_EXITS } from './location-exits.js?v=202';
+import { OpeningAdventure, openingStreamDepth, forestExitBlocked } from './opening-adventure.js?v=202';
+import { introStagingAt, outroStagingAt } from './cinematic-staging.js?v=202';
+import { segmentHitsBox, findGridPath } from './navigation.js?v=202';
+import { CatLife } from './cat-life.js?v=202';
+import { BirdLife } from './bird-life.js?v=202';
+import { CAT_BERRY_CHANCE, CAT_FORM_SECONDS, CAT_JUMP_SPEED, isCatBerryRoll, formTimeAfterStep } from './form-rules.js?v=202';
+const GAME_VERSION='v202';
 const attemptProgress=new AttemptProgress((()=>{try{return window.localStorage}catch{return null}})());let currentSeason=attemptProgress.season;
 let chosenSeason=null;try{chosenSeason=localStorage.getItem('kabanchiki3d_chosen_season')}catch{}
 function unlockedSeasons(){return attemptProgress.failed>=60?['summer','autumn','winter','spring']:attemptProgress.failed>=40?['summer','autumn','winter']:attemptProgress.failed>=20?['summer','autumn']:['summer']}
@@ -732,7 +732,7 @@ function saveHome(){try{localStorage.setItem('kabanchiki3d_home',JSON.stringify(
 function prepareHome(){if(personalHouse)return;personalHouse=new THREE.Group();personalHouse.position.set(HOME_SITE.x,0,HOME_SITE.z);personalHouse.userData.enterable=true;personalHouse.userData.personalHome=true;scene.add(personalHouse);houseObjects.push(personalHouse);
  const floor=block(personalHouse,mats.wood,0,.08,0,4.8,.16,4.8),front=[block(personalHouse,mats.wood,-1.7,1.45,2.4,1.4,2.7,.2),block(personalHouse,mats.wood,1.7,1.45,2.4,1.4,2.7,.2)],back=[block(personalHouse,mats.wood,0,1.45,-2.4,4.8,2.7,.2)],left=[block(personalHouse,mats.wood,-2.4,1.45,0,.2,2.7,4.8)],right=[block(personalHouse,mats.wood,2.4,1.45,0,.2,2.7,4.8)],roof=block(personalHouse,mats.roof,0,3,0,5.3,.4,5.3);
  const furnishings=new THREE.Group();personalHouse.add(furnishings);block(furnishings,mats.wood,1.2,.7,-.9,1.1,.12,.9);for(const x of [.8,1.6])for(const z of [-1.2,-.6])block(furnishings,mats.wood,x,.35,z,.1,.65,.1);block(furnishings,mats.wood,.9,.35,.3,.6,.1,.6);block(furnishings,mats.wood,.9,.55,.65,.6,.6,.1);block(furnishings,mats.wood,-1.3,.32,-1,1.3,.35,2);block(furnishings,mats.white,-1.3,.58,-1,1.25,.18,1.9);
- homeParts={floor,front,back,left,right,roof,furnishings};homeYard=new THREE.Group();scene.add(homeYard);for(const [x,z] of [[-2.6,-2.6],[2.6,-2.6],[-2.6,2.6],[2.6,2.6]])block(homeYard,mats.wood,HOME_SITE.x+x,.4,HOME_SITE.z+z,.15,.8,.15);const label=new THREE.Sprite(new THREE.SpriteMaterial({map:openingLabel('МОЙ ДОМИК · B'),transparent:true,depthWrite:false}));label.position.set(HOME_SITE.x,3.8,HOME_SITE.z+3);label.scale.set(5,1,1);homeYard.add(label);const trail=new THREE.Mesh(new THREE.PlaneGeometry(23,2.2),mats.path);trail.rotation.x=-Math.PI/2;trail.position.set(-17.5,.024,31.5);homeYard.add(trail);homeYard.userData.trail=trail;const arrow=new THREE.Sprite(new THREE.SpriteMaterial({map:openingLabel('← СВОЙ ДОМИК'),transparent:true,depthWrite:false}));arrow.position.set(-5,2.1,32);arrow.scale.set(4,.9,1);homeYard.add(arrow);
+ homeParts={floor,front,back,left,right,roof,furnishings};homeYard=new THREE.Group();scene.add(homeYard);for(const [x,z] of [[-2.6,-2.6],[2.6,-2.6],[-2.6,2.6],[2.6,2.6]])block(homeYard,mats.wood,HOME_SITE.x+x,.4,HOME_SITE.z+z,.15,.8,.15);physicalSign(homeYard,'МОЙ ДОМИК · B',HOME_SITE.x,3.8,HOME_SITE.z+3,5,1);const trail=new THREE.Mesh(new THREE.PlaneGeometry(23,2.2),mats.path);trail.rotation.x=-Math.PI/2;trail.position.set(-17.5,.024,31.5);homeYard.add(trail);homeYard.userData.trail=trail;physicalSign(homeYard,'← СВОЙ ДОМИК',-5,2.1,32,4,.9);
  for(const p of WOOD_PILES){const pile=new THREE.Group();pile.position.set(p.x,0,p.z);for(let i=0;i<5;i++)block(pile,mats.wood,(i%2)*.28,.18+Math.floor(i/2)*.22,0,2,.18,.28);scene.add(pile);homePiles.push(pile)}syncHomeVisual();syncHomeLocation(level);
 }
 function syncHomeVisual(){if(!personalHouse)return;const p=homeParts;p.floor.visible=home.stage>0;for(const side of ['front','back','left','right'])for(const m of p[side])m.visible=home.stage>=2;p.roof.visible=p.furnishings.visible=home.stage===3;personalHouse.userData.cutawayWalls={front:home.stage>=2?p.front:[],back:home.stage>=2?p.back:[],left:home.stage>=2?p.left:[],right:home.stage>=2?p.right:[],roof:p.roof};for(let i=0;i<homePiles.length;i++)homePiles[i].visible=level===3&&!home.collected[i];wallCacheEpoch=-1;}
@@ -743,7 +743,7 @@ function interactHome(){const action=homeInteraction();if(!action)return;if(acti
 $('homeAction').onclick=interactHome;
 function buildForestCorridor(parent){const woods=new THREE.Group();parent.add(woods);const leafMaterial=mats.leaf.clone(),wood=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),mats.wood,20),leaf=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),leafMaterial,40),matrix=new THREE.Matrix4();for(let i=0;i<20;i++){const side=i%2?1:-1,row=Math.floor(i/2),x=side*(8+.5*Math.sin(row*2.1)),z=-44-row*2.4,h=3.8+.7*Math.sin(row*1.7);matrix.makeScale(.6,h,.6).setPosition(x,h/2,z);wood.setMatrixAt(i,matrix);for(let layer=0;layer<2;layer++){matrix.makeScale(3.8-layer*.5,1.8,3.8-layer*.5).setPosition(x,h+layer*.9,z);leaf.setMatrixAt(i*2+layer,matrix)}}woods.add(wood,leaf);woods.userData.leafMaterial=leafMaterial;parent.userData.forestCorridor=woods;syncForestCorridor(parent);}
 function syncForestCorridor(parent){const material=parent?.userData.forestCorridor?.userData.leafMaterial;if(material)material.color.set(currentSeason==='winter'?0xe9eff2:currentSeason==='autumn'?0xb67f34:0x4d9854);}
-function loadLevel(n){locationExit=LOCATION_EXITS[n]?new LocationExit(n):null;for(const [lv,props] of locationExitProps)props.visible=lv===n;opening=n===1?new OpeningAdventure():null;if(openingProps)openingProps.visible=n===1;if(lakeExitProps)lakeExitProps.visible=n===2;resetWaterActivity();const carriedMounted=mountedFriend;mountedFriend=false;setRiderPose(false);const carriedFriend=friend,carriedFriendHP=friendHP;resetStormLocationState();worldEpoch++;level=n;syncHomeLocation(n);if(started&&!cinematicRunning&&!paused&&!win)startMusic();rescued=0;bossHits=0;levelTime=0;weatherStage=0;underwaterTime=0;underwaterDamageCd=0;hurricaneCarry=0;weatherGroup.visible=false;for(const q of stormLeaves)scene.remove(q.g);stormLeaves.length=0;forageTimer=18;if(n===1){totalTime=0;statsData={fed:0,forage:0,berries:0,damage:0,family:0,minions:0,bossHits:0};endShown=false;}bossRage=1;bossSummon=7;bossVictoryTimer=null;bossFireworkTimer=0;levelBoarsDone=0;levelFamilyDone=0;clearEntities(friends);clearEntities(foes);clearEntities(familyMembers);clearEntities(crates);fireballs.forEach(f=>scene.remove(f.g));fireballs=[];defeatedBoars.forEach(f=>scene.remove(f.g));defeatedBoars.length=0;for(const [t,b] of [...burningTrees]){if(b.light)t.remove(b.light);if(b.flames)t.remove(b.flames);t.visible=true}burningTrees.clear();friendKnockbackActive=false;friend=carriedFriend;friendHP=carriedFriendHP;if(friend){friend.knockback=null;if(!friend.g.parent)scene.add(friend.g);friend.g.position.set(1.8,0,5.2);friend.g.rotation.set(0,0,0);friend.g.visible=true;friend.friendly=true;friend.aura.material.color.set(0x4cff72);friend.aura.material.opacity=.24}for(const a of apples)scene.remove(a.g);apples.length=0
+function loadLevel(n){for(const props of [openingProps,lakeExitProps,...locationExitProps.values()]){const breaker=props?.userData.breaker;if(breaker){breaker.exitBreaking=false;if(breaker!==friend)scene.remove(breaker.g);props.userData.breaker=null;}}locationExit=LOCATION_EXITS[n]?new LocationExit(n):null;for(const [lv,props] of locationExitProps)props.visible=lv===n;opening=n===1?new OpeningAdventure():null;if(openingProps)openingProps.visible=n===1;if(lakeExitProps)lakeExitProps.visible=n===2;resetWaterActivity();const carriedMounted=mountedFriend;mountedFriend=false;setRiderPose(false);const carriedFriend=friend,carriedFriendHP=friendHP;resetStormLocationState();worldEpoch++;level=n;syncHomeLocation(n);if(started&&!cinematicRunning&&!paused&&!win)startMusic();rescued=0;bossHits=0;levelTime=0;weatherStage=0;underwaterTime=0;underwaterDamageCd=0;hurricaneCarry=0;weatherGroup.visible=false;for(const q of stormLeaves)scene.remove(q.g);stormLeaves.length=0;forageTimer=18;if(n===1){totalTime=0;statsData={fed:0,forage:0,berries:0,damage:0,family:0,minions:0,bossHits:0};endShown=false;}bossRage=1;bossSummon=7;bossVictoryTimer=null;bossFireworkTimer=0;levelBoarsDone=0;levelFamilyDone=0;clearEntities(friends);clearEntities(foes);clearEntities(familyMembers);clearEntities(crates);fireballs.forEach(f=>scene.remove(f.g));fireballs=[];defeatedBoars.forEach(f=>scene.remove(f.g));defeatedBoars.length=0;for(const [t,b] of [...burningTrees]){if(b.light)t.remove(b.light);if(b.flames)t.remove(b.flames);t.visible=true}burningTrees.clear();friendKnockbackActive=false;friend=carriedFriend;friendHP=carriedFriendHP;if(friend){friend.knockback=null;if(!friend.g.parent)scene.add(friend.g);friend.g.position.set(1.8,0,5.2);friend.g.rotation.set(0,0,0);friend.g.visible=true;friend.friendly=true;friend.aura.material.color.set(0x4cff72);friend.aura.material.opacity=.24}for(const a of apples)scene.remove(a.g);apples.length=0
 const enemyCounts=[3,4,5,5,6,1];const enemyCount=n===1||n===6?1:Math.max(1,Math.min(8,Math.round(enemyCounts[n-1]*diffCfg().enemyMult)));levelBoarsTotal=enemyCount;const spawnSets=[[-18,-10],[18,-13],[-15,-25],[16,-29],[-20,-36],[20,-39],[-8,-42],[9,-43]];if(n<6){for(let i=0;i<enemyCount;i++){const pos=n===1?[-6,14]:[spawnSets[i][0],Math.max(-31,spawnSets[i][1])];const foe=makeBoar(pos[0],pos[1],false);if(n===1){foe.openingBoar=true;foe.roamPause=999;foe.roamTimer=999}foes.push(foe)}}else{const b=makeBoar(0,-31,false);b.g.scale.setScalar(2.3);b.hp=BOSS_HITS[selectedDiff];b.maxHp=b.hp;b.isBoss=true;b.baseSpeed=2.05;b.rage=1;foes.push(b)}
 // v112: tree visibility must be finalized before spawning apples. Otherwise an apple can be attached to a tree that this level hides.
 for(const h of houseObjects){if(h!==familyHideout)setHouseTransparent(h,false);h.visible=(n===3)};setDadHouseCutaway(false);for(const o of biomeObjects)o.visible=(o.userData.biomeLevel===n);syncWorldGeneration(n);if(n===1)prepareOpeningClearing();if(n>=2&&n<=5)prepareLakeExit();rebuildWorldSurface();
@@ -829,7 +829,7 @@ function updateExitBreaker(props,dt,z){
 function setupLakeExit(){
  if(!lakeExitProps){lakeExitProps=new THREE.Group();scene.add(lakeExitProps);
  const trail=new THREE.Mesh(new THREE.PlaneGeometry(6.2,9),mats.path);trail.rotation.x=-Math.PI/2;trail.position.set(0,.05,-52.5);lakeExitProps.add(trail);lakeExitProps.userData.trail=trail;
- buildForestCorridor(lakeExitProps);buildBreakableExit(lakeExitProps,-39);}
+ buildForestCorridor(lakeExitProps);buildBreakableExit(lakeExitProps,-39);buildExitFence(lakeExitProps,-39);physicalSign(lakeExitProps,'К ДЕРЕВНЕ →',4,2,-34,3.4,.85);}
  syncForestCorridor(lakeExitProps);lakeExitProps.visible=true;lakeExitProps.userData.gateProgress=0;resetExitBreaker(lakeExitProps);
  lakeExitProps.userData.trail.material=currentSeason==='winter'?winterRoadMaterial:mats.path;
 }
@@ -842,13 +842,26 @@ function setupLocationExit(){
  if(!props){props=new THREE.Group();scene.add(props);locationExitProps.set(level,props);
  const trail=new THREE.Mesh(new THREE.PlaneGeometry(6.2,9),mats.path);trail.rotation.x=-Math.PI/2;trail.position.set(0,.05,-52.5);props.add(trail);props.userData.trail=trail;
  buildForestCorridor(props);buildBreakableExit(props,-39);
- const sign=new THREE.Sprite(new THREE.SpriteMaterial({map:openingLabel(locationExit.config.destination+' →'),transparent:true,depthWrite:false}));sign.position.set(4,2,-34);sign.scale.set(3.4,.85,1);props.add(sign);}
+ physicalSign(props,locationExit.config.destination+' →',4,2,-34,3.4,.85);}
  syncForestCorridor(props);props.visible=true;props.userData.trail.material=currentSeason==='winter'?winterRoadMaterial:mats.path;resetExitBreaker(props);
 }
 function locationExitReady(){return !!locationExit&&locationExit.ready(questsComplete())}
 function animateLocationExit(progress){const props=locationExitProps.get(level);if(props)animateBreakableExit(props,progress)}
 function updateLocationExit(dt){if(!locationExit)return;const props=locationExitProps.get(level);
  if(questsComplete()&&updateExitBreaker(props,dt,-39)&&locationExit.progress<1){locationExit.progress=1;notice('💚 Дорога свободна! '+locationExit.config.destination);}
+}
+function fixedSignLabel(text){const mesh=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({map:openingLabel(text),transparent:true,side:THREE.DoubleSide,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1}));mesh.userData.fixedSign=true;return mesh}
+function physicalSign(parent,text,x,y,z,w,h){
+ const board=new THREE.Group();board.position.set(x,y,z);parent.add(board);
+ block(board,mats.wood,0,-y/2,0,.16,y,.16);block(board,mats.wood,0,0,0,w,h,.14);
+ const label=fixedSignLabel(text);label.position.z=.075;label.scale.set(w-.12,h-.08,1);board.add(label);return board;
+}
+function buildExitFence(props,z){
+ props.userData.fenceExtent={left:-48,right:48,opening:11};
+ for(const side of [-1,1]){
+  for(const y of [.65,1.55])block(props,mats.wood,side*26.75,y,z,42.5,.22,.22);
+  for(let x=5.5;x<=48;x+=2.5)block(props,mats.wood,side*x,1.05,z,.2,2.1,.2);
+ }
 }
 function openingLabel(text){
  const canvas=document.createElement('canvas');canvas.width=320;canvas.height=80;const ctx=canvas.getContext('2d');
@@ -876,7 +889,7 @@ function setupOpeningProps(){
   for(let i=0;i<18;i++){const side=i%2?1:-1,chip=i<2?new THREE.Mesh(new THREE.CylinderGeometry(.64,.7,4.5,9),mats.wood):block(debris,mats.wood,0,0,0,.12+(i%3)*.07,.12,.25);if(i<2)debris.add(chip);chip.userData={large:i<2,side,offset:i<2?4.4:3.3+(i%5)*.35,height:i<2?.5:.15,spread:(i%4-1.5)*.7};}
   for(const x of [-3,1,3.8]){const branch=block(trunk,mats.wood,x,.65,0,.28,1.5,.28);branch.rotation.z=.5}
   block(exit,mats.wood,3.6,1.25,2,.14,2.5,.14);block(exit,mats.wood,3.6,2.15,2,2.5,.75,.12);
-  const sign=new THREE.Sprite(new THREE.SpriteMaterial({map:openingLabel('К ОЗЕРУ →'),transparent:true,depthWrite:false}));sign.position.set(3.6,2.17,2.1);sign.scale.set(2.6,.65,1);exit.add(sign);
+  const sign=fixedSignLabel('К ОЗЕРУ →');sign.position.set(3.6,2.17,2.1);sign.scale.set(2.6,.65,1);exit.add(sign);
  }
  openingProps.visible=true;resetExitBreaker(openingProps);openingProps.userData.label='';openingProps.userData.trunk.position.set(0,.72,4);openingProps.userData.trunk.rotation.set(0,0,0);openingProps.userData.trunk.visible=true;openingProps.userData.debris.visible=false;openingProps.userData.distantLake.material=currentSeason==='winter'?iceWaterMaterial:openingProps.userData.distantWater;for(const fruit of openingProps.userData.crateFruit)fruit.visible=true;
  const brook=openingProps.userData.brook;brook.position.y=Math.max(.04,terrainHeightAt(0,-5)+.025);brook.material=currentSeason==='winter'?iceWaterMaterial:openingProps.userData.waterMaterial;
@@ -898,7 +911,7 @@ function guideRefresh(){$('openingGuide').dataset.stage=''}
 function syncOpeningGuide(){
  const guide=$('openingGuide');if(!guide)return;
  guide.hidden=!(started&&level===1&&opening&&!paused&&!cinematicRunning&&!endShown&&!win);if(guide.hidden)return;
- const stage=opening.stage,action=$('openingAction');
+ const stage=opening.stage;
  if(guide.dataset.stage!==stage){
   guide.dataset.stage=stage;
   const copy={
@@ -908,13 +921,10 @@ function syncOpeningGuide(){
    rescue:['4/4 · СПАСЕНИЕ','Поезжайте к маме!',mobile?'Езжай по меткам. «Прыжок» — спрыгнуть.':'Езжай по дорожке к метке «МАМА». Пробел — спрыгнуть.'],
    complete:['ПЕРВОЕ ПРИКЛЮЧЕНИЕ ПРОЙДЕНО','Мама спасена!',!friend?'Покорми кабанчика: его помощь нужна, чтобы разбить дерево на пути к озеру.':opening.passageOpen?'Тропа свободна! Езжай прямо к озеру.':opening.passageStarted?'Друг разбивает дерево. Берегись щепок!':'Езжай с другом к поваленному дереву. Он поможет открыть тропу.']
   }[stage];$('openingStep').textContent=copy[0];$('openingTitle').textContent=copy[1];$('openingHint').textContent=copy[2];
-  action.hidden=!(['feed','ride'].includes(stage)||(stage==='complete'&&!friend));action.textContent=stage==='feed'||(stage==='complete'&&!friend)?'🍎 Угостить кабанчика':'🏇 Сесть на друга';
  }
- action.disabled=stage==='ride'&&(!friend||Math.hypot(boy.position.x-friend.g.position.x,boy.position.z-friend.g.position.z)>2.65);
  const mother=familyMembers.find(f=>f.role===0&&!f.done),enemy=foes.find(f=>f.openingBoar),target=stage==='feed'?enemy?.g:stage==='ride'?friend?.g:stage==='complete'?openingProps?.userData.exit:mother?.g;
  if(openingProps&&target){const marker=openingProps.userData.marker;marker.visible=true;marker.position.copy(target.position);marker.position.y+=stage==='complete'?5:3.4;const label={feed:'КАБАНЧИК',ride:'ТВОЙ ДРУГ',complete:'К ОЗЕРУ'}[stage]||'МАМА';if(openingProps.userData.label!==label){marker.material.map?.dispose();marker.material.map=openingLabel(label);openingProps.userData.label=label}}
 }
-$('openingAction').onclick=()=>{if(level!==1||!opening||paused)return;if(opening.stage==='feed'||(opening.stage==='complete'&&!friend))feed();else if(opening.stage==='ride'&&friend&&Math.hypot(boy.position.x-friend.g.position.x,boy.position.z-friend.g.position.z)<2.65)mountFriendNow()};
 $('watchIntro').onclick=()=>{$('intro').style.display='none';playCinematic('intro',()=>{started=false;paused=false;$('intro').style.display='grid';try{document.exitPointerLock?.()}catch{}})};
 
 function showFamilyPopup(role=0,member=null){
@@ -999,7 +1009,7 @@ function playCinematic(kind,onDone,detail={}){
  const finish=()=>{if(!cinematicRunning)return;cinematicRunning=false;cinematicFinish=null;cineClear();stopCinematicMusic();$('cinematic').style.display='none';onDone?.();startMusic()};cinematicFinish=finish;$('cinematicSkip').onclick=finish;cineLater(finish,kind==='intro'?18500:kind==='outro'?15500:kind==='storm'?6500:kind==='death'?4500:8500);
 }
 
-function showEnd(won){if(endShown)return;if(deathSceneActive&&!deathSceneFinished)return;if(!won&&!deathSceneActive&&lastDeathCause!=='wind'){deathSceneActive=true;life=0;playCinematic('death',()=>{deathSceneFinished=true;showEnd(false)},{cause:lastDeathCause,line:{boar:'Кабанчик сбил Тимура с ног. Приключение можно начать снова.',fire:'Тимур оказался слишком близко к огню.',water:'Тимур слишком долго пробыл под водой.',ice:'Тимур замёрз. Нужно успеть найти семью.'}[lastDeathCause]});return}if(!won){attemptProgress.lose();syncSeasonChoices();clearWorldFires();hasFlashlight=false;torch.intensity=0;playDeathMusic()}endShown=true;paused=true;resultSaving=false;resultLocalSaved=false;resultGlobalSaved=false;if(!mobile){try{(document.exitPointerLock||document.webkitExitPointerLock)?.call(document)}catch{}}const best=(()=>{try{return JSON.parse(localStorage.getItem('kabanchiki3d_results')||'[]')}catch{return[]}})();$('endTitle').textContent=won?'🎉 Победа!':'💀 Игра окончена';$('endStats').innerHTML=`⏱ Время: <b>${formatTime(totalTime)}</b><br>🏆 Очки: <b>${score}</b><br>🍎 Кормлений: <b>${statsData.fed}</b><br>🌿 Собрано еды: <b>${statsData.forage}</b><br>🫐 Лечебных ягод: <b>${statsData.berries}</b><br>❤️ Получено урона: <b>${statsData.damage}</b><br>👨‍👩‍👦 Найдено семьи: <b>${familyFound}/4</b><br>🐗 Побеждено миньонов: <b>${statsData.minions}</b><br>👑 Ударов друга по боссу: <b>${statsData.bossHits}</b>`;$('playerName').value=localStorage.getItem('kabanchiki3d_player_name')||'';$('endScreen').style.display='grid';setTimeout(()=>{$('playerName').focus();$('playerName').select()},40)}async function submitGlobalResult(name){
+function showEnd(won){if(endShown)return;if(deathSceneActive&&!deathSceneFinished)return;if(!won&&!deathSceneActive&&lastDeathCause!=='wind'){deathSceneActive=true;life=0;playCinematic('death',()=>{deathSceneFinished=true;showEnd(false)},{cause:lastDeathCause,line:{boar:'Кабанчик сбил Тимура с ног. Приключение можно начать снова.',fire:'Тимур оказался слишком близко к огню.',water:'Тимур слишком долго пробыл под водой.',ice:'Тимур замёрз. Нужно успеть найти семью.'}[lastDeathCause]});return}$('endRestart').textContent=won?'🔄 Новая игра':'🔄 Повторить уровень';if(!won){attemptProgress.lose();syncSeasonChoices();clearWorldFires();hasFlashlight=false;torch.intensity=0;playDeathMusic()}endShown=true;paused=true;resultSaving=false;resultLocalSaved=false;resultGlobalSaved=false;if(!mobile){try{(document.exitPointerLock||document.webkitExitPointerLock)?.call(document)}catch{}}const best=(()=>{try{return JSON.parse(localStorage.getItem('kabanchiki3d_results')||'[]')}catch{return[]}})();$('endTitle').textContent=won?'🎉 Победа!':'💀 Игра окончена';$('endStats').innerHTML=`⏱ Время: <b>${formatTime(totalTime)}</b><br>🏆 Очки: <b>${score}</b><br>🍎 Кормлений: <b>${statsData.fed}</b><br>🌿 Собрано еды: <b>${statsData.forage}</b><br>🫐 Лечебных ягод: <b>${statsData.berries}</b><br>❤️ Получено урона: <b>${statsData.damage}</b><br>👨‍👩‍👦 Найдено семьи: <b>${familyFound}/4</b><br>🐗 Побеждено миньонов: <b>${statsData.minions}</b><br>👑 Ударов друга по боссу: <b>${statsData.bossHits}</b>`;$('playerName').value=localStorage.getItem('kabanchiki3d_player_name')||'';$('endScreen').style.display='grid';setTimeout(()=>{$('playerName').focus();$('playerName').select()},40)}async function submitGlobalResult(name){
  // v121: completed and failed runs use the same existing leaderboard row schema.
  const payload={player_name:name,score:Math.max(0,Math.round(score)),play_time:Math.max(0,Math.round(totalTime)),difficulty:selectedDiff,family:Math.max(0,Math.min(4,familyFound)),game_version:GAME_VERSION};
  try{const r=await fetch(`${SUPABASE_URL}/rest/v1/leaderboard`,{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify(payload)});if(!r.ok)throw new Error(`HTTP ${r.status}`);return {ok:true}}catch(e){console.warn('Global leaderboard submit failed',e);return {ok:false,error:e}}
@@ -1014,10 +1024,11 @@ function resetNewRun(){deathSceneActive=deathSceneFinished=false;lastDeathCause=
  for(const shot of shots)scene.remove(shot.g);shots.length=0;throwCooldown=0;hurricaneCarry=0;underwaterTime=0;underwaterDamageCd=0;weatherBaseSky=null;
 }
 function restartGame(){
+ const retry=endShown&&!win,restartLevel=retry?level:1,elapsed=retry?totalTime:0,previousFamily=retry?Math.max(0,familyFound-levelFamilyDone):0;
  if(!mobile)requestDesktopMouseLock();stopMusic();stopCinematicMusic();cineClear();cinematicRunning=false;cinematicFinish=null;
  $('cinematic').style.display='none';$('endScreen').style.display='none';$('pauseMenu').style.display='none';$('familyPopup').style.display='none';$('statsScreen').style.display='none';
  win=false;started=true;paused=false;endShown=false;resultSaving=false;resultLocalSaved=false;resultGlobalSaved=false;life=diffCfg().playerHP;food=diffCfg().foodMax;score=0;familyFound=0;friendHP=diffCfg().friendHP;bossHits=0;damage=0;totalTime=0;invuln=0;
- resetNewRun();boy.position.set(0,0,4);py=0;vy=0;loadLevel(1);startMusic();notice('👩 Мама впереди. Иди по дорожке!');
+ resetNewRun();familyFound=previousFamily;statsData={fed:0,forage:0,berries:0,damage:0,family:previousFamily,minions:0,bossHits:0};boy.position.set(0,0,4);py=0;vy=0;loadLevel(restartLevel);totalTime=elapsed;startMusic();notice(retry?'🔄 Попробуй снова! Очки сброшены, общее время продолжается.':'👩 Мама впереди. Иди по дорожке!');
 }
 $('endRestart').onclick=restartGame;
 function escStat(v){return String(v??'').replace(/[<>&"']/g,'')}
@@ -2018,6 +2029,8 @@ if(__autoTest||__autoParams.get('openingtest')==='1')window.__KABANCHIKI_QA__={
  v161Fire(seconds=0){this.load(1);paused=true;const tree=treeObjects.find(t=>t.visible);igniteStormTarget(tree);const b=stormBurning.get(tree);b.time-=seconds;updateLivingFire(tree,b,performance.now());boy.position.set(tree.position.x,0,tree.position.z+5);yaw=Math.PI;camMode=3;return {time:b.time,emissive:b.materials[0].mesh.material.emissive?.getHex(),color:b.materials[0].mesh.material.color.getHex()}},
  revision(){return {entry:[boy.position.x,boy.position.z],heading:yaw,topHeight:camera.position.y-boy.position.y,movie:movie?{people:movie.people.map(p=>p.visible),hero:movie.hero.visible,blanket:movie.picnic?.visible,carZ:movie.car?.position.z}:null,vortices:false,waves:lakeWaves.length}},
 
+ v202Inspect(){let fixed=0,sprites=0;for(const props of [openingProps,lakeExitProps,...locationExitProps.values(),homeYard])props?.traverse(o=>{if(o.userData.fixedSign)fixed++;if(o.isSprite&&o.material.map?.image?.width===320&&o!==openingProps?.userData.marker)sprites++;});return {version:GAME_VERSION,level,score,totalTime,familyFound,levelFamilyDone,fixed,sprites,guideButtons:document.querySelectorAll('#openingGuide button').length,fence:lakeExitProps?.userData.fenceExtent};},
+ v202Retry(n){this.load(n);score=345;totalTime=123.5;familyFound=n===1?1:2;levelFamilyDone=1;lastDeathCause='wind';deathSceneActive=deathSceneFinished=false;endShown=false;win=false;showEnd(false);restartGame();paused=true;return this.v202Inspect();},
  homeInspect(){return {stage:home.stage,wood:home.wood,collected:home.collected.slice(),visible:personalHouse?.visible,inside:shelteredFromWind(),wallBlocked:playerWorldBlocked(HOME_SITE.x+2.4,HOME_SITE.z),doorBlocked:playerWorldBlocked(HOME_SITE.x,HOME_SITE.z+2.4)}},
  homeVisit(kind='site',i=0){if(level!==3)this.load(3);paused=false;mountedFriend=false;endBoarForm();py=vy=0;keys={};const p=kind==='wood'?WOOD_PILES[i]:{x:HOME_SITE.x,z:HOME_SITE.z+4};boy.position.set(p.x,0,p.z);yaw=boy.rotation.y=Math.PI;updateHomeUI();return this.homeInspect()},
  catRoofScenario(){this.load(3);paused=false;mountedFriend=false;py=vy=0;keys={};boy.position.set(-27,0,-23.5);yaw=boy.rotation.y=Math.PI;startCatForm();catLife.root.visible=false;invuln=999;return true},
