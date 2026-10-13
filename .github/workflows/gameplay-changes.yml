@@ -2,7 +2,7 @@ name: Gameplay changes checks
 on:
   pull_request:
   push:
-    branches: [fix/v204-house-walls-furniture]
+    branches: [fix/v205-signs-first-person-helper]
 jobs:
   gameplay:
     runs-on: ubuntu-latest
@@ -22,3 +22,10 @@ jobs:
           node scripts/v202-browser.mjs
           node scripts/v203-browser.mjs
           node scripts/v204-browser.mjs
+          node scripts/v205-browser.mjs
+      - name: First person screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v205-first-person-previews
+          path: screenshots/v205-*.png
