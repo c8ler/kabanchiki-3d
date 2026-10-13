@@ -9,3 +9,21 @@ export function findGridPath(start,goal,blocked,{step=1,bound=42,maxNodes=12000}
  while(heap.length&&visited++<maxNodes){const cur=pop();if(cur.g!==costs[cur.id])continue;const d=estimate(cur.id);if(d<bestD){bestD=d;best=cur.id}if(cur.id===gid&&!isBlocked(gid)){best=gid;break}const x=cur.id%width,z=Math.floor(cur.id/width);for(const [dx,dz] of [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]]){const nx=x+dx,nz=z+dz;if(nx<0||nz<0||nx>=width||nz>=width)continue;const id=nz*width+nx;if(isBlocked(id)||(dx&&dz&&(isBlocked(z*width+nx)||isBlocked(nz*width+x))))continue;const cost=cur.g+Math.hypot(dx,dz)*step;if(cost>=costs[id])continue;costs[id]=cost;parents[id]=cur.id;push({id,g:cost,f:cost+estimate(id)})}}
  const path=[];for(let id=best;id!==sid&&id>=0;id=parents[id])path.push(point(id));path.reverse();return path;
 }
+
+export function smoothHeading(current,target,dt,rate=3.2){const delta=Math.atan2(Math.sin(target-current),Math.cos(target-current));return current+Math.max(-rate*dt,Math.min(rate*dt,delta))}
+export class StableRoute{
+ constructor(){this.path=[];this.age=0;this.stuck=0;this.plans=0;this.wait=0;this.excluded=new Map()}
+ next(position,goal,blocked,dt,{epoch=0,step=.8,bound=42}={}){
+ this.age+=dt;this.wait=Math.max(0,this.wait-dt);for(const [key,life] of this.excluded){if(life<=dt)this.excluded.delete(key);else this.excluded.set(key,life-dt)}
+ const changed=!this.goal||Math.hypot(goal.x-this.goal.x,goal.z-this.goal.z)>2||this.epoch!==epoch;
+ if(changed||(this.path.length>0&&this.stuck>.65&&this.age>.8)||(this.path.length===0&&this.age>3&&this.wait<=0)){
+ if(this.stuck>.65&&this.path[0])this.excluded.set(this.key(this.path[0],step),3);
+ this.path=findGridPath(position,goal,(x,z)=>blocked(x,z)||this.excluded.has(this.key({x,z},step)),{step,bound,maxNodes:22000});
+ this.goal={...goal};this.epoch=epoch;this.age=0;this.stuck=0;this.plans++;this.wait=this.path.length?0:3;
+ }
+ while(this.path.length&&Math.hypot(position.x-this.path[0].x,position.z-this.path[0].z)<.22)this.path.shift();
+ return this.path[0]||null;
+ }
+ key(p,step){return Math.round(p.x/step)+','+Math.round(p.z/step)}
+ record(distance,dt){this.stuck=distance>.002?0:this.stuck+dt}
+}
