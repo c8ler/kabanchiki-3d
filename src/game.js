@@ -1,5 +1,5 @@
 import {forestEdgeAt,forestEdgeLimit,forestEdgeBlocked,RideHop} from './world-interactions.js?v=206';
-import {CinematicTreeGuard,visibleInTree} from './cinematic-tree-guard.js?v=206';
+import {CinematicTreeGuard,visibleInTree,projectedBox} from './cinematic-tree-guard.js?v=206';
 import { FirstPersonFood } from './first-person-food.js?v=206';
 import { BOAR_WADING_DEPTH, boarWaterStep, updateBoarBreath, shoreGoal } from './boar-water.js?v=206';
 import { HomeConstruction, HOME_SITE, WOOD_PILES } from './home-construction.js?v=206';
@@ -1400,6 +1400,7 @@ function depenetratePlayer(){
    if(d<need){if(d<.001){dx=1;dz=0;d=1}boy.position.x=o.x+dx/d*need;boy.position.z=o.z+dz/d*need;changed=true}
   }
   boy.position.x=Math.max(-43.1,Math.min(43.1,boy.position.x));boy.position.z=Math.max(-43.1,Math.min(43.1,boy.position.z));
+  if(level===1&&opening&&forestEdgeBlocked(boy.position.x,boy.position.z,mountedFriend?.7:PLAYER_RADIUS,opening.passageOpen)){boy.position.z=forestEdgeLimit(boy.position.x,mountedFriend?.7:PLAYER_RADIUS);changed=true;}
   if(!changed)break
  }
 }
@@ -2123,7 +2124,7 @@ if(__autoTest||__autoParams.get('openingtest')==='1')window.__KABANCHIKI_QA__={
  v206Cinematics(n,portrait=false){this.load(n);paused=true;const originalAspect=camera.aspect;camera.aspect=portrait?9/16:16/9;camera.updateProjectionMatrix();const results=[];const cases=[['intro',0,null],['outro',0,null],...Array.from({length:4},(_,role)=>['family',role,null]),['death',0,'boar'],['death',0,'water'],['death',0,'fire'],['storm',0,null]];
  const test=new THREE.Group();block(test,mats.wood,0,1.5,0,.75,3,.75);sphere(test,mats.leaf,0,3,0,1.2);scene.add(test);
  for(const [kind,role,cause] of cases){playCinematic(kind,()=>{}, {role,cause,member:familyMembers.find(f=>f.role===role)});let hidden=0,samples=0;const end=kind==='intro'?18:kind==='outro'?15:kind==='family'?8:kind==='storm'?6:4;
- for(let t=0;t<=end;t+=1){movie.elapsedOverride=t;updateCinematic(performance.now(),new THREE.Vector3());const actor=cinematicActors(movie).find(visibleInTree);if(!actor)continue;const target=new THREE.Box3().setFromObject(actor).getCenter(new THREE.Vector3());test.visible=true;test.position.lerpVectors(camera.position,target,.5);test.position.y-=1.5;movie.treeGuard.add(test);protectCinematicAction(movie);samples++;if(!test.visible)hidden++;}cineClear();results.push({kind,role,cause,samples,hidden,restored:test.visible});}
+ for(let t=0;t<=end;t+=1){movie.elapsedOverride=t;updateCinematic(performance.now(),new THREE.Vector3());const actor=cinematicActors(movie).find(a=>{if(!visibleInTree(a))return false;const r=projectedBox(THREE,new THREE.Box3().setFromObject(a),camera);return r&&r.right>-1&&r.left<1&&r.top>-1&&r.bottom<1;});if(!actor)continue;const target=new THREE.Box3().setFromObject(actor).getCenter(new THREE.Vector3());test.visible=true;test.position.lerpVectors(camera.position,target,.5);test.position.y-=1.5;movie.treeGuard.add(test);protectCinematicAction(movie);samples++;if(!test.visible)hidden++;}cineClear();results.push({kind,role,cause,samples,hidden,restored:test.visible});}
  scene.remove(test);cinematicRunning=false;cinematicFinish=null;camera.aspect=originalAspect;camera.updateProjectionMatrix();$('cinematic').style.display='none';return {level:n,portrait,results};},
  v206Logs(){this.load(1);paused=true;mountedFriend=false;boarFormTime=catFormTime=0;py=vy=0;const o=logObstacles[0];boy.position.set(0,0,6);for(let i=0;i<35;i++)movePlayerCollision(0,-.055);const lowLogRaised=py>=o.top-.03;
  opening.rescued=true;opening.passageStarted=true;opening.passageTime=2.4;opening.passageBroken=opening.passageOpen=true;updateOpeningAdventure(0);const samples=[];for(const q of openingDebrisCapsules()){const x=(q.body.ax+q.body.bx)/2,z=(q.body.az+q.body.bz)/2;py=0;samples.push({blocked:debrisBlocks(x,z,.43),x,z,top:q.top});boy.position.set(x,0,z);depenetratePlayer();samples[samples.length-1].pushed=!debrisBlocks(boy.position.x,boy.position.z,.43);}boy.position.set(0,0,-34);py=0;return {lowLogRaised,samples,centreFree:!debrisBlocks(0,-33.2,.43)};},
