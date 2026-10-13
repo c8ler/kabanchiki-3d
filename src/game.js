@@ -1,26 +1,26 @@
-import { BOAR_WADING_DEPTH, boarWaterStep, updateBoarBreath, shoreGoal } from './boar-water.js?v=203';
-import { HomeConstruction, HOME_SITE, WOOD_PILES } from './home-construction.js?v=203';
-import { parseCheatCode } from './cheat-codes.js?v=203';
+import { BOAR_WADING_DEPTH, boarWaterStep, updateBoarBreath, shoreGoal } from './boar-water.js?v=204';
+import { HomeConstruction, HOME_SITE, WOOD_PILES } from './home-construction.js?v=204';
+import { parseCheatCode } from './cheat-codes.js?v=204';
 window.__gameLoadProgress?.(84);let __loadFinished=false;
 import * as THREE from '../vendor/three/three.module.min.js';
-import { BOAR_MAX_WATER_DEPTH, attacksPlayer, shallowStepAllowed, capsuleAt, capsuleCircleContact, capsuleCapsuleContact } from './boar-physics.js?v=203';
-import { convexHull, polygonContact, FriendYield } from './movement-geometry.js?v=203';
-import { BOSS_HITS, riverCenterAt, riverDepthAt, onRiverBridge, lakeInletCenterAt, lakeInletHalfWidthAt, lakeInletDepthAt, bridgeRailBlocked, weatherDeadline, rainFillLimit, rainFillRate, WorldSurface, lakePointAt, lakeRadiusAt, lakeDepth } from './world-surface.js?v=203';
-import { Knockback } from './knockback.js?v=203';
-import { AdaptiveQuality, GRAPHICS_TIERS } from './adaptive-quality.js?v=203';
-import { AttemptProgress, seasonForAttempts } from './seasons.js?v=203';
-import { Soundscape } from './soundscape.js?v=203';
-import { BufferedMusic, gameScore, cinematicScore } from './music-player.js?v=203';
-import { StaticSceneryBatches } from './static-batching.js?v=203';
-import { lightBudget, selectEffectLights, OcclusionSchedule, distantActorDt } from './render-budget.js?v=203';
-import { LocationExit, LOCATION_EXITS } from './location-exits.js?v=203';
-import { OpeningAdventure, openingStreamDepth, forestExitBlocked } from './opening-adventure.js?v=203';
-import { introStagingAt, outroStagingAt } from './cinematic-staging.js?v=203';
-import { segmentHitsBox, findGridPath, StableRoute, smoothHeading } from './navigation.js?v=203';
-import { CatLife } from './cat-life.js?v=203';
-import { BirdLife } from './bird-life.js?v=203';
-import { CAT_BERRY_CHANCE, CAT_FORM_SECONDS, CAT_JUMP_SPEED, isCatBerryRoll, formTimeAfterStep } from './form-rules.js?v=203';
-const GAME_VERSION='v203';
+import { BOAR_MAX_WATER_DEPTH, attacksPlayer, shallowStepAllowed, capsuleAt, capsuleCircleContact, capsuleCapsuleContact } from './boar-physics.js?v=204';
+import { convexHull, polygonContact, FriendYield } from './movement-geometry.js?v=204';
+import { BOSS_HITS, riverCenterAt, riverDepthAt, onRiverBridge, lakeInletCenterAt, lakeInletHalfWidthAt, lakeInletDepthAt, bridgeRailBlocked, weatherDeadline, rainFillLimit, rainFillRate, WorldSurface, lakePointAt, lakeRadiusAt, lakeDepth } from './world-surface.js?v=204';
+import { Knockback } from './knockback.js?v=204';
+import { AdaptiveQuality, GRAPHICS_TIERS } from './adaptive-quality.js?v=204';
+import { AttemptProgress, seasonForAttempts } from './seasons.js?v=204';
+import { Soundscape } from './soundscape.js?v=204';
+import { BufferedMusic, gameScore, cinematicScore } from './music-player.js?v=204';
+import { StaticSceneryBatches } from './static-batching.js?v=204';
+import { lightBudget, selectEffectLights, OcclusionSchedule, distantActorDt } from './render-budget.js?v=204';
+import { LocationExit, LOCATION_EXITS } from './location-exits.js?v=204';
+import { OpeningAdventure, openingStreamDepth, forestExitBlocked } from './opening-adventure.js?v=204';
+import { introStagingAt, outroStagingAt } from './cinematic-staging.js?v=204';
+import { segmentHitsBox, findGridPath, StableRoute, smoothHeading } from './navigation.js?v=204';
+import { CatLife } from './cat-life.js?v=204';
+import { BirdLife } from './bird-life.js?v=204';
+import { CAT_BERRY_CHANCE, CAT_FORM_SECONDS, CAT_JUMP_SPEED, isCatBerryRoll, formTimeAfterStep } from './form-rules.js?v=204';
+const GAME_VERSION='v204';
 const attemptProgress=new AttemptProgress((()=>{try{return window.localStorage}catch{return null}})());let currentSeason=attemptProgress.season;
 let chosenSeason=null;try{chosenSeason=localStorage.getItem('kabanchiki3d_chosen_season')}catch{}
 function unlockedSeasons(){return attemptProgress.failed>=60?['summer','autumn','winter','spring']:attemptProgress.failed>=40?['summer','autumn','winter']:attemptProgress.failed>=20?['summer','autumn']:['summer']}
@@ -736,13 +736,13 @@ function prepareHome(){if(personalHouse)return;personalHouse=new THREE.Group();p
  front.push(block(personalHouse,mats.wood,0,2.45,2.4,1.6,.7,.2));front.at(-1).userData.doorLintel=true;
  const doorHinge=new THREE.Group();doorHinge.position.set(-.8,.16,2.52);personalHouse.add(doorHinge);
  const door=block(doorHinge,mats.wood,.8,.95,0,1.6,1.9,.12);sphere(door,mats.gold,.55,0,.09,.07);door.userData.homeDoor=true;
- homeParts={floor,front,back,left,right,roof,furnishings,doorHinge,door};homeYard=new THREE.Group();scene.add(homeYard);for(const [x,z] of [[-2.6,-2.6],[2.6,-2.6],[-2.6,2.6],[2.6,2.6]])block(homeYard,mats.wood,HOME_SITE.x+x,.4,HOME_SITE.z+z,.15,.8,.15);physicalSign(homeYard,'МОЙ ДОМИК · B',HOME_SITE.x,3.8,HOME_SITE.z+3,5,1);const trail=new THREE.Mesh(new THREE.PlaneGeometry(23,2.2),mats.path);trail.rotation.x=-Math.PI/2;trail.position.set(-17.5,.024,31.5);homeYard.add(trail);homeYard.userData.trail=trail;physicalSign(homeYard,'← СВОЙ ДОМИК',-5,2.1,32,4,.9);
+ furnishings.traverse(o=>{if(o.isMesh)o.userData.solidInterior=true;});homeParts={floor,front,back,left,right,roof,furnishings,doorHinge,door};homeYard=new THREE.Group();scene.add(homeYard);for(const [x,z] of [[-2.6,-2.6],[2.6,-2.6],[-2.6,2.6],[2.6,2.6]])block(homeYard,mats.wood,HOME_SITE.x+x,.4,HOME_SITE.z+z,.15,.8,.15);physicalSign(homeYard,'МОЙ ДОМИК · B',HOME_SITE.x,3.8,HOME_SITE.z+3,5,1);const trail=new THREE.Mesh(new THREE.PlaneGeometry(23,2.2),mats.path);trail.rotation.x=-Math.PI/2;trail.position.set(-17.5,.024,31.5);homeYard.add(trail);homeYard.userData.trail=trail;physicalSign(homeYard,'← СВОЙ ДОМИК',-5,2.1,32,4,.9);
  for(const p of WOOD_PILES){const pile=new THREE.Group();pile.position.set(p.x,0,p.z);for(let i=0;i<5;i++){const log=new THREE.Mesh(new THREE.CylinderGeometry(.12,.12,2,8),mats.wood);log.rotation.z=Math.PI/2;log.position.set((i%2)*.28,.18+Math.floor(i/2)*.22,0);pile.add(log);}scene.add(pile);homePiles.push(pile)}syncHomeVisual();syncHomeLocation(level);
 }
 function syncHomeVisual(){if(!personalHouse)return;const p=homeParts;p.floor.visible=home.stage>0;for(const side of ['front','back','left','right'])for(const m of p[side])m.visible=home.stage>=2;p.roof.visible=p.furnishings.visible=home.stage>=3;p.doorHinge.visible=home.stage>=4;personalHouse.userData.cutawayWalls={front:home.stage>=2?p.front:[],back:home.stage>=2?p.back:[],left:home.stage>=2?p.left:[],right:home.stage>=2?p.right:[],roof:p.roof};for(let i=0;i<homePiles.length;i++)homePiles[i].visible=level===3&&!home.collected[i];wallCacheEpoch=-1;}
 function syncHomeLocation(n){if(!personalHouse)return;personalHouse.visible=homeYard.visible=n===3;homeYard.userData.trail.material=currentSeason==='winter'?winterRoadMaterial:mats.path;for(let i=0;i<homePiles.length;i++)homePiles[i].visible=n===3&&!home.collected[i];if(n===3){const clear=(x,z)=>Math.hypot(x-HOME_SITE.x,z-HOME_SITE.z)<7||(x>-29&&x<-5&&Math.abs(z-31.5)<2.1)||WOOD_PILES.some(p=>Math.hypot(x-p.x,z-p.z)<3);for(const tree of treeObjects)if(clear(tree.position.x,tree.position.z))tree.visible=false;for(const [x,z,,mesh] of rockPositions)if(clear(x,z))mesh.visible=false;}}
 function homeInteraction(){if(level!==3||!started||paused||cinematicRunning||life<=0||mountedFriend||catFormTime>0||boarFormTime>0)return null;for(let i=0;i<WOOD_PILES.length;i++)if(!home.collected[i]&&Math.hypot(boy.position.x-WOOD_PILES[i].x,boy.position.z-WOOD_PILES[i].z)<3)return {kind:'wood',i};if(Math.hypot(boy.position.x-HOME_SITE.x,boy.position.z-(HOME_SITE.z+3.8))<4&&home.stage<4)return {kind:'build'};return null}
-function updateHomeUI(){if(level===3&&homeParts?.doorHinge){const near=Math.hypot(boy.position.x-HOME_SITE.x,boy.position.z-HOME_SITE.z-2.4)<3||friend?.g&&Math.hypot(friend.g.position.x-HOME_SITE.x,friend.g.position.z-HOME_SITE.z-2.4)<3;homeParts.doorHinge.rotation.y=near?-Math.PI*.48:0;homeParts.door.userData.closed=!near;}const action=homeInteraction(),button=$('homeAction');button.hidden=!action;if(action)button.textContent=action.kind==='wood'?'🪵 Собрать доски · B':`🏠 ${['Построить пол','Построить стены','Построить крышу','Сделать дверь'][home.stage]} · B (${home.wood}/2)`;if(home.stage>=3&&personalHouse?.visible)setHouseTransparent(personalHouse,Math.abs(boy.position.x-HOME_SITE.x)<2.25&&Math.abs(boy.position.z-HOME_SITE.z)<2.25&&py<2.8);}
+function updateHomeUI(){if(level===3&&homeParts?.doorHinge){const near=Math.hypot(boy.position.x-HOME_SITE.x,boy.position.z-HOME_SITE.z-2.4)<3||friend?.g&&Math.hypot(friend.g.position.x-HOME_SITE.x,friend.g.position.z-HOME_SITE.z-2.4)<3;homeParts.doorHinge.rotation.y=near?-Math.PI*.48:0;homeParts.door.userData.closed=!near;}const action=homeInteraction(),button=$('homeAction');button.hidden=!action;if(action)button.textContent=action.kind==='wood'?'🪵 Собрать доски · B':`🏠 ${['Построить пол','Построить стены','Построить крышу','Сделать дверь'][home.stage]} · B (${home.wood}/2)`;if(home.stage>=3&&personalHouse?.visible)setHomeHouseCutaway(Math.abs(boy.position.x-HOME_SITE.x)<2.25&&Math.abs(boy.position.z-HOME_SITE.z)<2.25&&py<2.8);}
 function interactHome(){const action=homeInteraction();if(!action)return;if(action.kind==='wood'){home.collect(action.i);notice(`🪵 Собраны доски: ${home.wood}. Неси их к площадке «Мой домик».`)}else{if(!home.build()){notice('🪵 Нужны 2 доски. Найди штабели рядом с поляной.');return}worldEpoch++;tagStormTargetsForCurrentLocation();notice(home.stage===4?'🚪 Дверь готова! Домик достроен.':home.stage===3?'🏠 Крыша готова! Найди ещё брёвна для двери.':['','🏠 Пол готов. Теперь нужны стены.','🏠 Стены готовы. Осталось построить крышу.'][home.stage])}saveHome();syncHomeVisual();syncHomeLocation(level);updateHomeUI();}
 $('homeAction').onclick=interactHome;
 function buildForestCorridor(parent){const woods=new THREE.Group();parent.add(woods);const leafMaterial=mats.leaf.clone(),wood=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),mats.wood,20),leaf=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),leafMaterial,40),matrix=new THREE.Matrix4();for(let i=0;i<20;i++){const side=i%2?1:-1,row=Math.floor(i/2),x=side*(8+.5*Math.sin(row*2.1)),z=-44-row*2.4,h=3.8+.7*Math.sin(row*1.7);matrix.makeScale(.6,h,.6).setPosition(x,h/2,z);wood.setMatrixAt(i,matrix);for(let layer=0;layer<2;layer++){matrix.makeScale(3.8-layer*.5,1.8,3.8-layer*.5).setPosition(x,h+layer*.9,z);leaf.setMatrixAt(i*2+layer,matrix)}}woods.add(wood,leaf);woods.userData.leafMaterial=leafMaterial;parent.userData.forestCorridor=woods;syncForestCorridor(parent);}
@@ -1143,7 +1143,7 @@ function applyObjectFade(o){
  if(!o?.isMesh||!o.material)return;ensureFadeMaterial(o);
  const cameraFade=o.userData._cameraFade?0.18:1,houseFade=o.userData._houseFade?0.16:1;
  // Dad's warm window must stay bright and readable even while the walls fade.
- const k=o.userData.familyWindow?1:Math.min(cameraFade,houseFade),base=o.userData._fadeBaseOpacity;
+ const k=(o.userData.familyWindow||o.userData.solidInterior)?1:Math.min(cameraFade,houseFade),base=o.userData._fadeBaseOpacity;
  o.material.opacity=base*k;o.material.transparent=k<1||o.userData._fadeBaseTransparent;o.material.depthWrite=k<1?false:o.userData._fadeBaseDepthWrite;
 }
 function setObjectCameraFade(root,on){if(!root)return;root.traverse(o=>{if(o.isMesh){o.userData._cameraFade=!!on;applyObjectFade(o)}})}
@@ -1156,6 +1156,15 @@ function familyHouseRevealAt(x,z){
  const doorway=Math.abs(q.x)<1.18&&q.z>1.18&&q.z<2.82;
  const insideShell=q.x>-2.28&&q.x<2.28&&q.z>-2.18&&q.z<2.48;
  return doorway||insideShell;
+}
+function setHomeHouseCutaway(on){
+ if(!personalHouse||home.stage<3)return;
+ const p=personalHouse.userData.cutawayWalls;setHouseTransparent(personalHouse,false);
+ for(const side of ['front','back','left','right'])for(const m of p[side])m.visible=true;p.roof.visible=true;
+ if(!on)return;
+ personalHouse.updateWorldMatrix(true,true);const c=personalHouse.worldToLocal(camera.position.clone());
+ const side=Math.abs(c.x)>Math.abs(c.z)?(c.x<0?'left':'right'):(c.z>0?'front':'back');
+ for(const m of p[side])m.visible=false;p.roof.visible=false;
 }
 function setDadHouseCutaway(on){
  const p=familyHideout?.userData?.cutawayWalls;if(!p)return;
@@ -1175,7 +1184,8 @@ function updateFamilyHouseReveal(){
 function houseBlockAt(x,z,pad=.45,allowJump=false){
  if(level!==3)return false;
  for(const wall of wallGeometry()){
-  if(allowJump&&!mountedFriend&&py>=wall.box.max.y-.015)continue;
+  const top=wall.shell&&wall.root.userData.enterable?Math.max(wall.box.max.y,wall.roofTop):wall.box.max.y;
+  if(allowJump&&!mountedFriend&&py>=top-.015)continue;
   if(polygonContact(wall.polygon,x,z,pad))return true;
  }
  return false;
@@ -1306,7 +1316,7 @@ function playerWorldBlocked(x,z,pad=0){
  if(houseBlockAt(x,z,rr,true))return true;
  return false
 }
-function roofHeightAt(x,z){let top=0;if(level!==3)return top;for(const h of houseObjects){if(!h.visible)continue;h.updateWorldMatrix(true,true);for(const m of h.children){if(!m.visible||!m.isMesh||(!m.userData.dadRoof&&(seasonBaseMaterials.get(m)||m.material).map!==mats.roof.map))continue;m.geometry.computeBoundingBox();const q=m.worldToLocal(new THREE.Vector3(x,0,z)),b=m.geometry.boundingBox;if(q.x>b.min.x+PLAYER_RADIUS*.12&&q.x<b.max.x-PLAYER_RADIUS*.12&&q.z>b.min.z+PLAYER_RADIUS*.12&&q.z<b.max.z-PLAYER_RADIUS*.12){const world=m.localToWorld(new THREE.Vector3(q.x,b.max.y,q.z));top=Math.max(top,world.y)}}}return top}
+function roofHeightAt(x,z){let top=0;if(level!==3)return top;for(const h of houseObjects){if(!h.visible)continue;h.updateWorldMatrix(true,true);for(const m of h.children){if((!m.visible&&!h.userData.enterable)||!m.isMesh||(!m.userData.dadRoof&&(seasonBaseMaterials.get(m)||m.material).map!==mats.roof.map))continue;m.geometry.computeBoundingBox();const q=m.worldToLocal(new THREE.Vector3(x,0,z)),b=m.geometry.boundingBox;if(q.x>b.min.x+PLAYER_RADIUS*.12&&q.x<b.max.x-PLAYER_RADIUS*.12&&q.z>b.min.z+PLAYER_RADIUS*.12&&q.z<b.max.z-PLAYER_RADIUS*.12){const world=m.localToWorld(new THREE.Vector3(q.x,b.max.y,q.z));top=Math.max(top,world.y)}}}return top}
 function playerSupportHeightAtNoRock(x,z){return roofHeightAt(x,z)}
 function familyFloorAt(x,z){if(level===3&&home.stage>0&&Math.abs(x-HOME_SITE.x)<2.35&&Math.abs(z-HOME_SITE.z)<2.35)return .16;if(level===4&&locationExitReady()&&Math.abs(x)<5.4&&z<-39&&z>-47)return .26;if(level!==3||!familyHideout.visible)return 0;const p=familyHideout.worldToLocal(new THREE.Vector3(x,0,z));return Math.abs(p.x)<2.4&&p.z>-1.95&&p.z<2.08?.16:0}
 function branchStepHeightAt(x,z){
@@ -1771,7 +1781,7 @@ function boarsInContact(a,b,padding=0){const body=boarBody(a);body.r+=padding;re
 function boarShouldChasePlayer(f,d){if(f.waterEscaping)return false;if(level===1&&f.openingBoar&&opening)return opening.chasing&&attacksPlayer(boarFormTime+catFormTime)&&d>1.05;return attacksPlayer(boarFormTime+catFormTime)&&d<13&&d>1.05}
 function boarAttackDistance(f){return 1.65*boarScale(f)+playerBodyRadius()+.18}
 let wallCacheEpoch=-1,wallCache=[];
-function wallGeometry(){if(wallCacheEpoch!==worldEpoch){wallCacheEpoch=worldEpoch;wallCache=[];if(level===3)for(const h of houseObjects){const walls=h.userData.cutawayWalls,objects=walls?[...walls.front,...walls.back,...walls.left,...walls.right,...(h===familyHideout?houseFurnishings.children:[])]:[h];for(const o of objects){if(o.userData.doorLintel)continue;o.updateWorldMatrix(true,true);const box=new THREE.Box3().setFromObject(o);wallCache.push({root:h,box,polygon:[{x:box.min.x,z:box.min.z},{x:box.max.x,z:box.min.z},{x:box.max.x,z:box.max.z},{x:box.min.x,z:box.max.z}]})}}}const result=wallCache.filter(q=>q.root.visible);if(level===3&&familyHideout.visible&&familyDoor.userData.closed){const box=new THREE.Box3().setFromObject(familyDoor);result.push({root:familyHideout,box,polygon:[{x:box.min.x,z:box.min.z},{x:box.max.x,z:box.min.z},{x:box.max.x,z:box.max.z},{x:box.min.x,z:box.max.z}]})}if(level===3&&home.stage>=4&&personalHouse?.visible&&homeParts.door.userData.closed){const box=new THREE.Box3().setFromObject(homeParts.door);result.push({root:personalHouse,box,polygon:[{x:box.min.x,z:box.min.z},{x:box.max.x,z:box.min.z},{x:box.max.x,z:box.max.z},{x:box.min.x,z:box.max.z}]});}return result}
+function wallGeometry(){if(wallCacheEpoch!==worldEpoch){wallCacheEpoch=worldEpoch;wallCache=[];if(level===3)for(const h of houseObjects){const walls=h.userData.cutawayWalls,objects=walls?[...walls.front,...walls.back,...walls.left,...walls.right,...(h===familyHideout?houseFurnishings.children:[])]:[h];for(const o of objects){if(o.userData.doorLintel)continue;o.updateWorldMatrix(true,true);const box=new THREE.Box3().setFromObject(o);const shell=!!walls&&['front','back','left','right'].some(side=>walls[side].includes(o));const roofTop=walls?.roof?new THREE.Box3().setFromObject(walls.roof).max.y:box.max.y;wallCache.push({root:h,box,shell,roofTop,polygon:[{x:box.min.x,z:box.min.z},{x:box.max.x,z:box.min.z},{x:box.max.x,z:box.max.z},{x:box.min.x,z:box.max.z}]})}}}const result=wallCache.filter(q=>q.root.visible);if(level===3&&familyHideout.visible&&familyDoor.userData.closed){const box=new THREE.Box3().setFromObject(familyDoor);result.push({root:familyHideout,box,polygon:[{x:box.min.x,z:box.min.z},{x:box.max.x,z:box.min.z},{x:box.max.x,z:box.max.z},{x:box.min.x,z:box.max.z}]})}if(level===3&&home.stage>=4&&personalHouse?.visible&&homeParts.door.userData.closed){const box=new THREE.Box3().setFromObject(homeParts.door);result.push({root:personalHouse,box,polygon:[{x:box.min.x,z:box.min.z},{x:box.max.x,z:box.min.z},{x:box.max.x,z:box.max.z},{x:box.min.x,z:box.max.z}]});}return result}
 function clearWallLine(a,b){const start={x:a.x,y:a.y??.8,z:a.z},end={x:b.x,y:b.y??.8,z:b.z};if(wallGeometry().some(w=>segmentHitsBox(start,end,w.box)))return false;if(level===3&&familyHideout.visible&&familyDoor.userData.closed){const box=new THREE.Box3().setFromObject(familyDoor);if(segmentHitsBox(start,end,box))return false}return true}
 function boarWallContacts(f,x=f.g.position.x,z=f.g.position.z,yaw=f.g.rotation.y){const body=boarBody(f,x,z,yaw),contacts=[];for(const w of wallGeometry())for(const [px,pz] of [[body.ax,body.az],[(body.ax+body.bx)/2,(body.az+body.bz)/2],[body.bx,body.bz]]){const hit=polygonContact(w.polygon,px,pz,body.r+.04);if(hit)contacts.push(hit)}return contacts}
 const companionChecks={checks:0,repairs:0,replans:0};
@@ -2040,12 +2050,26 @@ if(__autoTest||__autoParams.get('openingtest')==='1')window.__KABANCHIKI_QA__={
  v161Fire(seconds=0){this.load(1);paused=true;const tree=treeObjects.find(t=>t.visible);igniteStormTarget(tree);const b=stormBurning.get(tree);b.time-=seconds;updateLivingFire(tree,b,performance.now());boy.position.set(tree.position.x,0,tree.position.z+5);yaw=Math.PI;camMode=3;return {time:b.time,emissive:b.materials[0].mesh.material.emissive?.getHex(),color:b.materials[0].mesh.material.color.getHex()}},
  revision(){return {entry:[boy.position.x,boy.position.z],heading:yaw,topHeight:camera.position.y-boy.position.y,movie:movie?{people:movie.people.map(p=>p.visible),hero:movie.hero.visible,blanket:movie.picnic?.visible,carZ:movie.car?.position.z}:null,vortices:false,waves:lakeWaves.length}},
 
- v203Road(n){this.load(n);paused=true;if(friend)scene.remove(friend.g);friend=makeBoar(0,20,true);mountedFriend=false;friend.g.rotation.y=Math.PI;boy.position.set(0,0,-30);foes.forEach(f=>f.flee=true);let maxTurn=0,maxStep=0,reversals=0,previous=null;for(let i=0;i<1000;i++){const x=friend.g.position.x,z=friend.g.position.z,yaw=friend.g.rotation.y;moveFriendAroundObstacles(0,-30,4,.05);const dx=friend.g.position.x-x,dz=friend.g.position.z-z,d=Math.hypot(dx,dz);maxStep=Math.max(maxStep,d);maxTurn=Math.max(maxTurn,Math.abs(Math.atan2(Math.sin(friend.g.rotation.y-yaw),Math.cos(friend.g.rotation.y-yaw))));if(d>.01){if(previous&&dx*previous.x+dz*previous.z<-.5*d*previous.d)reversals++;previous={x:dx,z:dz,d};}if(Math.hypot(friend.g.position.x,friend.g.position.z+30)<2.2)break;}return {level:n,remaining:Math.hypot(friend.g.position.x,friend.g.position.z+30),maxTurn,maxStep,reversals,plans:friend.route?.plans};},
- v203BuildDoor(){this.load(3);paused=true;home.stage=0;home.wood=0;home.collected=WOOD_PILES.map(()=>false);for(let i=0;i<WOOD_PILES.length;i++){home.collect(i);home.build();}syncHomeVisual();syncHomeLocation(3);mountedFriend=false;boarFormTime=catFormTime=0;py=vy=0;boy.position.set(HOME_SITE.x,0,HOME_SITE.z+4);boy.rotation.y=yaw=Math.PI;for(let i=0;i<80;i++){updateHomeUI();movePlayerCollision(0,-.05);}return {stage:home.stage,wood:home.wood,doorVisible:homeParts.doorHinge.visible,inside:boy.position.z<HOME_SITE.z+2};},
- v203Mechanics(){return {homeStage:home.stage,piles:WOOD_PILES.length,door:{width:homeParts.door.scale.x,height:homeParts.door.scale.y},familyDoor:{width:familyDoor.scale.x,height:familyDoor.scale.y},lake:lakeDepth(-18,-17),river:riverDepthAt(15,riverCenterAt(15))};},
- v203Water(n){this.load(n);paused=true;const f=foes[0];f.g.position.set(n===2?-18:15,0,n===2?-17:riverCenterAt(15));boy.position.set(0,0,34);const start=lakeDepthAt(f.g.position.x,f.g.position.z);for(let i=0;i<240;i++)updateBoarWater(.05);return {start,depth:lakeDepthAt(f.g.position.x,f.g.position.z),alive:foes.includes(f),air:f.underwaterSeconds,position:f.g.position.toArray()};},
- v203Inspect(){let fixed=0,sprites=0;for(const props of [openingProps,lakeExitProps,...locationExitProps.values(),homeYard])props?.traverse(o=>{if(o.userData.fixedSign)fixed++;if(o.isSprite&&o.material.map?.image?.width===320&&o!==openingProps?.userData.marker)sprites++;});return {version:GAME_VERSION,level,score,totalTime,familyFound,levelFamilyDone,fixed,sprites,guideButtons:document.querySelectorAll('#openingGuide button').length,fence:lakeExitProps?.userData.fenceExtent};},
- v203Retry(n){this.load(n);score=345;totalTime=123.5;familyFound=n===1?1:2;levelFamilyDone=1;lastDeathCause='wind';deathSceneActive=deathSceneFinished=false;endShown=false;win=false;showEnd(false);restartGame();paused=true;return this.v203Inspect();},
+
+ v204HouseWalls(){this.load(3);paused=true;mountedFriend=false;boarFormTime=catFormTime=0;keys={};stick.x=stick.y=0;const samples=[];
+ const h=familyHideout;h.updateWorldMatrix(true,true);const roofTop=new THREE.Box3().setFromObject(h.userData.cutawayWalls.roof).max.y;
+ for(const cutaway of [false,true])for(const height of [.16,1.5,2.95,3.25])for(const [x,z,dx,dz] of [[3.4,0,-1,0],[-3.4,0,1,0],[0,-3,0,1],[1.8,3,0,-1]]){
+  const from=h.localToWorld(new THREE.Vector3(x,0,z)),to=h.localToWorld(new THREE.Vector3(x+dx*2,0,z+dz*2));boy.position.copy(from);py=height;boy.position.y=height;vy=0;setDadHouseCutaway(cutaway);
+  const wallPoint=h.localToWorld(new THREE.Vector3(dx?Math.sign(x)*2.6:x,0,dz?Math.sign(z)*2.18:z));const blocked=houseBlockAt(wallPoint.x,wallPoint.z,.43,true);movePlayerCollision(to.x-from.x,to.z-from.z);
+  const local=h.worldToLocal(boy.position.clone());const crossed=dx?(x>0?local.x<2.6:local.x>-2.6):(z>0?local.z<2.18:local.z>-2.18);samples.push({height,cutaway,x,z,blocked,crossed});
+ }
+ py=roofTop+.05;const side=h.localToWorld(new THREE.Vector3(2.6,0,0));const aboveRoofBlocked=houseBlockAt(side.x,side.z,.43,true);py=0;vy=0;boy.position.set(0,0,34);setDadHouseCutaway(false);return {samples,aboveRoofBlocked,roofTop};
+ },
+ v204HomeInterior(){this.v204BuildDoor();paused=true;boy.position.set(HOME_SITE.x,0,HOME_SITE.z);py=.16;const furnishings=[];for(const side of [[8,5],[8,-5],[-8,5],[-8,-5]]){camera.position.set(HOME_SITE.x+side[0],5,HOME_SITE.z+side[1]);setObjectCameraFade(personalHouse,true);updateHomeUI();const walls=personalHouse.userData.cutawayWalls;let opacity=1;homeParts.furnishings.traverse(o=>{if(o.isMesh)opacity=Math.min(opacity,o.material.opacity)});furnishings.push({opacity,roofVisible:walls.roof.visible,hidden:['front','back','left','right'].filter(k=>walls[k].some(m=>!m.visible)).length});}
+ setObjectCameraFade(personalHouse,false);boy.position.set(0,0,34);updateHomeUI();return {furnishings,roofRestored:homeParts.roof.visible,wallsRestored:['front','back','left','right'].every(k=>homeParts[k].every(m=>m.visible))};
+ },
+
+ v204Road(n){this.load(n);paused=true;if(friend)scene.remove(friend.g);friend=makeBoar(0,20,true);mountedFriend=false;friend.g.rotation.y=Math.PI;boy.position.set(0,0,-30);foes.forEach(f=>f.flee=true);let maxTurn=0,maxStep=0,reversals=0,previous=null;for(let i=0;i<1000;i++){const x=friend.g.position.x,z=friend.g.position.z,yaw=friend.g.rotation.y;moveFriendAroundObstacles(0,-30,4,.05);const dx=friend.g.position.x-x,dz=friend.g.position.z-z,d=Math.hypot(dx,dz);maxStep=Math.max(maxStep,d);maxTurn=Math.max(maxTurn,Math.abs(Math.atan2(Math.sin(friend.g.rotation.y-yaw),Math.cos(friend.g.rotation.y-yaw))));if(d>.01){if(previous&&dx*previous.x+dz*previous.z<-.5*d*previous.d)reversals++;previous={x:dx,z:dz,d};}if(Math.hypot(friend.g.position.x,friend.g.position.z+30)<2.2)break;}return {level:n,remaining:Math.hypot(friend.g.position.x,friend.g.position.z+30),maxTurn,maxStep,reversals,plans:friend.route?.plans};},
+ v204BuildDoor(){this.load(3);paused=true;home.stage=0;home.wood=0;home.collected=WOOD_PILES.map(()=>false);for(let i=0;i<WOOD_PILES.length;i++){home.collect(i);home.build();}syncHomeVisual();syncHomeLocation(3);mountedFriend=false;boarFormTime=catFormTime=0;py=vy=0;boy.position.set(HOME_SITE.x,0,HOME_SITE.z+4);boy.rotation.y=yaw=Math.PI;for(let i=0;i<80;i++){updateHomeUI();movePlayerCollision(0,-.05);}return {stage:home.stage,wood:home.wood,doorVisible:homeParts.doorHinge.visible,inside:boy.position.z<HOME_SITE.z+2};},
+ v204Mechanics(){return {homeStage:home.stage,piles:WOOD_PILES.length,door:{width:homeParts.door.scale.x,height:homeParts.door.scale.y},familyDoor:{width:familyDoor.scale.x,height:familyDoor.scale.y},lake:lakeDepth(-18,-17),river:riverDepthAt(15,riverCenterAt(15))};},
+ v204Water(n){this.load(n);paused=true;const f=foes[0];f.g.position.set(n===2?-18:15,0,n===2?-17:riverCenterAt(15));boy.position.set(0,0,34);const start=lakeDepthAt(f.g.position.x,f.g.position.z);for(let i=0;i<240;i++)updateBoarWater(.05);return {start,depth:lakeDepthAt(f.g.position.x,f.g.position.z),alive:foes.includes(f),air:f.underwaterSeconds,position:f.g.position.toArray()};},
+ v204Inspect(){let fixed=0,sprites=0;for(const props of [openingProps,lakeExitProps,...locationExitProps.values(),homeYard])props?.traverse(o=>{if(o.userData.fixedSign)fixed++;if(o.isSprite&&o.material.map?.image?.width===320&&o!==openingProps?.userData.marker)sprites++;});return {version:GAME_VERSION,level,score,totalTime,familyFound,levelFamilyDone,fixed,sprites,guideButtons:document.querySelectorAll('#openingGuide button').length,fence:lakeExitProps?.userData.fenceExtent};},
+ v204Retry(n){this.load(n);score=345;totalTime=123.5;familyFound=n===1?1:2;levelFamilyDone=1;lastDeathCause='wind';deathSceneActive=deathSceneFinished=false;endShown=false;win=false;showEnd(false);restartGame();paused=true;return this.v204Inspect();},
  homeInspect(){return {doorBuilt:home.stage>=4,doorWidth:homeParts.door.scale.x,doorHeight:homeParts.door.scale.y,stage:home.stage,wood:home.wood,collected:home.collected.slice(),visible:personalHouse?.visible,inside:shelteredFromWind(),wallBlocked:playerWorldBlocked(HOME_SITE.x+2.4,HOME_SITE.z),doorBlocked:playerWorldBlocked(HOME_SITE.x,HOME_SITE.z+2.4)}},
  homeVisit(kind='site',i=0){if(level!==3)this.load(3);paused=false;mountedFriend=false;endBoarForm();py=vy=0;keys={};const p=kind==='wood'?WOOD_PILES[i]:{x:HOME_SITE.x,z:HOME_SITE.z+4};boy.position.set(p.x,0,p.z);yaw=boy.rotation.y=Math.PI;updateHomeUI();return this.homeInspect()},
  catRoofScenario(){this.load(3);paused=false;mountedFriend=false;py=vy=0;keys={};boy.position.set(-27,0,-23.5);yaw=boy.rotation.y=Math.PI;startCatForm();catLife.root.visible=false;invuln=999;return true},

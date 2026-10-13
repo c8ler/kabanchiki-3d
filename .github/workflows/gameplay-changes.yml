@@ -2,7 +2,7 @@ name: Gameplay changes checks
 on:
   pull_request:
   push:
-    branches: [fix/v203-home-water-navigation]
+    branches: [fix/v204-house-walls-furniture]
 jobs:
   gameplay:
     runs-on: ubuntu-latest
@@ -21,3 +21,4 @@ jobs:
           python3 -m http.server 8080 > /tmp/kabanchiki-server.log 2>&1 &
           node scripts/v202-browser.mjs
           node scripts/v203-browser.mjs
+          node scripts/v204-browser.mjs
