@@ -1919,8 +1919,8 @@ function runBoarBehaviorAudit(){
   }
   if(level===2){f.g.scale.setScalar(1);f.isBoss=false;f.g.position.set(-18+13.1,0,-17);f.g.rotation.y=-Math.PI/2;
    for(let frame=0;frame<50;frame++)moveBoarToward(f,-18,-17,6,.05);
-   const depth=boarWaterDepth(f);if(currentSeason!=='winter'&&depth<1)issues.push('boar-cannot-enter-lake');
-   f.g.position.set(-18+8,0,-17);resolveBoarClearance(f);if(currentSeason!=='winter'&&boarWaterDepth(f)<1)issues.push('swimming-boar-pushed-to-shore');
+   const depth=boarWaterDepth(f);if(currentSeason!=='winter'&&depth>BOAR_WADING_DEPTH+.05)issues.push('boar-enters-unsafe-depth');
+   f.g.position.set(-18+8,0,-17);const beforeDepth=boarWaterDepth(f);resolveBoarClearance(f);if(currentSeason!=='winter'&&Math.abs(boarWaterDepth(f)-beforeDepth)>.05)issues.push('swimming-boar-teleported');
    samples.push({lakeDepth:+depth.toFixed(3),recoveredDepth:+boarWaterDepth(f).toFixed(3)});
   }
  }finally{
