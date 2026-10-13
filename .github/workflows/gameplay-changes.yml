@@ -2,7 +2,7 @@ name: Gameplay changes checks
 on:
   pull_request:
   push:
-    branches: [fix/v206-world-interactions]
+    branches: [fix/v207-home-reset]
 jobs:
   gameplay:
     runs-on: ubuntu-latest
@@ -19,6 +19,7 @@ jobs:
       - name: Browser regression checks
         run: |
           python3 -m http.server 8080 > /tmp/kabanchiki-server.log 2>&1 &
+          node scripts/v207-browser.mjs
           node scripts/v206-browser.mjs
           node scripts/v205-browser.mjs
           node scripts/v202-browser.mjs
@@ -28,5 +29,5 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: v206-first-person-previews
-          path: screenshots/v206-*.png
+          name: v207-first-person-previews
+          path: screenshots/v207-*.png
