@@ -2,6 +2,11 @@ name: Frame performance comparison
 on:
   push:
     branches: [fix/v209-fps]
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'scripts/frame-profile-browser.mjs'
+      - '.github/workflows/frame-profile.yml'
   workflow_dispatch:
 permissions:
   contents: read

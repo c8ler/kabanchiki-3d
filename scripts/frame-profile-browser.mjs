@@ -1,5 +1,6 @@
 import {chromium} from 'playwright';
 import fs from 'node:fs';
+import assert from 'node:assert/strict';
 const browser=await chromium.launch({headless:true});
 const reports=[];
 // Disable automatic correctness audits only in this dedicated timing run.
@@ -12,6 +13,7 @@ try{
  await page.goto('http://127.0.0.1:'+port+'/?autotest=1&level=1');
  await page.waitForFunction(()=>window.__KABANCHIKI_TEST__?.ready,null,{timeout:60000});
  for(const level of [1,2,3,4,5,6]){
+ console.log('Profiling',label,'location',level);
  await page.evaluate(n=>{const q=window.__KABANCHIKI_QA__;q.performanceScenario();if(n!==6)q.load(n);const c=window.__KABANCHIKI_ADAPTIVE__.controller;c.setTier(0,performance.now());c.sample=()=>{}},level);
  await page.waitForTimeout(2500);
  const cdp=await page.context().newCDPSession(page);
@@ -26,7 +28,7 @@ try{
  frames.sort((a,b)=>a-b);const pct=p=>frames[Math.min(frames.length-1,Math.floor(frames.length*p))];
  const row={label,level,frames:frames.length,p50:pct(.5),p95:pct(.95),p99:pct(.99),max:frames.at(-1),over50:frames.filter(x=>x>50).length,over100:frames.filter(x=>x>100).length,
  inspect:await page.evaluate(()=>window.__KABANCHIKI_QA__.performanceInspect()),hotspots:[...times].sort((a,b)=>b[1]-a[1]).slice(0,18),errors};
- reports.push(row);console.log(JSON.stringify(row));
+ reports.push(row);console.log(JSON.stringify(row));assert.deepEqual(errors,[]);assert.ok(frames.length>5,'not enough rendered frames');
  }
  await page.close();
  }
