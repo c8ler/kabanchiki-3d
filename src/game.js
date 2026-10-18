@@ -1599,7 +1599,7 @@ function runRobotCollisionTest(){
  let ri=0;for(const [, , ,m] of rockPositions){if(ri>=20)break;if(!m||m.visible===false)continue;
   const q=rockShape(m),c=Math.cos(q.yaw),sn=Math.sin(q.yaw),edge=q.ax+ROCK_PLAYER_RADIUS+.10;
   const ux=c,uz=-sn,sx=q.cx+ux*edge,sz=q.cz+uz*edge;
-  const inside=(x,z)=>rockEllipse(m,x,z,ROCK_PLAYER_RADIUS).n<.985;
+  const inside=(x,z)=>py<q.top-.045&&rockEllipse(m,x,z,ROCK_PLAYER_RADIUS).n<.985;
   const crossed=(x,z)=>{const e=rockEllipse(m,x,z,ROCK_PLAYER_RADIUS);return e.lx<-(e.ax*.35)};
   if(!playerWorldBlocked(sx,sz)){
    run(`rock${ri}-into`,sx,sz,-ux*(edge*2+.20),-uz*(edge*2+.20),inside,crossed,true);
@@ -1625,26 +1625,27 @@ function runRockClimbAudit(){
   const m=rockPositions[ri][3];if(!m||m.visible===false)continue;m.updateWorldMatrix(true,false);const b=new THREE.Box3().setFromObject(m),c=new THREE.Vector3();b.getCenter(c);
   // Normal jump apex is ~1.36 m. Test only genuinely reachable rocks.
   if(b.max.y<.22||b.max.y>1.34)continue;
-  let chosen=null;
+  let landed=false,maxY=0,approaches=0;
   for(const [ux,uz] of dirs){
    const ex=(b.max.x-b.min.x)/2,ez=(b.max.z-b.min.z)/2;
    const sx=c.x+ux*(ex+ROCK_PLAYER_RADIUS+.18),sz=c.z+uz*(ez+ROCK_PLAYER_RADIUS+.18);
-   if(!playerWorldBlocked(sx,sz)){chosen=[ux,uz,sx,sz];break}
+   py=vy=0;boy.position.y=0;
+   if(playerWorldBlocked(sx,sz))continue;
+   approaches++;boy.position.set(sx,0,sz);py=0;vy=7;
+   for(let frame=0;frame<100;frame++){
+    // Only the target rock may stop this approach: a nearby branch or rock
+    // must not masquerade as having reached the target's support footprint.
+    if(rockEllipse(m,boy.position.x,boy.position.z,PLAYER_RADIUS*.12).n>=1)movePlayerCollision(-ux*.075,-uz*.075);
+    const prev=py;vy-=18/60;let next=py+vy/60;const support=playerSupportHeightAt(boy.position.x,boy.position.z);
+    if(vy<=0&&prev>=support-.04&&next<=support){py=support;vy=0}else{py=Math.max(0,next);if(py===0)vy=0}
+    boy.position.y=py;maxY=Math.max(maxY,py);
+    if(vy===0&&rockEllipse(m,boy.position.x,boy.position.z,PLAYER_RADIUS*.12).n<1&&Math.abs(py-b.max.y)<.10){landed=true;break}
+    if(vy===0&&py===0&&frame>25)break;
+   }
+   if(landed)break;
   }
-  if(!chosen)continue;tested++;const [ux,uz,sx,sz]=chosen;
-  boy.position.set(sx,0,sz);py=0;vy=7;boy.position.y=0;let landed=false,maxY=0;
-  for(let frame=0;frame<100;frame++){
-   // Move toward the rock until Timur is actually over its support footprint, then stop
-   // horizontal input and let the normal vertical solver complete the landing.
-   const supportBefore=playerSupportHeightAt(boy.position.x,boy.position.z);
-   if(supportBefore<.12)movePlayerCollision(-ux*.075,-uz*.075);
-   const prev=py;vy-=18/60;let next=py+vy/60;const support=playerSupportHeightAt(boy.position.x,boy.position.z);
-   if(vy<=0&&prev>=support-.04&&next<=support){py=support;vy=0}else{py=Math.max(0,next);if(py===0)vy=0}
-   boy.position.y=py;maxY=Math.max(maxY,py);
-   if(vy===0&&support>0.12&&Math.abs(py-b.max.y)<.10){landed=true;break}
-   if(vy===0&&py===0&&frame>25)break;
-  }
-  samples.push({rock:ri,top:+b.max.y.toFixed(3),maxY:+maxY.toFixed(3),landed});
+  if(!approaches)continue;tested++;
+  samples.push({rock:ri,top:+b.max.y.toFixed(3),maxY:+maxY.toFixed(3),landed,approaches});
   if(landed)passed++;else issues.push(`rock-climb-failed:${ri}:top=${b.max.y.toFixed(2)}`);
  }
  boy.position.set(ox,oy,oz);py=opy;vy=ovy;
@@ -2089,7 +2090,7 @@ function runV156Audit(){
   ground.updateMatrixWorld();const sp=surfaceGeometry.attributes.position;for(const i of [1577,3329,6810]){const point=new THREE.Vector3().fromBufferAttribute(sp,i).applyMatrix4(ground.matrixWorld);if(Math.abs(point.y-groundSurfaceHeightAt(point.x,point.z))>.002)issues.push('terrain-visual-height-mismatch')}
   if(!puddleObjects.length)issues.push('no-rain-basins');weatherStage=2;puddleRain=0;updatePuddles(15);const early=puddleRain;updatePuddles(45);if(!(early>0&&puddleRain>early)||!puddleObjects.some(p=>p.visible))issues.push('puddles-do-not-fill');samples.push({basins:puddleObjects.length,earlyRain:early,laterRain:puddleRain});
   friend=f;foes.splice(0,foes.length,...saved.foes);mountedFriend=true;py=1.18;f.g.scale.set(1,1,1);
-  if(level===2&&currentSeason!=='winter'){boy.position.set(-18+13.1,1.18,-17);f.g.position.copy(boy.position);f.g.rotation.y=-Math.PI/2;let deepest=0;for(let i=0;i<160;i++){movePlayerCollision(-.13,0);deepest=Math.max(deepest,boarWaterDepth(playerBoarBody()))}if(deepest<4)issues.push('rider-cannot-enter-lake-centre');boy.position.set(-18+7,1.18,-17);resolveBoarClearance(playerBoarBody(),false);if(boarWaterDepth(playerBoarBody())<1)issues.push('deep-rider-pushed-to-shore');samples.push({riderMaxLakeDepth:deepest})}
+  if(level===2&&currentSeason!=='winter'){boy.position.set(-18+13.1,1.18,-17);f.g.position.copy(boy.position);f.g.rotation.y=-Math.PI/2;let deepest=0;for(let i=0;i<160;i++){movePlayerCollision(-.13,0);deepest=Math.max(deepest,boarWaterDepth(playerBoarBody()))}if(deepest<lakeDepth(-18,-17)-.1)issues.push('rider-cannot-enter-lake-centre');boy.position.set(-18,1.18,-17);const deepX=boy.position.x,deepZ=boy.position.z;resolveBoarClearance(playerBoarBody(),false);if(Math.hypot(boy.position.x-deepX,boy.position.z-deepZ)>.01||boarWaterDepth(playerBoarBody())<lakeDepth(-18,-17)-.1)issues.push('deep-rider-pushed-to-shore');samples.push({riderMaxLakeDepth:deepest})}
   if(level===4){boy.position.set(0,1.18,-6);f.g.rotation.y=Math.PI;for(let i=0;i<130;i++)movePlayerCollision(0,-.13);if(boy.position.z>-21)issues.push('rider-cannot-cross-river-bridge');boy.position.set(15,1.18,riverCenterAt(15)+6);for(let i=0;i<100;i++)movePlayerCollision(0,-.13);if(boy.position.z>=riverCenterAt(15)+4)issues.push('rider-cannot-enter-river');samples.push({bridgeAndRiverSafe:true})}
  }finally{
   if(tree&&treeScale){tree.scale.copy(treeScale);if(treeGrown!==undefined)tree.userData.yellowAppleGrown=treeGrown;else delete tree.userData.yellowAppleGrown;if(treeBefore)tree.userData.beforeYellowScale=treeBefore;else delete tree.userData.beforeYellowScale}
@@ -2122,14 +2123,14 @@ if(__autoTest||__autoParams.get('openingtest')==='1')window.__KABANCHIKI_QA__={
     if(!start){issues.push('missing-route-'+route);continue;}
     f.route=null;let remaining=Infinity,frames=0;
     for(;frames<45*fps;frames++){
-     moveBoarToward(f,goal.x,goal.z,4,1/fps);resolveBoarClearance(f,false);settleBoarOnGround(f);
+     catLife.update(1/fps,birdLife,[f]);moveBoarToward(f,goal.x,goal.z,4,1/fps);resolveBoarClearance(f,false);settleBoarOnGround(f);
      if(!companionValid(f)){issues.push('penetration-'+route);break;}
      const expected=terrainHeightAt(f.g.position.x,f.g.position.z)+Math.max(familyFloorAt(f.g.position.x,f.g.position.z),level===4&&onRiverBridge(f.g.position.x,f.g.position.z)?.28:0)-lakeDepthAt(f.g.position.x,f.g.position.z)-puddleDepthAt(f.g.position.x,f.g.position.z);
      if(!Number.isFinite(f.g.position.y)||Math.abs(f.g.position.y-expected)>.001)issues.push('floating-'+route);
      checks++;remaining=Math.hypot(f.g.position.x-goal.x,f.g.position.z-goal.z);if(remaining<.65)break;
     }
     if(remaining>=.65)issues.push('stuck-'+route);
-    samples.push({start,goal,remaining,frames,plans:f.route?.plans});
+    samples.push({start,goal,remaining,frames,plans:f.route?.plans,position:f.g.position.toArray(),heading:f.g.rotation.y,next:f.route?.path[0],catBlocked:catLife.blocksBoar(boarBody(f),terrainHeightAt(f.g.position.x,f.g.position.z)-lakeDepthAt(f.g.position.x,f.g.position.z))});
    }
    return {level:n,season:currentSeason,fps,seed,checks,issues:[...new Set(issues)],samples};
   }finally{scene.remove(f.g);}

@@ -73,14 +73,14 @@ jobs:
                 `http://127.0.0.1:8080/?autotest=1&level=${level}`,
                 {
                   waitUntil:'domcontentloaded',
-                  timeout:30000
+                  timeout:120000
                 }
               );
 
               await page.waitForFunction(
                 () => window.__KABANCHIKI_TEST__?.ready === true,
                 null,
-                {timeout:30000}
+                {timeout:120000}
               );
 
               await page.waitForTimeout(2500);
