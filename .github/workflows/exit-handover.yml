@@ -1,0 +1,22 @@
+name: Exit handover probe
+on:
+  push:
+    branches: [fix/v210-exit-helper]
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: |
+          npm install --no-save --package-lock=false playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - run: python3 -m http.server 8080 > /tmp/exit-server.log 2>&1 &
+      - run: node scripts/exit-handover-browser.mjs
+        env:
+          EXIT_EXPECT_FIXED: '0'

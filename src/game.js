@@ -2149,6 +2149,45 @@ function runV156Audit(){
 }
 window.__KABANCHIKI_V156_AUDIT__=runV156Audit;
 if(__autoTest||__autoParams.get('openingtest')==='1')window.__KABANCHIKI_QA__={
+
+ exitHandoverRobot(n=1,mode='near',fps=30){
+  this.season(0);this.load(n);paused=true;mountedFriend=false;py=vy=0;
+  for(const f of foes)scene.remove(f.g);foes.length=0;
+  if(friend)scene.remove(friend.g);
+  const z=n===1?-35:-39,pz=n===1?-31:-34;
+  boy.position.set(0,0,pz);friend=makeBoar(.6,pz+1.2,true);friend.g.rotation.y=Math.PI;
+  const props=n===1?openingProps:n===2?lakeExitProps:locationExitProps.get(n);resetExitBreaker(props);
+  levelBoarsDone=levelBoarsTotal;levelFamilyDone=levelFamilyTotal;
+  friendYield.reset();friendYieldOwner=friend;friendYieldActive=false;
+  if(mode==='mounted'){friend.g.position.set(0,0,pz);mountedFriend=true;py=riderSeatHeight();boy.position.y=py;setRiderPose(true)}
+  friend.route=new StableRoute({incremental:true});
+  friend.route.next({x:friend.g.position.x,z:friend.g.position.z},{x:0,z:pz},()=>false,1/fps);
+  const oldRoute=friend.route;
+  let oldRouteRetained=false,activeYield=0,frames=0,done=false,reversals=0,previous=null,maxStep=0;
+  const issues=[];
+  for(;frames<20*fps;frames++){
+   boarCollisionEpoch++;
+   const before={x:friend.g.position.x,z:friend.g.position.z};
+   if(mode==='blocking'&&frames>fps/2&&frames<fps*2){
+    const tx=props.userData.approachX??2.5,step=Math.sign(tx-boy.position.x)*Math.min(.1,Math.abs(tx-boy.position.x));
+    if(!playerWorldBlocked(boy.position.x+step,boy.position.z)&&!boarPlayerContact(friend,friend.g.position.x,friend.g.position.z,friend.g.rotation.y,boy.position.x+step,boy.position.z))boy.position.x+=step;
+   }
+   if(n===1)updateOpeningAdventure(1/fps);else if(n===2)updateLakeExit(1/fps);else updateLocationExit(1/fps);
+   if(frames===0)oldRouteRetained=friend.route===oldRoute;
+   updateFriendYield(0,mode==='standing'?0:-1,1/fps);
+   if(friend.exitBreaking&&friendYieldActive)activeYield++;
+   resolveBoarClearance(friend);repairCompanion(friend);settleBoarOnGround(friend);
+   const dx=friend.g.position.x-before.x,dz=friend.g.position.z-before.z,d=Math.hypot(dx,dz);maxStep=Math.max(maxStep,d);
+   if(d>.01){if(previous&&dx*previous.x+dz*previous.z<-.5*d*previous.d)reversals++;previous={x:dx,z:dz,d}}
+   done=n===1?opening.passageOpen:n===2?lakeExitReady():locationExitReady();
+   if(done)break;
+  }
+  if(!done)issues.push('exit-never-opened');
+  if(activeYield)issues.push('competing-yield-controller');
+  if(oldRouteRetained)issues.push('old-route-retained-on-handover');
+  return {level:n,mode,fps,done,frames,seconds:frames/fps,activeYield,oldRouteRetained,reversals,maxStep,position:friend.g.position.toArray(),goal:friend.route?.goal,issues};
+ },
+
  // Deterministic browser robot: real navigation, real scenery and real movement.
  boarRobot(n=1,season=0,fps=30,seed=208){
   this.season(season);this.load(n);paused=true;mountedFriend=false;
