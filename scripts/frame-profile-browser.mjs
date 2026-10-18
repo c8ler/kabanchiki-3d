@@ -2,15 +2,17 @@ import {chromium} from 'playwright';
 import fs from 'node:fs';
 const browser=await chromium.launch({headless:true});
 const reports=[];
+// Disable automatic correctness audits only in this dedicated timing run.
+// Those audits are synchronous and otherwise contaminate the first sample.
 try{
  for(const [label,port] of [['baseline',8080],['candidate',8081]]){
  const page=await browser.newPage({viewport:{width:1280,height:720}});
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
- await page.addInitScript(()=>{let seed=208;Math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296}});
+ await page.addInitScript(()=>{let seed=208;Math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296};const schedule=window.setTimeout;window.setTimeout=function(fn,...args){if(typeof fn==='function'&&fn.toString().includes('const __v156=runV156Audit()'))return 0;return schedule.call(this,fn,...args)}});
  await page.goto('http://127.0.0.1:'+port+'/?autotest=1&level=1');
  await page.waitForFunction(()=>window.__KABANCHIKI_TEST__?.ready,null,{timeout:60000});
  for(const level of [1,2,3,4,5,6]){
- await page.evaluate(n=>{const q=window.__KABANCHIKI_QA__;if(n===6)q.performanceScenario();else q.load(n)},level);
+ await page.evaluate(n=>{const q=window.__KABANCHIKI_QA__;q.performanceScenario();if(n!==6)q.load(n);const c=window.__KABANCHIKI_ADAPTIVE__.controller;c.setTier(0,performance.now());c.sample=()=>{}},level);
  await page.waitForTimeout(2500);
  const cdp=await page.context().newCDPSession(page);
  await cdp.send('Profiler.enable');await cdp.send('Profiler.start');
