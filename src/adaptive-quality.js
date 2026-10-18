@@ -9,16 +9,23 @@ export const GRAPHICS_TIERS = [
 export class AdaptiveQuality {
  constructor({initial=2,max=3,onChange=()=>{}}={}) {
   this.max=max;this.tier=Math.min(initial,max);this.onChange=onChange;
-  this.last=null;this.elapsed=0;this.frames=0;this.slow=0;this.fast=0;
+  this.last=null;this.elapsed=0;this.frames=0;this.slow=0;this.fast=0;this.stalls=0;
   this.cooldownUntil=0;this.recoveryUntil=0;this.fps=0;
  }
- resetSample(){this.last=null;this.elapsed=0;this.frames=0;this.slow=0;this.fast=0}
+ resetSample(){this.last=null;this.elapsed=0;this.frames=0;this.slow=0;this.fast=0;this.stalls=0}
  sample(now,active=true){
   if(!active){this.resetSample();return}
   if(this.last===null){this.last=now;return}
   const delta=now-this.last;this.last=now;
-  // Background-tab delays and loading stalls do not describe sustained rendering speed.
-  if(delta<=0||delta>1000){this.resetSample();return}
+  // Ignore isolated loading stalls, but repeated one-second frames while active
+  // are a real overload. Otherwise the worst FPS can stay at maximum forever.
+  if(delta<=0){this.resetSample();return}
+  if(delta>1000){
+   this.elapsed=0;this.frames=0;this.slow=0;this.fast=0;
+   if(++this.stalls>=3&&this.tier>0&&now>=this.cooldownUntil){this.setTier(this.tier-1,now);this.recoveryUntil=now+60000;this.stalls=0}
+   return;
+  }
+  this.stalls=0;
   this.elapsed+=delta;this.frames++;
   if(this.elapsed<2000)return;
   const duration=this.elapsed;this.fps=this.frames*1000/duration;this.elapsed=0;this.frames=0;

@@ -146,7 +146,7 @@ function syncMeadowGrass(){
 }
 
 let graphicsParticleFactor=1,graphicsCloudFactor=1;
-const adaptiveGraphics=new AdaptiveQuality({initial:mobile?1:3,max:mobile?2:3,onChange:applyGraphicsQuality});
+const adaptiveGraphics=new AdaptiveQuality({initial:1,max:mobile?2:3,onChange:applyGraphicsQuality});
 function applyGraphicsQuality(tier){
  const preset=GRAPHICS_TIERS[tier],shadows=preset.shadows&&!mobile;
  renderer.setPixelRatio(Math.min(devicePixelRatio,preset.pixelRatio));renderer.setSize(innerWidth,innerHeight);
@@ -1886,7 +1886,7 @@ function companionNavBlocked(f){
  const scale=boarScale(f),radius=1.65*scale+.05,
  trees=treeObjects.filter(t=>t.visible).map(t=>{const m=t.children.find(m=>m.userData.treeSolid);if(!m)return null;const q=treeTrunkShape(m);return {...q,r2:(q.r+1.65*scale)**2}}).filter(Boolean),
  rocks=rockPositions.filter(q=>q[3]?.visible!==false&&q[3]?.parent?.visible!==false).map(q=>{const s=rockShape(q[3]);return {...s,c:Math.cos(s.yaw),sn:Math.sin(s.yaw),ix:1/(s.ax+radius)**2,iz:1/(s.az+radius)**2}}),
- walls=wallGeometry(),mountains=level===5?mountainObstacles.filter(q=>q[3]?.parent?.visible!==false).map(q=>mountainFootprint(q[3])):[],
+ walls=wallGeometry(),mountains=level===5?mountainObstacles.filter(q=>q[3]?.parent?.visible!==false).map(q=>{const polygon=mountainFootprint(q[3]);return {polygon,minX:Math.min(...polygon.map(p=>p.x)),maxX:Math.max(...polygon.map(p=>p.x)),minZ:Math.min(...polygon.map(p=>p.z)),maxZ:Math.max(...polygon.map(p=>p.z))}}):[],
  debris=openingDebrisCapsules().filter(q=>!q.closed||!f.exitBreaking),
  exitReady=locationExit?locationExitReady():false,lakeReady=level===2?lakeExitReady():false,
  avoidsWater=!controlledSwimmer(f)&&!f.waterEscaping;
@@ -1900,7 +1900,7 @@ function companionNavBlocked(f){
   for(const t of trees)if((x-t.x)**2+(z-t.z)**2<t.r2)return true;
   for(const q of rocks){const dx=x-q.cx,dz=z-q.cz,lx=dx*q.c-dz*q.sn,lz=dx*q.sn+dz*q.c;if(lx*lx*q.ix+lz*lz*q.iz<1)return true}
   for(const w of walls){if(x+radius<w.box.min.x||x-radius>w.box.max.x||z+radius<w.box.min.z||z-radius>w.box.max.z)continue;if(polygonContact(w.polygon,x,z,radius))return true}
-  return mountains.some(poly=>polygonContact(poly,x,z,radius))||(level===6&&lairObstacles.some(([px,pz,r,o])=>o.visible&&Math.hypot(x-px,z-pz)<r+radius));
+  return mountains.some(q=>x+radius>=q.minX&&x-radius<=q.maxX&&z+radius>=q.minZ&&z-radius<=q.maxZ&&polygonContact(q.polygon,x,z,radius))||(level===6&&lairObstacles.some(([px,pz,r,o])=>o.visible&&Math.hypot(x-px,z-pz)<r+radius));
  };
 }
 function boarSceneryBlockedAt(f,x,z,yaw=f.g.rotation.y){
@@ -1946,7 +1946,7 @@ function bossBattleImpact(x,z){
  if(f.flee){let vx=ux,vz=uz;if(level===3&&Math.abs(ox)<41&&Math.abs(oz)<41&&((f.fleePath?.length>0)||Array.from({length:20},(_,i)=>boarWallContacts(f,ox+ux*(i+1),oz+uz*(i+1),Math.atan2(ux,uz)).length).some(Boolean))){const blocked=(x,z)=>boarWallContacts(f,x,z,Math.atan2(vx,vz)).length>0;if(!f.fleePath||f.fleePathAge<=0){f.fleePath=findGridPath({x:ox,z:oz},{x:Math.max(-42,Math.min(42,ox+ux*20)),z:Math.max(-42,Math.min(42,oz+uz*20))},blocked,{step:.8,bound:43,maxNodes:15000});f.fleePathAge=1.5}f.fleePathAge-=dt;while(f.fleePath.length&&Math.hypot(f.fleePath[0].x-ox,f.fleePath[0].z-oz)<.5)f.fleePath.shift();if(f.fleePath.length){const q=f.fleePath[0],len=Math.max(.01,Math.hypot(q.x-ox,q.z-oz));vx=(q.x-ox)/len;vz=(q.z-oz)/len}if(boarWallContacts(f,ox+vx*step,oz+vz*step,Math.atan2(vx,vz)).length)return false}f.g.position.x+=vx*step;f.g.position.z+=vz*step;f.g.rotation.y=smoothHeading(f.g.rotation.y,Math.atan2(vx,vz),dt);return true}
 
  if(f.waterEscaping)return moveBoarOutOfWater(f,tx,tz,Math.max(speed,5.5),dt);
- f.route??=new StableRoute();const point={x:ox,z:oz},goal={x:tx,z:tz};let navGeometry;const navBlocked=(x,z)=>(navGeometry??=companionNavBlocked(f))(x,z);
+ f.route??=new StableRoute({incremental:true});const point={x:ox,z:oz},goal={x:tx,z:tz};let navGeometry;const navBlocked=(x,z)=>(navGeometry??=companionNavBlocked(f))(x,z);
  const clear=(x,z,yaw)=>!boarSceneryBlockedAt(f,x,z,yaw)&&!boarPlayerContact(f,x,z,yaw)&&!blockedByBoar(x,z,f,.78,yaw)&&!catLife.blocksBoar(boarBody(f,x,z,yaw),terrainHeightAt(x,z)-lakeDepthAt(x,z));
  f.escapeRetry=Math.max(0,(f.escapeRetry||0)-dt);
  if((!f.route.goal||f.tightEscape||f.route.stuck>.5)&&navBlocked(ox,oz)){

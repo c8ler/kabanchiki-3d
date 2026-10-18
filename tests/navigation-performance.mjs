@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {findGridPath} from '../src/navigation.js';
+import {findGridPath,StableRoute} from '../src/navigation.js';
 
 // Count geometric work, independent of CI CPU speed. This sealed target forces
 // a full search; checking already dominated edges used nearly 60,000 queries.
@@ -26,4 +26,19 @@ test('door bounds are shared within a frame and refresh after movement or world 
  door.x=2;assert.equal(cache.box(door).min.x,2);assert.equal(boxes,2);
  cache.frame();cache.box(door);assert.equal(boxes,3);
  cache.world();cache.box(door);assert.equal(boxes,4);
+});
+
+test('live route planning splits a sealed search across frames without changing the result',()=>{
+ let queries=0,maxQueries=0,frames=0;
+ const blocked=(x,z)=>Math.abs(x)<.4||Math.hypot(x-15,z-15)<1.8;
+ const start={x:-15,z:-15},goal={x:15,z:15},route=new StableRoute({incremental:true});
+ do{const before=queries;route.next(start,goal,(x,z)=>{queries++;return blocked(x,z)},1/60,{bound:20,step:.8});maxQueries=Math.max(maxQueries,queries-before);frames++}while(route.pending&&frames<200);
+ assert.ok(frames>1&&frames<200);assert.ok(maxQueries<1000,'single-frame geometry work: '+maxQueries);
+ assert.deepEqual(route.path,findGridPath(start,goal,blocked,{bound:20,step:.8,maxNodes:22000}));
+});
+test('world changes cancel an unfinished route and never expose its old path',()=>{
+ const r=new StableRoute({incremental:true}),start={x:-15,z:-15},blocked=(x,z)=>Math.abs(x)<.4;
+ r.next(start,{x:15,z:15},blocked,1/60,{bound:20});assert.ok(r.pending);const old=r.pending;
+ r.next(start,{x:-15,z:-14},blocked,1/60,{bound:20,epoch:1});assert.notEqual(r.pending,old);assert.equal(r.epoch,1);
+ assert.ok(r.path.every(p=>p.x<0));
 });
