@@ -50,3 +50,11 @@ test('off-grid first leg cannot cut through an inflated obstacle',()=>{
  assert.ok(path.length);let a=start;
  for(const b of path){for(let i=1;i<=100;i++)assert.equal(blocked(a.x+(b.x-a.x)*i/100,a.z+(b.z-a.z)*i/100),false);a=b;}
 });
+
+test('fallback recovery restores the safe heading as well as the safe position',()=>{
+ const checks={checks:0,repairs:0};
+ const valid=(f,x=f.g.position.x,z=f.g.position.z,yaw=f.g.rotation.y)=>x===10&&z===10&&yaw===1;
+ const repair=new Function('performance','companionChecks','companionValid',extract('repairCompanion')+';return repairCompanion')({now:()=>1000},checks,valid);
+ const f={g:{position:{x:0,z:0},rotation:{y:0},userData:{}},lastSafe:{x:10,z:10,yaw:1},route:{}};
+ repair(f,true);assert.ok(valid(f));assert.equal(f.route,null);assert.equal(checks.repairs,1);
+});
