@@ -42,3 +42,23 @@ test('world changes cancel an unfinished route and never expose its old path',()
  r.next(start,{x:-15,z:-14},blocked,1/60,{bound:20,epoch:1});assert.notEqual(r.pending,old);assert.equal(r.epoch,1);
  assert.ok(r.path.every(p=>p.x<0));
 });
+
+test('a moving target cannot restart a pending search every frame',()=>{
+ const r=new StableRoute({incremental:true}),start={x:-15,z:-15},blocked=(x,z)=>Math.abs(x)<.4||Math.hypot(x-15,z-15)<1.8;
+ r.next(start,{x:15,z:15},blocked,1/60,{bound:20,step:.8});const pending=r.pending;assert.ok(pending);
+ r.next(start,{x:15,z:10},blocked,1/60,{bound:20,step:.8});assert.equal(r.pending,pending);assert.equal(r.plans,1);
+ for(let i=0;r.pending&&i<200;i++)r.next(start,{x:15,z:10},blocked,1/60,{bound:20,step:.8});
+ assert.ok(r.path.length);
+ const waypoint=r.next(start,{x:15,z:10},blocked,1/60,{bound:20,step:.8});
+ assert.ok(waypoint,'follow the existing route during replacement planning');
+});
+test('replacement routes rejoin the actor position without walking back to the old start',()=>{
+ const blocked=(x,z)=>Math.abs(x)<.4||Math.hypot(x-15,z-15)<1.8,r=new StableRoute({incremental:true});
+ let p={x:-15,z:-15};r.next(p,{x:15,z:15},blocked,1/60,{bound:20,step:.8});
+ for(let i=0;r.pending&&i<200;i++)r.next(p,{x:15,z:15},blocked,1/60,{bound:20,step:.8});
+ const oldPath=r.path.slice();r.next(p,{x:15,z:10},blocked,1/60,{bound:20,step:.8});assert.ok(r.pending);
+ p={...oldPath[3]};
+ for(let i=0;r.pending&&i<200;i++)r.next(p,{x:15,z:10},blocked,1/60,{bound:20,step:.8});
+ assert.ok(Math.hypot(r.path[0].x-p.x,r.path[0].z-p.z)<1.5);
+ for(let i=1;i<=20;i++)assert.equal(blocked(p.x+(r.path[0].x-p.x)*i/20,p.z+(r.path[0].z-p.z)*i/20),false);
+});

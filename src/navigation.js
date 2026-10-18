@@ -22,15 +22,27 @@ export class StableRoute{
  constructor({incremental=false}={}){this.incremental=incremental;this.pending=null;this.path=[];this.age=0;this.stuck=0;this.plans=0;this.wait=0;this.excluded=new Map()}
  next(position,goal,blocked,dt,{epoch=0,step=.8,bound=42}={}){
  this.age+=dt;this.wait=Math.max(0,this.wait-dt);for(const [key,life] of this.excluded){if(life<=dt)this.excluded.delete(key);else this.excluded.set(key,life-dt)}
- const changed=!this.goal||Math.hypot(goal.x-this.goal.x,goal.z-this.goal.z)>2||this.epoch!==epoch;
+ const changed=!this.goal||this.epoch!==epoch||(!this.pending&&Math.hypot(goal.x-this.goal.x,goal.z-this.goal.z)>2);
  if(changed||(!this.pending&&((this.path.length>0&&this.stuck>.65&&this.age>.8)||(this.path.length===0&&this.age>3&&this.wait<=0)))){
  if(this.stuck>.65&&this.path[0])this.excluded.set(this.key(this.path[0],step),3);
  const predicate=(x,z)=>blocked(x,z)||this.excluded.has(this.key({x,z},step)),options={step,bound,maxNodes:22000};
- if(this.incremental){this.path=[];this.pending=gridPathSearch({...position},{...goal},predicate,options)}
+ if(this.incremental){if(this.epoch!==epoch)this.path=[];this.pending=gridPathSearch({...position},{...goal},predicate,options)}
  else this.path=findGridPath(position,goal,predicate,options);
  this.goal={...goal};this.epoch=epoch;this.age=0;this.stuck=0;this.plans++;this.wait=this.pending||this.path.length?0:3;
  }
- if(this.pending){const result=this.pending.next();if(result.done){this.path=result.value;this.pending=null;this.stuck=0;this.age=0;this.wait=this.path.length?0:3}}
+ if(this.pending){const result=this.pending.next();if(result.done){
+  // The actor may have followed its old route while this search was pending.
+  // Adopt the nearest new waypoint only after checking its connecting segment.
+  let path=result.value;
+  if(this.path.length&&path.length){
+   let nearest=0,distance=Infinity;
+   for(let i=0;i<path.length;i++){const d=Math.hypot(path[i].x-position.x,path[i].z-position.z);if(d<distance){nearest=i;distance=d}}
+   let safe=distance<=step*2;
+   if(safe){const p=path[nearest],slices=Math.max(1,Math.ceil(distance/.15));for(let i=1;i<=slices;i++)if(blocked(position.x+(p.x-position.x)*i/slices,position.z+(p.z-position.z)*i/slices)){safe=false;break}}
+   path=safe?path.slice(nearest):this.path;
+  }
+  this.path=path;this.pending=null;this.stuck=0;this.age=0;this.wait=this.path.length?0:3;
+ }}
  while(this.path.length&&Math.hypot(position.x-this.path[0].x,position.z-this.path[0].z)<.06)this.path.shift();
  return this.path[0]||null;
  }
