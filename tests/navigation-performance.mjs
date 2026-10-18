@@ -84,3 +84,16 @@ test('a major target change abandons a stale pending destination',()=>{
  r.next(start,{x:15,z:15},blocked,1/60,{bound:20});const old=r.pending;assert.ok(old);
  r.next(start,{x:-12,z:-12},blocked,1/60,{bound:20});assert.notEqual(r.pending,old);assert.deepEqual(r.goal,{x:-12,z:-12});
 });
+
+test('partial-to-complete handover never reverses on a straight road',()=>{
+ const r=new StableRoute({incremental:true}),p={x:0,z:20},goal={x:0,z:-30};let previous=null,reversals=0;
+ for(let frame=0;frame<500;frame++){
+  const q=r.next(p,goal,()=>false,.05,{step:.8});if(!q)continue;
+  const d=Math.hypot(q.x-p.x,q.z-p.z);if(!d)continue;
+  const step=Math.min(.2,d),dx=(q.x-p.x)/d*step,dz=(q.z-p.z)/d*step;
+  if(previous&&dx*previous.x+dz*previous.z<-.5*step*previous.d)reversals++;
+  previous={x:dx,z:dz,d:step};p.x+=dx;p.z+=dz;r.record(step,.05);
+  if(Math.hypot(p.x-goal.x,p.z-goal.z)<.5)break;
+ }
+ assert.equal(reversals,0);assert.ok(Math.hypot(p.x-goal.x,p.z-goal.z)<.5);
+});

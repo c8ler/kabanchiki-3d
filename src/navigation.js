@@ -36,8 +36,16 @@ export class StableRoute{
   // Adopt the nearest new waypoint only after checking its connecting segment.
   let path=result.value;
   if(path.length&&Math.hypot(position.x-this.searchStart.x,position.z-this.searchStart.z)>.06){
-   let nearest=0,distance=Infinity;
-   for(let i=0;i<path.length;i++){const d=Math.hypot(path[i].x-position.x,path[i].z-position.z);if(d<distance){nearest=i;distance=d}}
+   let nearest=0,best=Infinity;
+   // Project onto route segments and choose their forward endpoint. A nearest
+   // vertex can lie behind an actor midway through a step and cause a reversal.
+   for(let i=0;i<path.length;i++){
+    const a=i?path[i-1]:this.searchStart,b=path[i],dx=b.x-a.x,dz=b.z-a.z,len2=dx*dx+dz*dz;
+    const t=len2?Math.max(0,Math.min(1,((position.x-a.x)*dx+(position.z-a.z)*dz)/len2)):1;
+    const d=(position.x-a.x-dx*t)**2+(position.z-a.z-dz*t)**2;
+    if(d<=best+1e-10){nearest=i;best=d}
+   }
+   const distance=Math.hypot(path[nearest].x-position.x,path[nearest].z-position.z);
    let safe=distance<=step*2;
    if(safe){const p=path[nearest],slices=Math.max(1,Math.ceil(distance/.15));for(let i=1;i<=slices;i++)if(blocked(position.x+(p.x-position.x)*i/slices,position.z+(p.z-position.z)*i/slices)){safe=false;break}}
    path=safe?path.slice(nearest):this.path;
