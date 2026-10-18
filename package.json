@@ -5,6 +5,6 @@
   "type": "module",
   "scripts": {
     "validate": "node scripts/validate.mjs",
-    "test": "node --test tests/boar-physics.mjs tests/movement-geometry.mjs tests/adaptive-quality.mjs tests/knockback.mjs tests/world-surface.mjs tests/seasons.mjs tests/cinematic-staging.mjs tests/navigation.mjs tests/bird-life.mjs tests/form-rules.mjs tests/opening-adventure.mjs tests/location-exits.mjs tests/cat-roof-yield.mjs tests/home-construction.mjs tests/cheat-codes.mjs tests/render-budget.mjs tests/static-batching.mjs tests/boar-water.mjs tests/cat-boar-yield.mjs tests/world-interactions.mjs"
+    "test": "node --test tests/*.mjs"
   }
 }

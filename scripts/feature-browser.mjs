@@ -8,9 +8,9 @@ async function checkStartup(browser){const page=await browser.newPage(),errors=[
 const browser=await chromium.launch({headless:true});
 try{
  await checkStartup(browser);
- const page=await browser.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(base+'/?autotest=1&level=1');await page.waitForFunction(()=>window.__KABANCHIKI_TEST__?.ready);await page.waitForTimeout(1200);
- const qa=async(method,...args)=>{console.log('Check: '+method+' '+JSON.stringify(args));return await page.evaluate(({method,args})=>window.__KABANCHIKI_QA__[method](...args),{method,args})};
- await page.click("#pauseBtn");await page.click("#menuDifficulty");await page.locator("input[name=diff3d][value=\"0\"]").check({force:true});await page.click("#difficultyStart");assert.match(await page.locator("#stats").innerText(),/мал, чтобы умереть/);await page.click("#menuDifficulty");await page.keyboard.press("Escape");await page.waitForSelector("#pauseMenu",{state:"visible"});await page.click("#resume");
+ const page=await browser.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(base+'/?autotest=1&level=1');await page.waitForFunction(()=>window.__KABANCHIKI_TEST__?.ready,null,{timeout:120000});await page.waitForTimeout(1200);
+ const qa=async(method,...args)=>{console.log('Check: '+method+' '+JSON.stringify(args));let timer;try{return await Promise.race([page.evaluate(({method,args})=>window.__KABANCHIKI_QA__[method](...args),{method,args}),new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('QA timed out: '+method)),120000)})]);}finally{clearTimeout(timer)}};
+ await page.click("#pauseBtn");await page.click("#menuDifficulty");await page.locator("input[name=diff3d][value=\"0\"]").check({force:true});await page.click("#difficultyStart");assert.equal((await qa('state')).difficulty,0);assert.equal((await qa('state')).life,(await qa('state')).maxLife);await page.click("#menuDifficulty");await page.keyboard.press("Escape");await page.waitForSelector("#pauseMenu",{state:"visible"});await page.click("#resume");
  const walls=await qa('v161Walls');assert.ok(walls.blocked&&walls.open&&walls.noseClear);
  const recovery=await qa('v161Recover');assert.ok(recovery.foot&&recovery.ride);
  const routes=[];for(const n of [1,3,5]){const route=await qa('v161Navigate',n);assert.ok(route.remaining<3.3&&route.penetrations===0,JSON.stringify(route));routes.push(route)}

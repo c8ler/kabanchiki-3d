@@ -19,7 +19,7 @@ import { lightBudget, selectEffectLights, OcclusionSchedule, distantActorDt } fr
 import { LocationExit, LOCATION_EXITS } from './location-exits.js?v=207';
 import { OpeningAdventure, openingStreamDepth, forestExitBlocked } from './opening-adventure.js?v=207';
 import { introStagingAt, outroStagingAt } from './cinematic-staging.js?v=207';
-import { segmentHitsBox, findGridPath, StableRoute, smoothHeading } from './navigation.js?v=207';
+import { segmentHitsBox, findGridPath, StableRoute, smoothHeading, findClearEscape } from './navigation.js?v=207-boar1';
 import { CatLife } from './cat-life.js?v=207';
 import { BirdLife } from './bird-life.js?v=207';
 import { CAT_BERRY_CHANCE, CAT_FORM_SECONDS, CAT_JUMP_SPEED, isCatBerryRoll, formTimeAfterStep } from './form-rules.js?v=207';
@@ -751,7 +751,7 @@ function interactHome(){const action=homeInteraction();if(!action)return;if(acti
 $('homeAction').onclick=interactHome;
 function buildForestCorridor(parent){const woods=new THREE.Group();parent.add(woods);const leafMaterial=mats.leaf.clone(),wood=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),mats.wood,20),leaf=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),leafMaterial,40),matrix=new THREE.Matrix4();for(let i=0;i<20;i++){const side=i%2?1:-1,row=Math.floor(i/2),x=side*(8+.5*Math.sin(row*2.1)),z=-44-row*2.4,h=3.8+.7*Math.sin(row*1.7);matrix.makeScale(.6,h,.6).setPosition(x,h/2,z);wood.setMatrixAt(i,matrix);for(let layer=0;layer<2;layer++){matrix.makeScale(3.8-layer*.5,1.8,3.8-layer*.5).setPosition(x,h+layer*.9,z);leaf.setMatrixAt(i*2+layer,matrix)}}woods.add(wood,leaf);woods.userData.leafMaterial=leafMaterial;parent.userData.forestCorridor=woods;syncForestCorridor(parent);}
 function syncForestCorridor(parent){const material=parent?.userData.forestCorridor?.userData.leafMaterial;if(material)material.color.set(currentSeason==='winter'?0xe9eff2:currentSeason==='autumn'?0xb67f34:0x4d9854);}
-function loadLevel(n){rideHop.reset();resetFallingSigns();for(const props of [openingProps,lakeExitProps,...locationExitProps.values()]){const breaker=props?.userData.breaker;if(breaker){breaker.exitBreaking=false;if(breaker!==friend){exitHelpers.delete(breaker);scene.remove(breaker.g);}props.userData.breaker=null;}}locationExit=LOCATION_EXITS[n]?new LocationExit(n):null;for(const [lv,props] of locationExitProps)props.visible=lv===n;opening=n===1?new OpeningAdventure():null;if(openingProps)openingProps.visible=n===1;if(lakeExitProps)lakeExitProps.visible=n===2;resetWaterActivity();const carriedMounted=mountedFriend;mountedFriend=false;setRiderPose(false);const carriedFriend=friend,carriedFriendHP=friendHP;resetStormLocationState();worldEpoch++;level=n;syncHomeLocation(n);if(started&&!cinematicRunning&&!paused&&!win)startMusic();rescued=0;bossHits=0;levelTime=0;weatherStage=0;underwaterTime=0;underwaterDamageCd=0;hurricaneCarry=0;weatherGroup.visible=false;for(const q of stormLeaves)scene.remove(q.g);stormLeaves.length=0;forageTimer=18;if(n===1){totalTime=0;statsData={fed:0,forage:0,berries:0,damage:0,family:0,minions:0,bossHits:0};endShown=false;}bossRage=1;bossSummon=7;bossVictoryTimer=null;bossFireworkTimer=0;levelBoarsDone=0;levelFamilyDone=0;clearEntities(friends);clearEntities(foes);clearEntities(familyMembers);clearEntities(crates);fireballs.forEach(f=>scene.remove(f.g));fireballs=[];defeatedBoars.forEach(f=>scene.remove(f.g));defeatedBoars.length=0;for(const [t,b] of [...burningTrees]){if(b.light)t.remove(b.light);if(b.flames)t.remove(b.flames);t.visible=true}burningTrees.clear();friendKnockbackActive=false;friend=carriedFriend;friendHP=carriedFriendHP;if(friend){friend.knockback=null;if(!friend.g.parent)scene.add(friend.g);friend.g.position.set(1.8,0,5.2);friend.g.rotation.set(0,0,0);friend.g.visible=true;friend.friendly=true;friend.aura.material.color.set(0x4cff72);friend.aura.material.opacity=.24}for(const a of apples)scene.remove(a.g);apples.length=0
+function loadLevel(n){rideHop.reset();resetFallingSigns();for(const props of [openingProps,lakeExitProps,...locationExitProps.values()]){const breaker=props?.userData.breaker;if(breaker){breaker.exitBreaking=false;if(breaker!==friend){exitHelpers.delete(breaker);scene.remove(breaker.g);}props.userData.breaker=null;}}locationExit=LOCATION_EXITS[n]?new LocationExit(n):null;for(const [lv,props] of locationExitProps)props.visible=lv===n;opening=n===1?new OpeningAdventure():null;if(openingProps)openingProps.visible=n===1;if(lakeExitProps)lakeExitProps.visible=n===2;resetWaterActivity();const carriedMounted=mountedFriend;mountedFriend=false;setRiderPose(false);const carriedFriend=friend,carriedFriendHP=friendHP;resetStormLocationState();worldEpoch++;level=n;syncHomeLocation(n);if(started&&!cinematicRunning&&!paused&&!win)startMusic();rescued=0;bossHits=0;levelTime=0;weatherStage=0;underwaterTime=0;underwaterDamageCd=0;hurricaneCarry=0;weatherGroup.visible=false;for(const q of stormLeaves)scene.remove(q.g);stormLeaves.length=0;forageTimer=18;if(n===1){totalTime=0;statsData={fed:0,forage:0,berries:0,damage:0,family:0,minions:0,bossHits:0};endShown=false;}bossRage=1;bossSummon=7;bossVictoryTimer=null;bossFireworkTimer=0;levelBoarsDone=0;levelFamilyDone=0;clearEntities(friends);clearEntities(foes);clearEntities(familyMembers);clearEntities(crates);fireballs.forEach(f=>scene.remove(f.g));fireballs=[];defeatedBoars.forEach(f=>scene.remove(f.g));defeatedBoars.length=0;for(const [t,b] of [...burningTrees]){if(b.light)t.remove(b.light);if(b.flames)t.remove(b.flames);t.visible=true}burningTrees.clear();friendKnockbackActive=false;friend=carriedFriend;friendHP=carriedFriendHP;if(friend){friend.route=null;friend.tightEscape=null;friend.escapeRetry=0;friend.lastSafe=null;friend.knockback=null;if(!friend.g.parent)scene.add(friend.g);friend.g.position.set(1.8,0,5.2);friend.g.rotation.set(0,0,0);friend.g.visible=true;friend.friendly=true;friend.aura.material.color.set(0x4cff72);friend.aura.material.opacity=.24}for(const a of apples)scene.remove(a.g);apples.length=0
 const enemyCounts=[3,4,5,5,6,1];const enemyCount=n===1||n===6?1:Math.max(1,Math.min(8,Math.round(enemyCounts[n-1]*diffCfg().enemyMult)));levelBoarsTotal=enemyCount;const spawnSets=[[-18,-10],[18,-13],[-15,-25],[16,-29],[-20,-36],[20,-39],[-8,-42],[9,-43]];if(n<6){for(let i=0;i<enemyCount;i++){const pos=n===1?[-6,14]:[spawnSets[i][0],Math.max(-31,spawnSets[i][1])];const foe=makeBoar(pos[0],pos[1],false);if(n===1){foe.openingBoar=true;foe.roamPause=999;foe.roamTimer=999}foes.push(foe)}}else{const b=makeBoar(0,-31,false);b.g.scale.setScalar(2.3);b.hp=BOSS_HITS[selectedDiff];b.maxHp=b.hp;b.isBoss=true;b.baseSpeed=2.05;b.rage=1;foes.push(b)}
 // v112: tree visibility must be finalized before spawning apples. Otherwise an apple can be attached to a tree that this level hides.
 for(const h of houseObjects){if(h!==familyHideout)setHouseTransparent(h,false);h.visible=(n===3)};setDadHouseCutaway(false);for(const o of biomeObjects)o.visible=(o.userData.biomeLevel===n);syncWorldGeneration(n);if(n===1)prepareOpeningClearing();if(n>=2&&n<=5)prepareLakeExit();rebuildWorldSurface();
@@ -803,7 +803,7 @@ function buildBreakableExit(props,z){
 }
 function resetExitBreaker(props){
  const d=props.userData;if(d.breaker&&d.breaker!==friend){exitHelpers.delete(d.breaker);scene.remove(d.breaker.g);}
- d.breaker=null;d.approachX=null;d.approachCooldown=0;d.breakerTime=0;d.breakerHit=false;d.breakerDone=false;
+ d.breaker=null;d.approachX=null;d.approachCooldown=0;d.approachStall=0;d.lastApproachDistance=undefined;d.breakerTime=0;d.breakerHit=false;d.breakerDone=false;
  animateBreakableExit(props,0);
 }
 function animateBreakableExit(props,p){
@@ -821,7 +821,7 @@ function updateExitBreaker(props,dt,z){
  }
  const f=d.breaker;
  if(!d.breakerHit){
-  d.approachCooldown=Math.max(0,(d.approachCooldown||0)-dt);if(f.route?.stuck>.8&&d.approachCooldown<=0&&Math.hypot((d.approachX??0)-boy.position.x,z+3.6-boy.position.z)<2.2){d.approachX=-(d.approachX||2.5);d.approachCooldown=4;f.route=null;}
+  d.approachCooldown=Math.max(0,(d.approachCooldown||0)-dt);const progress=Math.hypot(f.g.position.x-(d.approachX??0),f.g.position.z-(z+3.6));d.approachStall=d.lastApproachDistance!==undefined&&d.lastApproachDistance-progress<.005*dt?(d.approachStall||0)+dt:0;d.lastApproachDistance=progress;if(d.approachStall>2&&d.approachCooldown<=0&&Math.hypot((d.approachX??0)-boy.position.x,z+3.6-boy.position.z)<3.2){d.approachX=-(d.approachX||2.5);d.approachCooldown=4;f.route=null;}
   const moved=moveBoarToward(f,d.approachX??0,z+3.6,5.5,dt);f.breakStride=(f.breakStride||0)+(moved?dt:0);
   f.b.position.y=moved?Math.abs(Math.sin(f.breakStride*16))*.08:0;
   if(Math.abs(f.g.position.x)>3.3||f.g.position.z>z+4.3||f.g.position.z<z+2.4)return false;
@@ -1231,12 +1231,16 @@ function circleHitsTreeGeometry(x,z,r){
 // v101: rock collision follows the visible rounded footprint instead of the rotated Box3.
 // A Box3 turns a rotated rock into a large invisible rectangle, which was the source of the
 // "empty space around the stone" seen in the phone recording.
+const rockShapeCache=new WeakMap();
 function rockShape(mesh){
  mesh.updateWorldMatrix(true,false);
+ const matrix=mesh.matrixWorld.elements,cached=rockShapeCache.get(mesh);
+ if(cached&&cached.geometry===mesh.geometry&&cached.matrix.every((value,index)=>value===matrix[index]))return cached.shape;
  const sx=Math.max(.08,Math.abs(mesh.scale.x)),sz=Math.max(.08,Math.abs(mesh.scale.z));
  // DodecahedronGeometry(1) is roughly unit-radius. A tiny inset keeps the collision on the
  // visible stone rather than outside its silhouette.
- return {cx:mesh.position.x,cz:mesh.position.z,ax:sx*.92,az:sz*.92,yaw:mesh.rotation.y,top:new THREE.Box3().setFromObject(mesh).max.y};
+ const shape={cx:mesh.position.x,cz:mesh.position.z,ax:sx*.92,az:sz*.92,yaw:mesh.rotation.y,top:new THREE.Box3().setFromObject(mesh).max.y};
+ rockShapeCache.set(mesh,{matrix:Array.from(matrix),geometry:mesh.geometry,shape});return shape;
 }
 function rockEllipse(mesh,x,z,pad=0){
  const q=rockShape(mesh),dx=x-q.cx,dz=z-q.cz,c=Math.cos(q.yaw),sn=Math.sin(q.yaw);
@@ -1349,7 +1353,7 @@ function solidCircles(){
 }
 function playerWorldBlocked(x,z,pad=0){
  if(locationExit&&forestExitBlocked(x,z+4,mountedFriend?.7:PLAYER_RADIUS+pad,locationExitReady()))return true;
- if(x<-43.15||x>43.15||z<-43.15||z>43.15)return true;
+ if(x<-43.1||x>43.1||z<-43.1||z>43.1)return true;
  if(level===2&&forestExitBlocked(x,z+4,mountedFriend?.7:PLAYER_RADIUS+pad,lakeExitReady()))return true;
  if(level===1&&opening&&forestEdgeBlocked(x,z,mountedFriend?.7:PLAYER_RADIUS+pad,opening.passageOpen))return true;
  const rr=PLAYER_RADIUS+pad;if(helperBlocksPlayer(x,z)||debrisBlocks(x,z,rr))return true;
@@ -1573,10 +1577,10 @@ function runRobotCollisionTest(){
  // far side of the same obstacle. This uses the same trunk circle / rotated rock ellipse as gameplay.
  const run=(label,sx,sz,mx,mz,insideFn,crossFn,expectBlocked)=>{
   boy.position.set(sx,0,sz);py=0;vy=0;
-  const bx=sx,bz=sz;let pathPenetrated=false;const steps=Math.max(1,Math.ceil(Math.hypot(mx,mz)/.055));for(let i=0;i<steps;i++){const px=boy.position.x,pz=boy.position.z;movePlayerCollision(mx/steps,mz/steps);for(let j=1;j<=4;j++)if(insideFn(px+(boy.position.x-px)*j/4,pz+(boy.position.z-pz)*j/4))pathPenetrated=true}
+  const bx=sx,bz=sz;let pathPenetrated=false,firstPenetration=null;const steps=Math.max(1,Math.ceil(Math.hypot(mx,mz)/.055));for(let i=0;i<steps;i++){const px=boy.position.x,pz=boy.position.z;movePlayerCollision(mx/steps,mz/steps);for(let j=1;j<=4;j++)if(insideFn(px+(boy.position.x-px)*j/4,pz+(boy.position.z-pz)*j/4)){pathPenetrated=true;firstPenetration??={from:{x:px,z:pz},to:{x:boy.position.x,z:boy.position.z},py,vy};}}
   const fx=boy.position.x,fz=boy.position.z,moved=Math.hypot(fx-bx,fz-bz);
   const penetrated=insideFn(fx,fz),crossed=crossFn?crossFn(fx,fz):false,blocked=!penetrated&&!pathPenetrated;
-  samples.push({label,moved:+moved.toFixed(3),blocked,penetrated,crossed,pathPenetrated});
+  samples.push({label,moved:+moved.toFixed(3),blocked,penetrated,crossed,pathPenetrated,firstPenetration,start:{x:sx,z:sz},end:{x:fx,z:fz}});
   if(expectBlocked&&(penetrated||pathPenetrated))issues.push(`robot-pass-through:${label}`);
   if(!expectBlocked&&moved<Math.hypot(mx,mz)*.55)issues.push(`robot-stuck:${label}`);
   return blocked;
@@ -1599,7 +1603,7 @@ function runRobotCollisionTest(){
  let ri=0;for(const [, , ,m] of rockPositions){if(ri>=20)break;if(!m||m.visible===false)continue;
   const q=rockShape(m),c=Math.cos(q.yaw),sn=Math.sin(q.yaw),edge=q.ax+ROCK_PLAYER_RADIUS+.10;
   const ux=c,uz=-sn,sx=q.cx+ux*edge,sz=q.cz+uz*edge;
-  const inside=(x,z)=>rockEllipse(m,x,z,ROCK_PLAYER_RADIUS).n<.985;
+  const inside=(x,z)=>py<q.top-.045&&rockEllipse(m,x,z,ROCK_PLAYER_RADIUS).n<.985;
   const crossed=(x,z)=>{const e=rockEllipse(m,x,z,ROCK_PLAYER_RADIUS);return e.lx<-(e.ax*.35)};
   if(!playerWorldBlocked(sx,sz)){
    run(`rock${ri}-into`,sx,sz,-ux*(edge*2+.20),-uz*(edge*2+.20),inside,crossed,true);
@@ -1623,28 +1627,32 @@ function runRockClimbAudit(){
  const dirs=[[1,0],[-1,0],[0,1],[0,-1]];let tested=0,passed=0;
  for(let ri=0;ri<rockPositions.length&&tested<12;ri++){
   const m=rockPositions[ri][3];if(!m||m.visible===false)continue;m.updateWorldMatrix(true,false);const b=new THREE.Box3().setFromObject(m),c=new THREE.Vector3();b.getCenter(c);
+  // Closed forest-edge scenery is deliberately unreachable before the exit opens.
+  if(level===1&&opening&&forestEdgeBlocked(c.x,c.z,PLAYER_RADIUS,opening.passageOpen))continue;
   // Normal jump apex is ~1.36 m. Test only genuinely reachable rocks.
   if(b.max.y<.22||b.max.y>1.34)continue;
-  let chosen=null;
+  let landed=false,maxY=0,approaches=0;const attempts=[];
   for(const [ux,uz] of dirs){
    const ex=(b.max.x-b.min.x)/2,ez=(b.max.z-b.min.z)/2;
    const sx=c.x+ux*(ex+ROCK_PLAYER_RADIUS+.18),sz=c.z+uz*(ez+ROCK_PLAYER_RADIUS+.18);
-   if(!playerWorldBlocked(sx,sz)){chosen=[ux,uz,sx,sz];break}
+   py=vy=0;boy.position.y=0;
+   if(playerWorldBlocked(sx,sz))continue;
+   approaches++;boy.position.set(sx,0,sz);py=0;vy=7;
+   for(let frame=0;frame<100;frame++){
+    // Only the target rock may stop this approach: a nearby branch or rock
+    // must not masquerade as having reached the target's support footprint.
+    if(rockEllipse(m,boy.position.x,boy.position.z,PLAYER_RADIUS*.12).n>=1)movePlayerCollision(-ux*.075,-uz*.075);
+    const prev=py;vy-=18/60;let next=py+vy/60;const support=playerSupportHeightAt(boy.position.x,boy.position.z);
+    if(vy<=0&&prev>=support-.04&&next<=support){py=support;vy=0}else{py=Math.max(0,next);if(py===0)vy=0}
+    boy.position.y=py;maxY=Math.max(maxY,py);
+    if(vy===0&&rockEllipse(m,boy.position.x,boy.position.z,PLAYER_RADIUS*.12).n<1&&Math.abs(py-b.max.y)<.10){landed=true;break}
+    if(vy===0&&py===0&&frame>25)break;
+   }
+   attempts.push({start:{x:sx,z:sz},end:{x:boy.position.x,z:boy.position.z},py,support:playerSupportHeightAt(boy.position.x,boy.position.z),onTarget:rockEllipse(m,boy.position.x,boy.position.z,PLAYER_RADIUS*.12).n});
+   if(landed)break;
   }
-  if(!chosen)continue;tested++;const [ux,uz,sx,sz]=chosen;
-  boy.position.set(sx,0,sz);py=0;vy=7;boy.position.y=0;let landed=false,maxY=0;
-  for(let frame=0;frame<100;frame++){
-   // Move toward the rock until Timur is actually over its support footprint, then stop
-   // horizontal input and let the normal vertical solver complete the landing.
-   const supportBefore=playerSupportHeightAt(boy.position.x,boy.position.z);
-   if(supportBefore<.12)movePlayerCollision(-ux*.075,-uz*.075);
-   const prev=py;vy-=18/60;let next=py+vy/60;const support=playerSupportHeightAt(boy.position.x,boy.position.z);
-   if(vy<=0&&prev>=support-.04&&next<=support){py=support;vy=0}else{py=Math.max(0,next);if(py===0)vy=0}
-   boy.position.y=py;maxY=Math.max(maxY,py);
-   if(vy===0&&support>0.12&&Math.abs(py-b.max.y)<.10){landed=true;break}
-   if(vy===0&&py===0&&frame>25)break;
-  }
-  samples.push({rock:ri,top:+b.max.y.toFixed(3),maxY:+maxY.toFixed(3),landed});
+  if(!approaches)continue;tested++;
+  samples.push({rock:ri,top:+b.max.y.toFixed(3),maxY:+maxY.toFixed(3),landed,approaches,attempts});
   if(landed)passed++;else issues.push(`rock-climb-failed:${ri}:top=${b.max.y.toFixed(2)}`);
  }
  boy.position.set(ox,oy,oz);py=opy;vy=ovy;
@@ -1855,8 +1863,15 @@ function clearWallLine(a,b){const start={x:a.x,y:a.y??.8,z:a.z},end={x:b.x,y:b.y
 function boarWallContacts(f,x=f.g.position.x,z=f.g.position.z,yaw=f.g.rotation.y){const body=boarBody(f,x,z,yaw),contacts=[];for(const w of wallGeometry())for(const [px,pz] of [[body.ax,body.az],[(body.ax+body.bx)/2,(body.az+body.bz)/2],[body.bx,body.bz]]){const hit=polygonContact(w.polygon,px,pz,body.r+.04);if(hit)contacts.push(hit)}return contacts}
 const companionChecks={checks:0,repairs:0,replans:0};
 function companionValid(f,x=f.g.position.x,z=f.g.position.z,yaw=f.g.rotation.y){return !boarSceneryBlockedAt(f,x,z,yaw)}
-function repairCompanion(f,force=false){if(!f?.g||f.flee)return;const now=performance.now();if(!force&&now-(f.g.userData.lastRecoveryAt||0)<200)return;f.g.userData.lastRecoveryAt=now;companionChecks.checks++;if(companionValid(f)){f.lastSafe={x:f.g.position.x,z:f.g.position.z,yaw:f.g.rotation.y};return}const current={x:f.g.position.x,z:f.g.position.z};let safe=null;for(let r=.15;r<5&&!safe;r+=.25)for(let i=0;i<24;i++){const a=i/24*Math.PI*2,x=current.x+Math.sin(a)*r,z=current.z+Math.cos(a)*r;if(companionValid(f,x,z)){safe={x,z};break}}if(!safe&&f.lastSafe&&companionValid(f,f.lastSafe.x,f.lastSafe.z,f.lastSafe.yaw))safe=f.lastSafe;if(safe){f.g.position.x=safe.x;f.g.position.z=safe.z;f.navigation=null;companionChecks.repairs++}}
-function companionNavBlocked(f){const scale=boarScale(f),radius=1.65*scale,trees=treeObjects.filter(t=>t.visible).map(t=>{const m=t.children.find(m=>m.userData.treeSolid);return m?treeTrunkShape(m):null}).filter(Boolean),rocks=rockPositions.filter(q=>q[3]?.visible!==false&&q[3]?.parent?.visible!==false).map(q=>rockShape(q[3])),walls=wallGeometry(),mountains=level===5?mountainObstacles.filter(q=>q[3]?.parent?.visible!==false).map(q=>mountainFootprint(q[3])):[];return (x,z)=>{if(locationExit&&forestExitBlocked(x,z+4,radius,locationExitReady()))return true;if(level===2&&forestExitBlocked(x,z+4,radius,lakeExitReady()))return true;if(level===1&&opening&&forestEdgeBlocked(x,z,radius,opening.passageOpen))return true;if(openingDebrisCapsules().some(q=>(!q.closed||!f.exitBreaking)&&capsuleCircleContact(q.body,x,z,radius)))return true;if(f.exitHelper&&Math.hypot(x-boy.position.x,z-boy.position.z)<boarRadius(f)+PLAYER_RADIUS+.7)return true;if(Math.abs(x)>42||Math.abs(z)>42||(!controlledSwimmer(f)&&!f.waterEscaping&&boarWaterDepth(f,x,z)>BOAR_WADING_DEPTH))return true;if(trees.some(t=>Math.hypot(x-t.x,z-t.z)<t.r+1.65*scale))return true;if(rocks.some(q=>{const dx=x-q.cx,dz=z-q.cz,c=Math.cos(q.yaw),sn=Math.sin(q.yaw),lx=dx*c-dz*sn,lz=dx*sn+dz*c;return lx*lx/(q.ax+radius)**2+lz*lz/(q.az+radius)**2<1}))return true;return walls.some(w=>polygonContact(w.polygon,x,z,radius))||mountains.some(poly=>polygonContact(poly,x,z,radius))||(level===6&&lairObstacles.some(([px,pz,r,o])=>o.visible&&Math.hypot(x-px,z-pz)<r+radius))}}
+function settleBoarOnGround(f){
+ const {x,z}=f.g.position;
+ // Absolute world support; exit helpers and actors skipped by distance LOD
+ // must never accumulate last frame's elevation.
+ const bridge=level===4&&onRiverBridge(x,z)?.28:0;
+ f.g.position.y=terrainHeightAt(x,z)+Math.max(familyFloorAt(x,z),bridge)-lakeDepthAt(x,z)-puddleDepthAt(x,z);
+}
+function repairCompanion(f,force=false){if(!f?.g||f.flee)return;const now=performance.now();if(!force&&now-(f.g.userData.lastRecoveryAt||0)<200)return;f.g.userData.lastRecoveryAt=now;companionChecks.checks++;if(companionValid(f)){f.lastSafe={x:f.g.position.x,z:f.g.position.z,yaw:f.g.rotation.y};return}const current={x:f.g.position.x,z:f.g.position.z};let safe=null;for(let r=.15;r<5&&!safe;r+=.25)for(let i=0;i<24;i++){const a=i/24*Math.PI*2,x=current.x+Math.sin(a)*r,z=current.z+Math.cos(a)*r;if(companionValid(f,x,z)){safe={x,z};break}}if(!safe&&f.lastSafe&&companionValid(f,f.lastSafe.x,f.lastSafe.z,f.lastSafe.yaw))safe=f.lastSafe;if(safe){f.g.position.x=safe.x;f.g.position.z=safe.z;if(Number.isFinite(safe.yaw))f.g.rotation.y=safe.yaw;f.route=null;f.tightEscape=null;f.escapeRetry=0;f.navigation=null;f.lastSafe={x:safe.x,z:safe.z,yaw:f.g.rotation.y};companionChecks.repairs++}}
+function companionNavBlocked(f){const scale=boarScale(f),radius=1.65*scale+.05,trees=treeObjects.filter(t=>t.visible).map(t=>{const m=t.children.find(m=>m.userData.treeSolid);return m?treeTrunkShape(m):null}).filter(Boolean),rocks=rockPositions.filter(q=>q[3]?.visible!==false&&q[3]?.parent?.visible!==false).map(q=>rockShape(q[3])),walls=wallGeometry(),mountains=level===5?mountainObstacles.filter(q=>q[3]?.parent?.visible!==false).map(q=>mountainFootprint(q[3])):[];return (x,z)=>{if(locationExit&&forestExitBlocked(x,z+4,.7*scale,locationExitReady()))return true;if(level===2&&forestExitBlocked(x,z+4,.7*scale,lakeExitReady()))return true;if(level===1&&opening&&forestEdgeBlocked(x,z,.7*scale,opening.passageOpen))return true;if(openingDebrisCapsules().some(q=>(!q.closed||!f.exitBreaking)&&capsuleCircleContact(q.body,x,z,radius)))return true;if(f.exitBreaking&&Math.hypot(x-boy.position.x,z-boy.position.z)<boarRadius(f)+PLAYER_RADIUS+.7)return true;if(Math.abs(x)>42||Math.abs(z)>42||(!controlledSwimmer(f)&&!f.waterEscaping&&boarWaterDepth(f,x,z)>BOAR_WADING_DEPTH))return true;if(trees.some(t=>Math.hypot(x-t.x,z-t.z)<t.r+1.65*scale))return true;if(rocks.some(q=>{const dx=x-q.cx,dz=z-q.cz,c=Math.cos(q.yaw),sn=Math.sin(q.yaw),lx=dx*c-dz*sn,lz=dx*sn+dz*c;return lx*lx/(q.ax+radius)**2+lz*lz/(q.az+radius)**2<1}))return true;return walls.some(w=>polygonContact(w.polygon,x,z,radius))||mountains.some(poly=>polygonContact(poly,x,z,radius))||(level===6&&lairObstacles.some(([px,pz,r,o])=>o.visible&&Math.hypot(x-px,z-pz)<r+radius))}}
 function boarSceneryBlockedAt(f,x,z,yaw=f.g.rotation.y){
   if(f.flee)return boarWallContacts(f,x,z,yaw).length>0;
  if(locationExit&&forestExitBlocked(x,z+4,.7*boarScale(f),locationExitReady()))return true;
@@ -1901,14 +1916,37 @@ function bossBattleImpact(x,z){
 
  if(f.waterEscaping)return moveBoarOutOfWater(f,tx,tz,Math.max(speed,5.5),dt);
  f.route??=new StableRoute();const point={x:ox,z:oz},goal={x:tx,z:tz};let navGeometry;const navBlocked=(x,z)=>(navGeometry??=companionNavBlocked(f))(x,z);
+ const clear=(x,z,yaw)=>!boarSceneryBlockedAt(f,x,z,yaw)&&!boarPlayerContact(f,x,z,yaw)&&!blockedByBoar(x,z,f,.78,yaw)&&!catLife.blocksBoar(boarBody(f,x,z,yaw),terrainHeightAt(x,z)-lakeDepthAt(x,z));
+ f.escapeRetry=Math.max(0,(f.escapeRetry||0)-dt);
+ if((!f.route.goal||f.tightEscape||f.route.stuck>.5)&&navBlocked(ox,oz)){
+  const yaw=f.g.rotation.y;
+  if(!f.tightEscape||navBlocked(f.tightEscape.x,f.tightEscape.z)){if(f.escapeRetry>0)return false;f.tightEscape=findClearEscape(point,navBlocked,(x,z)=>clear(x,z,yaw));if(!f.tightEscape)f.escapeRetry=.75;}
+  const q=f.tightEscape;if(!q)return false;
+  const dx=q.x-ox,dz=q.z-oz,len=Math.hypot(dx,dz);if(len<1e-6){f.tightEscape=null;return false;}
+  const distance=Math.min(speed*dt,len),count=Math.max(1,Math.ceil(distance/.055));
+  for(let i=1;i<=count;i++)if(!clear(ox+dx/len*distance*i/count,oz+dz/len*distance*i/count,yaw)){f.tightEscape=null;return false;}
+  f.g.position.x=ox+dx/len*distance;f.g.position.z=oz+dz/len*distance;f.route=null;return true;
+ }
+ f.tightEscape=null;
  const target=f.route.next(point,goal,navBlocked,dt,{epoch:worldEpoch,step:level===3?.5:.8});
  if(!target){f.route.record(0,dt);return false;}
  const vx=target.x-ox,vz=target.z-oz,len=Math.hypot(vx,vz),desired=Math.atan2(vx,vz),heading=smoothHeading(f.g.rotation.y,desired,dt),stepSize=Math.min(speed*dt,len);
- const clear=(x,z,yaw)=>!boarSceneryBlockedAt(f,x,z,yaw)&&!boarPlayerContact(f,x,z,yaw)&&!blockedByBoar(x,z,f,.78,yaw)&&!catLife.blocksBoar(boarBody(f,x,z,yaw),terrainHeightAt(x,z)-lakeDepthAt(x,z));
  let valid=true;const count=Math.max(1,Math.ceil(stepSize/.055));
- for(let i=1;i<=count;i++)if(!clear(ox+vx/len*stepSize*i/count,oz+vz/len*stepSize*i/count,heading)){valid=false;break;}
+ const delta=Math.atan2(Math.sin(heading-f.g.rotation.y),Math.cos(heading-f.g.rotation.y));
+ const slices=Math.max(count,Math.ceil(Math.abs(delta)/.06));
+ for(let i=1;i<=slices;i++)if(!clear(ox+vx/len*stepSize*i/slices,oz+vz/len*stepSize*i/slices,f.g.rotation.y+delta*i/slices)){valid=false;break;}
  if(valid){f.g.position.x=ox+vx/len*stepSize;f.g.position.z=oz+vz/len*stepSize;f.g.rotation.y=heading;}
- f.route.record(valid?stepSize:0,dt);return valid;
+ // A long capsule must be able to turn while waiting at a corner.
+ // Previously the heading only changed after translation succeeded: a blocked
+ // nose froze the heading forever, followed by repeated route exclusions.
+ let turned=false;
+ if(!valid){
+  const delta=Math.atan2(Math.sin(heading-f.g.rotation.y),Math.cos(heading-f.g.rotation.y));
+  const turns=Math.max(1,Math.ceil(Math.abs(delta)/.06));
+  let safe=true;for(let i=1;i<=turns;i++)if(!clear(ox,oz,f.g.rotation.y+delta*i/turns)){safe=false;break;}
+  if(safe&&Math.abs(delta)>1e-6){f.g.rotation.y=heading;turned=true;}
+ }
+ f.route.record(valid?stepSize:turned?.003:0,dt);return valid;
 }
 function moveBoarOutOfWater(f,tx,tz,speed,dt){
  const x=f.g.position.x,z=f.g.position.z,depth=boarWaterDepth(f),a=Math.atan2(tx-x,tz-z),step=Math.min(speed*dt,Math.hypot(tx-x,tz-z));
@@ -2070,7 +2108,7 @@ function runV156Audit(){
   ground.updateMatrixWorld();const sp=surfaceGeometry.attributes.position;for(const i of [1577,3329,6810]){const point=new THREE.Vector3().fromBufferAttribute(sp,i).applyMatrix4(ground.matrixWorld);if(Math.abs(point.y-groundSurfaceHeightAt(point.x,point.z))>.002)issues.push('terrain-visual-height-mismatch')}
   if(!puddleObjects.length)issues.push('no-rain-basins');weatherStage=2;puddleRain=0;updatePuddles(15);const early=puddleRain;updatePuddles(45);if(!(early>0&&puddleRain>early)||!puddleObjects.some(p=>p.visible))issues.push('puddles-do-not-fill');samples.push({basins:puddleObjects.length,earlyRain:early,laterRain:puddleRain});
   friend=f;foes.splice(0,foes.length,...saved.foes);mountedFriend=true;py=1.18;f.g.scale.set(1,1,1);
-  if(level===2&&currentSeason!=='winter'){boy.position.set(-18+13.1,1.18,-17);f.g.position.copy(boy.position);f.g.rotation.y=-Math.PI/2;let deepest=0;for(let i=0;i<160;i++){movePlayerCollision(-.13,0);deepest=Math.max(deepest,boarWaterDepth(playerBoarBody()))}if(deepest<4)issues.push('rider-cannot-enter-lake-centre');boy.position.set(-18+7,1.18,-17);resolveBoarClearance(playerBoarBody(),false);if(boarWaterDepth(playerBoarBody())<1)issues.push('deep-rider-pushed-to-shore');samples.push({riderMaxLakeDepth:deepest})}
+  if(level===2&&currentSeason!=='winter'){boy.position.set(-18+13.1,1.18,-17);f.g.position.copy(boy.position);f.g.rotation.y=-Math.PI/2;let deepest=0;for(let i=0;i<160;i++){movePlayerCollision(-.13,0);deepest=Math.max(deepest,boarWaterDepth(playerBoarBody()))}if(deepest<lakeDepth(-18,-17)-.1)issues.push('rider-cannot-enter-lake-centre');boy.position.set(-18,1.18,-17);const deepX=boy.position.x,deepZ=boy.position.z;resolveBoarClearance(playerBoarBody(),false);if(Math.hypot(boy.position.x-deepX,boy.position.z-deepZ)>.01||boarWaterDepth(playerBoarBody())<lakeDepth(-18,-17)-.1)issues.push('deep-rider-pushed-to-shore');samples.push({riderMaxLakeDepth:deepest})}
   if(level===4){boy.position.set(0,1.18,-6);f.g.rotation.y=Math.PI;for(let i=0;i<130;i++)movePlayerCollision(0,-.13);if(boy.position.z>-21)issues.push('rider-cannot-cross-river-bridge');boy.position.set(15,1.18,riverCenterAt(15)+6);for(let i=0;i<100;i++)movePlayerCollision(0,-.13);if(boy.position.z>=riverCenterAt(15)+4)issues.push('rider-cannot-enter-river');samples.push({bridgeAndRiverSafe:true})}
  }finally{
   if(tree&&treeScale){tree.scale.copy(treeScale);if(treeGrown!==undefined)tree.userData.yellowAppleGrown=treeGrown;else delete tree.userData.yellowAppleGrown;if(treeBefore)tree.userData.beforeYellowScale=treeBefore;else delete tree.userData.beforeYellowScale}
@@ -2080,6 +2118,58 @@ function runV156Audit(){
 }
 window.__KABANCHIKI_V156_AUDIT__=runV156Audit;
 if(__autoTest||__autoParams.get('openingtest')==='1')window.__KABANCHIKI_QA__={
+ // Deterministic browser robot: real navigation, real scenery and real movement.
+ boarRobot(n=1,season=0,fps=30,seed=208){
+  this.season(season);this.load(n);paused=true;mountedFriend=false;
+  for(const f of foes)scene.remove(f.g);foes.length=0;
+  if(friend)scene.remove(friend.g);friend=null;
+  boy.position.set(0,0,42);
+  const f=makeBoar(0,10,true),issues=[],samples=[];let checks=0;
+  const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
+  const blocked=companionNavBlocked(f);
+  try{
+   for(let route=0;route<3;route++){
+    let start,goal,path;
+    for(let tries=0;tries<160;tries++){
+     const a={x:random()*66-33,z:random()*60-28},b={x:random()*66-33,z:random()*60-28};
+     if(blocked(a.x,a.z)||blocked(b.x,b.z)||Math.hypot(a.x-b.x,a.z-b.z)<8)continue;
+     f.g.position.set(a.x,0,a.z);f.g.rotation.y=Math.atan2(b.x-a.x,b.z-a.z);
+     if(!companionValid(f))continue;
+     path=findGridPath(a,b,blocked,{step:.8,bound:42,maxNodes:22000});
+     if(path.length&&Math.hypot(path.at(-1).x-b.x,path.at(-1).z-b.z)<.6){start=a;goal=b;break;}
+    }
+    if(!start){issues.push('missing-route-'+route);continue;}
+    f.route=null;let remaining=Infinity,frames=0;
+    for(;frames<45*fps;frames++){
+     catLife.update(1/fps,birdLife,[f]);moveBoarToward(f,goal.x,goal.z,4,1/fps);resolveBoarClearance(f,false);settleBoarOnGround(f);
+     if(!companionValid(f)){issues.push('penetration-'+route);break;}
+     const expected=terrainHeightAt(f.g.position.x,f.g.position.z)+Math.max(familyFloorAt(f.g.position.x,f.g.position.z),level===4&&onRiverBridge(f.g.position.x,f.g.position.z)?.28:0)-lakeDepthAt(f.g.position.x,f.g.position.z)-puddleDepthAt(f.g.position.x,f.g.position.z);
+     if(!Number.isFinite(f.g.position.y)||Math.abs(f.g.position.y-expected)>.001)issues.push('floating-'+route);
+     checks++;remaining=Math.hypot(f.g.position.x-goal.x,f.g.position.z-goal.z);if(remaining<.65)break;
+    }
+    if(remaining>=.65)issues.push('stuck-'+route);
+    samples.push({start,goal,remaining,frames,plans:f.route?.plans,position:f.g.position.toArray(),heading:f.g.rotation.y,next:f.route?.path[0],catBlocked:catLife.blocksBoar(boarBody(f),terrainHeightAt(f.g.position.x,f.g.position.z)-lakeDepthAt(f.g.position.x,f.g.position.z))});
+   }
+   return {level:n,season:currentSeason,fps,seed,checks,issues:[...new Set(issues)],samples};
+  }finally{scene.remove(f.g);}
+ },
+ boarExitRobot(n=3,withFriend=true,fps=30){
+  this.season(0);this.load(n);paused=true;mountedFriend=false;
+  for(const f of foes)scene.remove(f.g);foes.length=0;
+  if(friend)scene.remove(friend.g);friend=withFriend?makeBoar(8,-27,true):null;
+  const props=n===1?openingProps:n===2?lakeExitProps:locationExitProps.get(n);
+  resetExitBreaker(props);boy.position.set(0,0,n===1?-30:-34);if(friend)repairCompanion(friend,true);
+  const issues=[];let frames=0,maxHeight=0,done=false;
+  for(;frames<30*fps;frames++){
+   done=updateExitBreaker(props,1/fps,n===1?-35:-39);
+   const f=props.userData.breaker;
+   if(f){resolveBoarClearance(f);settleBoarOnGround(f);maxHeight=Math.max(maxHeight,Math.abs(f.g.position.y));if(!companionValid(f))issues.push('penetration');}
+   if(done)break;
+  }
+  if(!done)issues.push('exit-never-opened');
+  return {level:n,withFriend,fps,done,frames,maxHeight,position:props.userData.breaker?.g.position.toArray(),path:props.userData.breaker?.route?.path.slice(0,3),issues:[...new Set(issues)]};
+ },
+
  v207HomeReset(retry=false){this.v207BuildDoor();saveHome();endShown=retry;win=false;totalTime=123;score=42;restartGame();paused=true;const saved=JSON.parse(localStorage.getItem('kabanchiki3d_home'));const result={stage:home.stage,wood:home.wood,collected:home.collected.slice(),saved,level,totalTime,score};this.load(3);paused=true;return {...result,floorVisible:homeParts.floor.visible,furnitureVisible:homeParts.furnishings.visible,piles:homePiles.filter(p=>p.visible).length,solid:wallGeometry().filter(w=>w.root===personalHouse).length};},
  v207HomeFurniture(){this.v207BuildDoor();paused=true;const results=[];for(const cutaway of [false,true]){setHomeHouseCutaway(cutaway);for(const [name,x,z] of [['table',1.2,-.9],['chair',.9,.3],['bed',-1.3,-1]]){const tx=HOME_SITE.x+x,tz=HOME_SITE.z+z;py=.16;vy=0;boy.position.set(tx,.16,tz+1.5);for(let i=0;i<50;i++)movePlayerCollision(0,-.03);results.push({name,cutaway,blocked:houseBlockAt(tx,tz,.43,true),distance:Math.hypot(boy.position.x-tx,boy.position.z-tz)});}}home.stage=2;syncHomeVisual();return {results,unbuiltFurnitureBlocked:houseBlockAt(HOME_SITE.x+1.2,HOME_SITE.z-.9,.43,true)};},
 
@@ -2104,7 +2194,7 @@ if(__autoTest||__autoParams.get('openingtest')==='1')window.__KABANCHIKI_QA__={
  v164Death(cause){cinematicFinish?.();cineClear();cinematicRunning=false;deathSceneActive=deathSceneFinished=endShown=false;lastDeathCause=cause;life=0;showEnd(false);return {kind:movie?.kind,cause:movie?.deathCause,active:deathSceneActive}},
  v164Chewing(){this.season(0);this.load(1);const f=foes[0];updateBoarChewing(f,0,true);const first=f.g.userData.grazingJaw.position.y;updateBoarChewing(f,90,true);const moving=first!==f.g.userData.grazingJaw.position.y,grass=f.g.userData.grazingGrass.visible;updateBoarChewing(f,100,false);return {moving,grass,hidden:!f.g.userData.grazingGrass.visible}},
  v164Fishing(){this.v161Fish();fishStock=0;const sessions=[];for(let session=0;session<3;session++){keys.KeyW=true;updateFishing(.1,performance.now());keys.KeyW=false;for(let i=0;i<650;i++)updateFishing(.1,performance.now()+i*100);sessions.push({active:!!fishingTarget,stock:fishStock})} const initial=yaw;yaw+=1.2;for(let i=0;i<1200;i++)updateFishing(.1,performance.now()+i*100);const cameraFree=Math.abs(yaw-initial)>1,stock=fishStock;paused=false;throwCooldown=0;yellowAppleStock=yellowMushroomStock=0;feed();paused=true;return {cameraFree,stock,remaining:fishStock,type:shots.at(-1)?.type,sessions,stoppedAfterFeed:!fishingTarget}},
- v164Swim(){this.season(0);this.load(2);const f=makeBoar(-5, -17,false);f.g.rotation.y=-Math.PI/2;for(let i=0;i<100;i++)moveBoarToward(f,-18,-17,5,.05);resolveBoarClearance(f,false);const depth=boarWaterDepth(f),x=f.g.position.x;scene.remove(f.g);return {depth,x}},
+ v164Swim(){this.season(0);this.load(2);const f=makeBoar(-5, -17,false);f.g.rotation.y=-Math.PI/2;for(let i=0;i<100;i++)moveBoarToward(f,-18,-17,5,.05);resolveBoarClearance(f,false);const depth=boarWaterDepth(f),x=f.g.position.x;scene.remove(f.g);return {depth,x,z:f.g.position.z,remaining:Math.hypot(f.g.position.x+18,f.g.position.z+17)}},
 
  v163Inspect(){return {season:currentSeason,grass:grassBlades.visible,plants:forestVisual.children.filter(g=>g.userData.seasonPlant&&g.visible).length,borders:seasonVisual.children.filter(g=>g.userData.snowRoadBorder).length,treeBlocked:christmasSolid?circleHitsTreeGeometry(10,26,PLAYER_RADIUS):false,treeBoarBlocked:christmasSolid?boarTreeContacts({g:{position:{x:10,z:26},rotation:{y:0},scale:{x:1,y:1,z:1}}},10,26,0).length>0:false,headlights:movie?.car?.userData.headlights.map(l=>l.intensity),actors:movie?.people.map(p=>({x:p.position.x,z:p.position.z,visible:p.visible,yaw:p.rotation.y})),boars:movie?.boars.map(b=>({x:b.g.position.x,z:b.g.position.z,visible:b.g.visible}))}},
  v161Walls(){this.load(3);const h=familyHideout;h.updateWorldMatrix(true,true);const outside=new THREE.Vector3(-3.8,.8,0).applyMatrix4(h.matrixWorld),inside=new THREE.Vector3(-1.5,.8,0).applyMatrix4(h.matrixWorld);const blocked=!clearWallLine(outside,inside),open=clearWallLine(new THREE.Vector3(-8,1,8),new THREE.Vector3(8,1,8));const b=makeBoar(outside.x,outside.z,false);b.g.rotation.y=Math.PI/2;for(let i=0;i<120;i++)moveBoarToward(b,inside.x,inside.z,3,.05);resolveBoarClearance(b,false);const noseClear=boarWallContacts(b).length===0;scene.remove(b.g);return {blocked,open,noseClear,boar:[b.g.position.x,b.g.position.z]}},
@@ -2114,7 +2204,7 @@ if(__autoTest||__autoParams.get('openingtest')==='1')window.__KABANCHIKI_QA__={
  v161Snow(minutes){this.season(40);this.load(2);levelTime=minutes*60;updateSnow(.01,performance.now());return this.v161Inspect()},
  v161Inspect(){return {food,shots:shots.length,birds:birdLife.inspect(),snowMinute:winterSnowMinute,snowStrength:Math.min(1,.35+Math.max(0,winterSnowMinute)*.2),driftHeight:Math.max(0,...winterDrifts.map(d=>d.m.scale.y)),drifts:winterDrifts.length,snowDraw:snowGeometry.drawRange.count,iceWater:lake.material===iceWaterMaterial,roadSnow:roadSurface.material===winterRoadMaterial,checks:{...companionChecks},version:GAME_VERSION,season:currentSeason,level,life,underwater:underwaterTime,ice:iceShell.visible,freeze:freezeTime,tree:seasonVisual.children.some(g=>g.userData.christmasTree),fishing:fishingRig.visible,catch:caughtFish.visible,spray:sprayPool.filter(q=>q.t>0).length,rings:rainRingPool.filter(q=>q.t>0).length,puddles:puddleRain,depth:puddleObjects[0]?puddleDepthAt(puddleObjects[0].position.x,puddleObjects[0].position.z):0,riverEnd:riverGeo.attributes.position.getX(riverGeo.attributes.position.count-1),foodInRiver:level===4?apples.filter(a=>!a.done&&Math.abs(a.z-riverCenterAt(a.x))<4.6).length:0,rocks:rockPositions.filter(q=>q[3]?.userData.biomeLevel===4).map(q=>({x:q[0],z:q[1],scale:q[3].scale.toArray()})),movie:movie?{kind:movie.kind,light:movie.lampLight?.visible&&movie.lampLight?.intensity,headlights:movie.car?.userData.headlights?.length,boss:movie.fleeingBoss?.g.visible,hug:movie.hero.children[5].rotation.x}:null}},
  v161Bridge(){this.load(4);mountedFriend=false;py=.28;boy.position.set(0,.28,-14);for(let i=0;i<70;i++)movePlayerCollision(.06,0);const foot=boy.position.x;boy.position.set(0,.28,-14);mountedFriend=true;for(let i=0;i<70;i++)movePlayerCollision(.06,0);const ride=boy.position.x;mountedFriend=false;return {foot,ride}},
- v161Drown(){this.load(4);mountedFriend=false;boy.position.set(15,-3,riverCenterAt(15));const before=life;updateUnderwater(9);const after=life;while(life>0)updateUnderwater(4);return {before,after,dead:life===0&&(endShown||deathSceneActive)}},
+ v161Drown(){this.season(0);this.load(4);mountedFriend=false;boarFormTime=catFormTime=0;boy.position.set(15,-3,riverCenterAt(15));const before=life;updateUnderwater(9);const after=life;for(let tick=0;tick<32&&life>0;tick++)updateUnderwater(4);return {before,after,dead:life===0&&(endShown||deathSceneActive)}},
  v161Freeze(level=1){this.season(40);this.load(level);levelTime=301;updateWinterFreeze(3);return this.v161Inspect()},
  v161BossSeason(failed){this.season(failed);this.load(6);levelTime=310;updateWinterFreeze(3);updateWeather(.016,performance.now());updateHurricaneCarry(.016,performance.now());return {carry:hurricaneCarry,ice:iceShell.visible,life}},
  v161Fish(){this.season(0);this.load(4);mountedFriend=false;boarFormTime=0;py=vy=0;keys={};stick.x=stick.y=0;jump=act=false;boy.position.set(17,0,riverCenterAt(17)+4.9);foes.forEach(f=>f.flee=true);for(let i=0;i<145;i++)updateFishing(.1,performance.now()+i*100);paused=true;return this.v161Inspect()},
@@ -2189,7 +2279,7 @@ if(__autoTest||__autoParams.get('openingtest')==='1')window.__KABANCHIKI_QA__={
  openingGateAudit(){const positions=[-42,-20,-6,0,6,20,42],closed=positions.map(x=>({x,blocked:playerWorldBlocked(x,-35)}));const actor=friend||foes[0],boars=positions.map(x=>({x,blocked:boarSceneryBlockedAt(actor,x,-35)}));return {closed,boars,extensionNearZ:-39+openingProps.userData.trail.position.z+openingProps.userData.trail.geometry.parameters.height/2,roadEndZ:-48}},
  openingScenario(kind){keys={};stick.x=stick.y=0;jump=act=false;paused=false;invuln=100;if(kind==='crate'){food=0;boy.position.set(-2.9,0,24.3)}if(kind==='mother'){const m=familyMembers.find(f=>f.role===0);boy.position.set(m.x,0,m.z)}if(kind==='break'){const f=foes.find(f=>f.openingBoar);if(f)resolveMeat({g:new THREE.Group(),foe:f,type:'apple'});mountedFriend=true;setRiderPose(true);boy.position.set(0,1.18,-32.5);friend.g.position.set(0,0,-32.5);boy.rotation.y=yaw=Math.PI}return this.openingInspect()},
  openingInspect(){return {stage:opening?.stage,elapsed:opening?.elapsed,chasing:opening?.chasing,hit:opening?.hit,rode:opening?.rode,rescued:opening?.rescued,refills:opening?.refills,life,food,mounted:mountedFriend,position:boy.position.toArray(),heading:yaw,friend:friend?.g.position.toArray(),enemy:foes.map(f=>({position:f.g.position.toArray(),bolt:f.bolt.visible,opening:f.openingBoar})),family:familyMembers.map(f=>({role:f.role,done:f.done,position:f.g.position.toArray()})),completed:levelFamilyDone,total:levelFamilyTotal,cinematic:cinematicRunning,propsVisible:openingProps?.visible,portalVisible:portalObj?.g.visible,passageOpen:opening?.passageOpen,passageStarted:opening?.passageStarted,passageTime:opening?.passageTime,passageBroken:opening?.passageBroken,crateApples:opening?.crateApples,trunkVisible:openingProps?.userData.trunk.visible,debrisVisible:openingProps?.userData.debris.visible,exitBlockedDecor:boundaryDecor.filter(o=>o.visible&&Math.abs(o.position.x)<10&&o.position.z<-40).length,exitLakeVisible:openingProps?.userData.distantLake.visible,guideHidden:$('openingGuide').hidden}},
- state(){return {season:currentSeason,failedAttempts:attemptProgress.failed,camMode,level,version:GAME_VERSION,flashlight:hasFlashlight,friend:!!friend,apples:yellowAppleStock,mushrooms:yellowMushroomStock,form:boarFormTime,basins:puddleObjects.length,boss:foes.find(f=>f.isBoss)?.maxHp,redTrees:treeObjects.filter(t=>{let red=false;t.traverse(m=>{if(m.material?.emissive?.getHex())red=true});return red}).length}},
+ state(){return {difficulty:selectedDiff,life,maxLife:diffCfg().playerHP,season:currentSeason,failedAttempts:attemptProgress.failed,camMode,level,version:GAME_VERSION,flashlight:hasFlashlight,friend:!!friend,apples:yellowAppleStock,mushrooms:yellowMushroomStock,form:boarFormTime,basins:puddleObjects.length,boss:foes.find(f=>f.isBoss)?.maxHp,redTrees:treeObjects.filter(t=>{let red=false;t.traverse(m=>{if(m.material?.emissive?.getHex())red=true});return red}).length}},
  prepareRestart(){hasFlashlight=true;yellowAppleStock=2;yellowMushroomStock=2;boarFormTime=30;const t=treeObjects.find(t=>t.visible);if(t)igniteBossTree(t);friend=makeBoar(3,6,true);mountedFriend=true;return this.state()},
  restart(){restartGame();return this.state()},
  load(n,diff=2){selectedDiff=diff;loadLevel(n);return this.state()},
@@ -2343,10 +2433,10 @@ if(f.attackLeap>0&&f.attackLeap<.2&&d<attackDist&&invuln<=0&&boarFormTime<=0&&ca
    notice(life>0?'💥 Босс таранит! Он отшатнулся — уходи в сторону, пока есть окно!':'💔 Игра окончена.');
  }else notice(life>0?'💥 Кабан атаковал! Отбеги и брось еду 🍎':'💔 Игра окончена.');
  if(life<=0)showEnd(false)}}if(level===6){const boss=foes.find(f=>f.isBoss);if(boss){bossRage=Math.min(2.35,bossRage+dt*.018);bossSummon-=dt;if(bossSummon<=0){const minions=foes.filter(f=>!f.isBoss).length;if(minions<4){const count=Math.min(2,4-minions);for(let k=0;k<count;k++){const awayX=boss.g.position.x-boy.position.x,awayZ=boss.g.position.z-boy.position.z,len=Math.hypot(awayX,awayZ),ux=len>.1?awayX/len:0,uz=len>.1?awayZ/len:-1,edge=40/Math.max(Math.abs(ux),Math.abs(uz)),offset=(k-(count-1)/2)*3,m=makeBoar(ux*edge-uz*offset,uz*edge+ux*offset,false);for(let tries=0;tries<12&&boarSceneryBlockedAt(m,m.g.position.x,m.g.position.z);tries++){const s=(tries%2?1:-1)*(2+Math.floor(tries/2)*2);m.g.position.set(ux*edge-uz*s,0,uz*edge+ux*s);}m.entering=true;m.entryX=ux*34-uz*offset;m.entryZ=uz*34+ux*offset;m.entryGrace=2;m.isMinion=true;m.hp=1;m.maxHp=1;m.stagger=0;foes.push(m)}notice(`👑 Босс призвал ${count} кабанчика-миньона! Накорми одного, чтобы получить друга.`)}bossSummon=rand(8,13)}if(!boss.eyeGlow){const eyeMat=new THREE.MeshBasicMaterial({color:0xff4a16});boss.eyeGlow=[];for(const xx of [-.34,.34])boss.eyeGlow.push(sphere(boss.b,eyeMat,xx,1.01,1.39,.10));boss.rageLight=makeEffectLight(0xff5420,0,24,1.35);boss.rageLight.userData.primary=true;boss.rageLight.position.set(0,1.08,1.48);boss.b.add(boss.rageLight);boss.auraGlow=new THREE.Mesh(new THREE.RingGeometry(2.45,3.35,32),new THREE.MeshBasicMaterial({color:0xff4a16,transparent:true,opacity:.28,side:THREE.DoubleSide,depthWrite:false}));boss.auraGlow.rotation.x=-Math.PI/2;boss.auraGlow.position.y=.08;boss.g.add(boss.auraGlow);boss.crownLight=makeEffectLight(0xff2d00,8,28,1.25);boss.crownLight.position.set(0,2.2,0);boss.g.add(boss.crownLight)}const eyePower=Math.min(1,Math.max(.18,(bossRage-.75)/1.6));for(const e of boss.eyeGlow)e.scale.setScalar(1+eyePower*.55);boss.rageLight.intensity=8+eyePower*13+(boss.hp<=2?7:0);boss.crownLight.intensity=7+eyePower*10+(boss.hp<=2?5:0);boss.auraGlow.material.opacity=.20+eyePower*.24+Math.sin(now*.008)*.05;boss.auraGlow.rotation.z+=dt*(.35+eyePower*.45);boss.attackCd-=dt;const bossBoyDist=Math.hypot(boss.g.position.x-boy.position.x,boss.g.position.z-boy.position.z);if(attacksPlayer(boarFormTime+catFormTime)&&boss.attackCd<=0&&bossBoyDist>6.5&&fireballs.length<3&&!(boss.stagger>0)){const shotsN=boss.hp<=1?Math.min(2,3-fireballs.length):1;for(let k=0;k<shotsN;k++){const a=Math.atan2(boy.position.x-boss.g.position.x,boy.position.z-boss.g.position.z)+(k-(shotsN-1)/2)*.18;const fg=new THREE.Group(),core=new THREE.Mesh(fireballAssets.coreGeometry,fireballAssets.coreMaterial),flame=new THREE.Mesh(fireballAssets.flameGeometry,fireballAssets.flameMaterial),light=makeEffectLight(0xff5a18,9,9);fg.add(core,flame,light);fg.position.set(boss.g.position.x,1.25,boss.g.position.z);scene.add(fg);fireballs.push({g:fg,a,flame,light})}boss.attackCd=boss.hp<=1?1.15:1.65;effect('fire');notice(shotsN===2?'🔥 Босс выпускает два огненных сгустка!':'🔥 Босс швыряет настоящий огонь!')}}for(let i=fireballs.length-1;i>=0;i--){const q=fireballs[i];q.g.position.x+=Math.sin(q.a)*dt*5.4;q.g.position.z+=Math.cos(q.a)*dt*5.4;q.flame.scale.setScalar(.85+Math.sin(now*.025+i)*.25);q.g.position.y=1.0+Math.sin(now*.018+i)*.18;let burned=false;for(const t of treeObjects){if(t.visible&&t.position.distanceTo(q.g.position)<1.5){igniteBossTree(t);scene.remove(q.g);fireballs.splice(i,1);burned=true;break}}if(burned)continue;if(q.g.position.distanceTo(boy.position)<1.1&&invuln<=0&&boarFormTime<=0){life--;statsData.damage++;invuln=3;sound(120,.3,'sawtooth');playerHitFeedback('fire');scene.remove(q.g);fireballs.splice(i,1);notice('🔥 Огонь попал! -1❤️');if(life<=0)showEnd(false);continue}if(Math.abs(q.g.position.x)>50||Math.abs(q.g.position.z)>50){scene.remove(q.g);fireballs.splice(i,1)}}for(const [t,b] of burningTrees){b.time-=dt;updateLivingFire(t,b,now);if(Math.hypot(t.position.x-boy.position.x,t.position.z-boy.position.z)<b.damageRadius&&invuln<=0){life--;statsData.damage++;invuln=2.4;playerHitFeedback('fire');notice(life>0?'🔥 Слишком близко к горящему дереву! -1❤️':'🔥 Тимур обжёгся у горящего дерева.');if(life<=0)showEnd(false)}if(b.time<=0){t.remove(b.light);if(b.flames)t.remove(b.flames);for(const a of apples){if(!a.done&&(a.tree===t||a.g?.userData?.appleTree===t)){a.done=true;scene.remove(a.g)}}t.visible=false;makeCharredTreeRemains(t.position.x,t.position.z,1);burningTrees.delete(t);notice('🪵 Дерево сгорело — остался метровый обгоревший пень с обломанными ветвями.')}}}for(let i=battleFx.length-1;i>=0;i--){const fx=battleFx[i];fx.t+=dt;const k=fx.t/.42;fx.g.scale.setScalar(1+k*3.2);fx.ring.material.opacity=Math.max(0,1-k);for(let j=1;j<fx.g.children.length;j++){const p=fx.g.children[j];p.position.y+=dt*1.5;p.material.opacity=Math.max(0,1-k);p.material.transparent=true}if(k>=1){scene.remove(fx.g);battleFx.splice(i,1)}}
-if(friend){(!friend.waterEscaping&&repairCompanion(mountedFriend?playerBoarBody():friend));if(mountedFriend){friend.g.position.x=boy.position.x;friend.g.position.z=boy.position.z}}for(const f of [...boarBodies(),...defeatedBoars])if(!(mountedFriend&&f===friend))resolveBoarClearance(f);if(mountedFriend||boarFormTime>0){resolveBoarClearance(playerBoarBody(),false);if(mountedFriend&&friend){friend.g.position.x=boy.position.x;friend.g.position.z=boy.position.z}}
+if(friend){(!friend.waterEscaping&&repairCompanion(mountedFriend?playerBoarBody():friend));if(mountedFriend){friend.g.position.x=boy.position.x;friend.g.position.z=boy.position.z}}for(const f of [...boarBodies(),...defeatedBoars])if(!(mountedFriend&&f===friend)){resolveBoarClearance(f);if(!f.waterEscaping)repairCompanion(f);}if(mountedFriend||boarFormTime>0){resolveBoarClearance(playerBoarBody(),false);if(mountedFriend&&friend){friend.g.position.x=boy.position.x;friend.g.position.z=boy.position.z}}
 if(level===1&&opening?.passageStarted&&!opening.passageOpen&&friend){const t=opening.passageTime;friend.b.rotation.x=t<1.1?-.16*Math.sin(t/1.1*Math.PI):Math.sin((t-1.1)*7)*.1;}
 for(const f of boarBodies()){const calm=f.graze>0&&!f.flee&&!f.attackLeap&&!(f.stagger>0)&&lakeDepthAt(f.g.position.x,f.g.position.z)<.08&&(currentSeason==='summer'||currentSeason==='spring')&&(f===friend?!mountedFriend&&!friendYieldActive&&!friendKnockbackActive&&friend.g.position.distanceTo(boy.position)<3&&!foes.some(q=>q!==friend&&q.g.position.distanceTo(friend.g.position)<10):!boarShouldChasePlayer(f,Math.hypot(f.g.position.x-boy.position.x,f.g.position.z-boy.position.z)));updateBoarChewing(f,now,calm)}
-if(fishingTarget)boy.rotation.y=Math.atan2(fishingTarget.x-boy.position.x,fishingTarget.z-boy.position.z);boy.position.y+=terrainHeightAt(boy.position.x,boy.position.z);for(const q of [...boarBodies(),...defeatedBoars])q.g.position.y=q.flee?terrainHeightAt(q.g.position.x,q.g.position.z)-lakeDepthAt(q.g.position.x,q.g.position.z)-puddleDepthAt(q.g.position.x,q.g.position.z):q.g.position.y+terrainHeightAt(q.g.position.x,q.g.position.z)+(mountedFriend&&q===friend?0:familyFloorAt(q.g.position.x,q.g.position.z));for(const a of apples){if(level===4&&!a.done&&Math.abs(a.z-riverCenterAt(a.x))<4.6){a.done=true;scene.remove(a.g);continue}if(canCollectForage(a))collectForageItem(a)}act=false;hud(false)}const pos=boy.position;const camPresets=[{pitch:.30,dist:8.8,lift:3.8},{pitch:.22,dist:7.5,lift:3.0},{pitch:.14,dist:6.4,lift:2.35},{pitch:.38,dist:10.5,lift:5.6},{pitch:.12,dist:4.7,lift:2.05},{pitch:.10,dist:9.8,lift:2.2},{pitch:.46,dist:7.2,lift:6.6},{pitch:.20,dist:5.5,lift:2.75},{pitch:Math.PI/2,dist:0,lift:22},{pitch:0,dist:0,lift:0}],cp=camPresets[camMode];const fixedPitch=camMode===9?pitch:cp.pitch,distCam=cp.dist;/* v133: rider animation may bounce, camera anchor must not. */const cameraAnchorY=mountedFriend?riderSeatHeight()+rideHop.height-lakeDepthAt(pos.x,pos.z)+terrainHeightAt(pos.x,pos.z)+familyFloorAt(pos.x,pos.z)+(level===4&&onRiverBridge(pos.x,pos.z)?.28:0):pos.y,cy=cameraAnchorY+1.55;const look=new THREE.Vector3(pos.x+Math.sin(yaw)*Math.cos(fixedPitch)*7,cy-.15+Math.sin(fixedPitch)*1.2,pos.z+Math.cos(yaw)*Math.cos(fixedPitch)*7);camera.position.set(pos.x-Math.sin(yaw)*distCam,cy+cp.lift,pos.z-Math.cos(yaw)*distCam);boy.visible=camMode!==9&&boarFormTime<=0&&catFormTime<=0&&!cinematicRunning;if(catFormModel){catFormModel.g.visible=camMode!==9&&catFormTime>0&&!cinematicRunning;catFormModel.g.position.copy(boy.position);catFormModel.g.rotation.y=boy.rotation.y;}if(boarFormVisual&&boarFormTime>0&&!cinematicRunning){boarFormVisual.visible=camMode!==9;boarFormVisual.position.set(pos.x,pos.y,pos.z);boarFormVisual.rotation.y=boy.rotation.y}if(camMode===9){camera.position.set(pos.x,cy,pos.z);look.set(pos.x+Math.sin(yaw)*Math.cos(pitch)*7,cy+Math.sin(pitch)*7,pos.z+Math.cos(yaw)*Math.cos(pitch)*7);}if(camMode===8){camera.position.set(pos.x,cy+22,pos.z);look.set(pos.x,cy,pos.z);camera.up.set(Math.sin(yaw),0,Math.cos(yaw))}else camera.up.set(0,1,0);camera.lookAt(look);if(cinematicRunning)updateCinematic(now,look);updateHandFlashlight();foodView.update(dt,now,camMode===9&&started&&!cinematicRunning&&!endShown,nextFoodKind(),yellowMushroomStock>0||yellowAppleStock>0,Object.values(keys).some(Boolean)||Math.hypot(stick.x,stick.y)>.1);$('cross').style.display=camMode===9&&started&&!paused&&!cinematicRunning?'block':'none';
+if(fishingTarget)boy.rotation.y=Math.atan2(fishingTarget.x-boy.position.x,fishingTarget.z-boy.position.z);boy.position.y+=terrainHeightAt(boy.position.x,boy.position.z);for(const q of new Set([...boarBodies(),...defeatedBoars])){if(mountedFriend&&q===friend)q.g.position.y+=terrainHeightAt(q.g.position.x,q.g.position.z);else settleBoarOnGround(q);}for(const a of apples){if(level===4&&!a.done&&Math.abs(a.z-riverCenterAt(a.x))<4.6){a.done=true;scene.remove(a.g);continue}if(canCollectForage(a))collectForageItem(a)}act=false;hud(false)}const pos=boy.position;const camPresets=[{pitch:.30,dist:8.8,lift:3.8},{pitch:.22,dist:7.5,lift:3.0},{pitch:.14,dist:6.4,lift:2.35},{pitch:.38,dist:10.5,lift:5.6},{pitch:.12,dist:4.7,lift:2.05},{pitch:.10,dist:9.8,lift:2.2},{pitch:.46,dist:7.2,lift:6.6},{pitch:.20,dist:5.5,lift:2.75},{pitch:Math.PI/2,dist:0,lift:22},{pitch:0,dist:0,lift:0}],cp=camPresets[camMode];const fixedPitch=camMode===9?pitch:cp.pitch,distCam=cp.dist;/* v133: rider animation may bounce, camera anchor must not. */const cameraAnchorY=mountedFriend?riderSeatHeight()+rideHop.height-lakeDepthAt(pos.x,pos.z)+terrainHeightAt(pos.x,pos.z)+familyFloorAt(pos.x,pos.z)+(level===4&&onRiverBridge(pos.x,pos.z)?.28:0):pos.y,cy=cameraAnchorY+1.55;const look=new THREE.Vector3(pos.x+Math.sin(yaw)*Math.cos(fixedPitch)*7,cy-.15+Math.sin(fixedPitch)*1.2,pos.z+Math.cos(yaw)*Math.cos(fixedPitch)*7);camera.position.set(pos.x-Math.sin(yaw)*distCam,cy+cp.lift,pos.z-Math.cos(yaw)*distCam);boy.visible=camMode!==9&&boarFormTime<=0&&catFormTime<=0&&!cinematicRunning;if(catFormModel){catFormModel.g.visible=camMode!==9&&catFormTime>0&&!cinematicRunning;catFormModel.g.position.copy(boy.position);catFormModel.g.rotation.y=boy.rotation.y;}if(boarFormVisual&&boarFormTime>0&&!cinematicRunning){boarFormVisual.visible=camMode!==9;boarFormVisual.position.set(pos.x,pos.y,pos.z);boarFormVisual.rotation.y=boy.rotation.y}if(camMode===9){camera.position.set(pos.x,cy,pos.z);look.set(pos.x+Math.sin(yaw)*Math.cos(pitch)*7,cy+Math.sin(pitch)*7,pos.z+Math.cos(yaw)*Math.cos(pitch)*7);}if(camMode===8){camera.position.set(pos.x,cy+22,pos.z);look.set(pos.x,cy,pos.z);camera.up.set(Math.sin(yaw),0,Math.cos(yaw))}else camera.up.set(0,1,0);camera.lookAt(look);if(cinematicRunning)updateCinematic(now,look);updateHandFlashlight();foodView.update(dt,now,camMode===9&&started&&!cinematicRunning&&!endShown,nextFoodKind(),yellowMushroomStock>0||yellowAppleStock>0,Object.values(keys).some(Boolean)||Math.hypot(stick.x,stick.y)>.1);$('cross').style.display=camMode===9&&started&&!paused&&!cinematicRunning?'block':'none';
 // v124: anything large between camera and Timur fades: houses, trees, rocks and cliffs.
 // Track only last frame's roots, avoiding a full-world material reset every frame.
 updateCameraOcclusion(now);if(soundscape)soundscape.update({active:started&&!paused&&!win&&!endShown&&!document.hidden,sfx:sfxEnabled,music:musicEnabled,season:currentSeason,stage:weatherStage,water:walkingInWater(pos.x,pos.z),mounted:mountedFriend,x:pos.x,z:pos.z,grounded:mountedFriend||py<.1,dt});updateFamilyHouseReveal();if(level===6&&moon.visible){moonHalo.lookAt(camera.position);moonDisc.rotation.y=now*.00003;}syncOpeningGuide();skyDome.position.copy(camera.position);skyUniforms.horizon.value.copy(scene.background);skyUniforms.zenith.value.set(movie?.kind==='outro'?0x617e9e:level<=4?0x709bc9:level===5?0x171d39:0x03020b);if(weatherStage>=2)skyUniforms.zenith.value.lerp(scene.background,.65);const renderStart=trackPerformance?performance.now():0;renderWithLightBudget(now);if(trackPerformance&&level===6&&started&&!paused){performanceFrames.push({cpu:renderStart-frameStart,render:performance.now()-renderStart,calls:renderer.info.render.calls,triangles:renderer.info.render.triangles});if(performanceFrames.length>120)performanceFrames.shift()}if(!__loadFinished){__loadFinished=true;window.__gameLoaded?.()}}prepareHome();

@@ -1,0 +1,54 @@
+name: Boar movement robot
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '23 4 * * 1'
+  workflow_dispatch:
+    inputs:
+      seed:
+        description: Reproducible route seed
+        default: '208'
+        required: false
+permissions:
+  contents: read
+concurrency:
+  group: boar-robot-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  robot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate and run all regression tests
+        run: |
+          npm run validate
+          npm test
+      - name: Install browser
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.1
+          npx playwright install --with-deps ${{ matrix.browser }}
+      - name: Serve game
+        run: python3 -m http.server 8080 > /tmp/kabanchiki-robot-server.log 2>&1 &
+      - name: Play routes and break exits
+        env:
+          BROWSER: ${{ matrix.browser }}
+          ROBOT_SEED: ${{ inputs.seed || '208' }}
+        run: node scripts/boar-robot-browser.mjs
+      - name: Preserve replay reports and failure screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: boar-robot-${{ matrix.browser }}
+          path: |
+            logs/
+            screenshots/

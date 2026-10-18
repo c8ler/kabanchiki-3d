@@ -6,7 +6,7 @@ export function findGridPath(start,goal,blocked,{step=1,bound=42,maxNodes=12000}
  const isBlocked=id=>{if(id===sid)return false;if(occupancy[id]<0){const p=point(id);occupancy[id]=blocked(p.x,p.z)?1:0}return occupancy[id]===1};
  const push=v=>{heap.push(v);let i=heap.length-1;while(i){const p=(i-1)>>1;if(heap[p].f<=v.f)break;heap[i]=heap[p];i=p}heap[i]=v},pop=()=>{const top=heap[0],last=heap.pop();if(heap.length){let i=0;while(i*2+1<heap.length){let c=i*2+1;if(c+1<heap.length&&heap[c+1].f<heap[c].f)c++;if(heap[c].f>=last.f)break;heap[i]=heap[c];i=c}heap[i]=last}return top};
  const estimate=id=>{const p=point(id);return Math.hypot(p.x-goal.x,p.z-goal.z)};push({id:sid,g:0,f:estimate(sid)});let best=sid,bestD=estimate(sid),visited=0;
- while(heap.length&&visited++<maxNodes){const cur=pop();if(cur.g!==costs[cur.id])continue;const d=estimate(cur.id);if(d<bestD){bestD=d;best=cur.id}if(cur.id===gid&&!isBlocked(gid)){best=gid;break}const x=cur.id%width,z=Math.floor(cur.id/width);for(const [dx,dz] of [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]]){const nx=x+dx,nz=z+dz;if(nx<0||nz<0||nx>=width||nz>=width)continue;const id=nz*width+nx;if(isBlocked(id)||(dx&&dz&&(isBlocked(z*width+nx)||isBlocked(nz*width+x))))continue;const cost=cur.g+Math.hypot(dx,dz)*step;if(cost>=costs[id])continue;costs[id]=cost;parents[id]=cur.id;push({id,g:cost,f:cost+estimate(id)})}}
+ while(heap.length&&visited++<maxNodes){const cur=pop();if(cur.g!==costs[cur.id])continue;const d=estimate(cur.id);if(d<bestD){bestD=d;best=cur.id}if(cur.id===gid&&!isBlocked(gid)){best=gid;break}const x=cur.id%width,z=Math.floor(cur.id/width);for(const [dx,dz] of [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]]){const nx=x+dx,nz=z+dz;if(nx<0||nz<0||nx>=width||nz>=width)continue;const id=nz*width+nx;if(isBlocked(id)||(dx&&dz&&(isBlocked(z*width+nx)||isBlocked(nz*width+x))))continue;const from=cur.id===sid?start:point(cur.id),to=point(id);let crosses=false;const slices=Math.ceil(Math.hypot(dx,dz)*step/.15);for(let i=1;i<slices;i++)if(blocked(from.x+(to.x-from.x)*i/slices,from.z+(to.z-from.z)*i/slices)){crosses=true;break}if(crosses)continue;const cost=cur.g+Math.hypot(dx,dz)*step;if(cost>=costs[id])continue;costs[id]=cost;parents[id]=cur.id;push({id,g:cost,f:cost+estimate(id)})}}
  const path=[];for(let id=best;id!==sid&&id>=0;id=parents[id])path.push(point(id));path.reverse();return path;
 }
 
@@ -21,9 +21,22 @@ export class StableRoute{
  this.path=findGridPath(position,goal,(x,z)=>blocked(x,z)||this.excluded.has(this.key({x,z},step)),{step,bound,maxNodes:22000});
  this.goal={...goal};this.epoch=epoch;this.age=0;this.stuck=0;this.plans++;this.wait=this.path.length?0:3;
  }
- while(this.path.length&&Math.hypot(position.x-this.path[0].x,position.z-this.path[0].z)<.22)this.path.shift();
+ while(this.path.length&&Math.hypot(position.x-this.path[0].x,position.z-this.path[0].z)<.06)this.path.shift();
  return this.path[0]||null;
  }
  key(p,step){return Math.round(p.x/step)+','+Math.round(p.z/step)}
  record(distance,dt){this.stuck=distance>.002?0:this.stuck+dt}
+}
+
+ // Escape a conservative navigation mask without ignoring physical collision.
+ // Keep the capsule heading fixed and validate every slice of the translation.
+export function findClearEscape(start,blocked,clear,{step=.3,range=4.2}={}){
+ for(let r=step;r<=range+1e-8;r+=step)for(let k=0;k<24;k++){
+  const angle=k*Math.PI/12,q={x:start.x+Math.sin(angle)*r,z:start.z+Math.cos(angle)*r};
+  if(blocked(q.x,q.z))continue;
+  const count=Math.ceil(r/.055);let safe=true;
+  for(let i=1;i<=count;i++)if(!clear(start.x+(q.x-start.x)*i/count,start.z+(q.z-start.z)*i/count)){safe=false;break;}
+  if(safe)return q;
+ }
+ return null;
 }
