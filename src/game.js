@@ -1573,10 +1573,10 @@ function runRobotCollisionTest(){
  // far side of the same obstacle. This uses the same trunk circle / rotated rock ellipse as gameplay.
  const run=(label,sx,sz,mx,mz,insideFn,crossFn,expectBlocked)=>{
   boy.position.set(sx,0,sz);py=0;vy=0;
-  const bx=sx,bz=sz;let pathPenetrated=false;const steps=Math.max(1,Math.ceil(Math.hypot(mx,mz)/.055));for(let i=0;i<steps;i++){const px=boy.position.x,pz=boy.position.z;movePlayerCollision(mx/steps,mz/steps);for(let j=1;j<=4;j++)if(insideFn(px+(boy.position.x-px)*j/4,pz+(boy.position.z-pz)*j/4))pathPenetrated=true}
+  const bx=sx,bz=sz;let pathPenetrated=false,firstPenetration=null;const steps=Math.max(1,Math.ceil(Math.hypot(mx,mz)/.055));for(let i=0;i<steps;i++){const px=boy.position.x,pz=boy.position.z;movePlayerCollision(mx/steps,mz/steps);for(let j=1;j<=4;j++)if(insideFn(px+(boy.position.x-px)*j/4,pz+(boy.position.z-pz)*j/4)){pathPenetrated=true;firstPenetration??={from:{x:px,z:pz},to:{x:boy.position.x,z:boy.position.z},py,vy};}}
   const fx=boy.position.x,fz=boy.position.z,moved=Math.hypot(fx-bx,fz-bz);
   const penetrated=insideFn(fx,fz),crossed=crossFn?crossFn(fx,fz):false,blocked=!penetrated&&!pathPenetrated;
-  samples.push({label,moved:+moved.toFixed(3),blocked,penetrated,crossed,pathPenetrated});
+  samples.push({label,moved:+moved.toFixed(3),blocked,penetrated,crossed,pathPenetrated,firstPenetration,start:{x:sx,z:sz},end:{x:fx,z:fz}});
   if(expectBlocked&&(penetrated||pathPenetrated))issues.push(`robot-pass-through:${label}`);
   if(!expectBlocked&&moved<Math.hypot(mx,mz)*.55)issues.push(`robot-stuck:${label}`);
   return blocked;
@@ -1625,7 +1625,7 @@ function runRockClimbAudit(){
   const m=rockPositions[ri][3];if(!m||m.visible===false)continue;m.updateWorldMatrix(true,false);const b=new THREE.Box3().setFromObject(m),c=new THREE.Vector3();b.getCenter(c);
   // Normal jump apex is ~1.36 m. Test only genuinely reachable rocks.
   if(b.max.y<.22||b.max.y>1.34)continue;
-  let landed=false,maxY=0,approaches=0;
+  let landed=false,maxY=0,approaches=0;const attempts=[];
   for(const [ux,uz] of dirs){
    const ex=(b.max.x-b.min.x)/2,ez=(b.max.z-b.min.z)/2;
    const sx=c.x+ux*(ex+ROCK_PLAYER_RADIUS+.18),sz=c.z+uz*(ez+ROCK_PLAYER_RADIUS+.18);
@@ -1642,10 +1642,11 @@ function runRockClimbAudit(){
     if(vy===0&&rockEllipse(m,boy.position.x,boy.position.z,PLAYER_RADIUS*.12).n<1&&Math.abs(py-b.max.y)<.10){landed=true;break}
     if(vy===0&&py===0&&frame>25)break;
    }
+   attempts.push({start:{x:sx,z:sz},end:{x:boy.position.x,z:boy.position.z},py,support:playerSupportHeightAt(boy.position.x,boy.position.z),onTarget:rockEllipse(m,boy.position.x,boy.position.z,PLAYER_RADIUS*.12).n});
    if(landed)break;
   }
   if(!approaches)continue;tested++;
-  samples.push({rock:ri,top:+b.max.y.toFixed(3),maxY:+maxY.toFixed(3),landed,approaches});
+  samples.push({rock:ri,top:+b.max.y.toFixed(3),maxY:+maxY.toFixed(3),landed,approaches,attempts});
   if(landed)passed++;else issues.push(`rock-climb-failed:${ri}:top=${b.max.y.toFixed(2)}`);
  }
  boy.position.set(ox,oy,oz);py=opy;vy=ovy;

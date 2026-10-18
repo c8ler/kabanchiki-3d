@@ -179,6 +179,7 @@ jobs:
               errors.push(`TEST:${e.message}`);
             }
 
+            if(errors.length) console.log('AUDIT DETAILS', JSON.stringify({climb:state?.rockClimbAudit,robot:state?.robotAudit?.samples?.filter(s=>s.penetrated||s.pathPenetrated)}));
             const ok = errors.length === 0;
 
             if(!ok)
@@ -222,18 +223,23 @@ jobs:
           node kabanchiki-runtime-test.mjs
 
       - name: Water, navigation, winter, scenes and Safari gestures
+        if: ${{ !cancelled() }}
         run: node scripts/feature-browser.mjs
 
       - name: Intro, seasonal menus, vegetation and Christmas tree
+        if: ${{ !cancelled() }}
         run: node scripts/seasons-intro-browser.mjs
 
       - name: Spring, cats, repeated fishing and grazing
+        if: ${{ !cancelled() }}
         run: node scripts/new-features-browser.mjs
 
       - name: House door, cat berry, roof support and lake bottom
+        if: ${{ !cancelled() }}
         run: node scripts/house-cats-browser.mjs
 
       - name: Cat jump and immunity on all six locations
+        if: ${{ !cancelled() }}
         run: node scripts/cat-jumps-browser.mjs
 
       - name: Save screenshots and audit logs
