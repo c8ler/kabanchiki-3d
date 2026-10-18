@@ -43,7 +43,9 @@ jobs:
         env:
           BROWSER: ${{ matrix.browser }}
           ROBOT_SEED: ${{ inputs.seed || '208' }}
-        run: node scripts/boar-robot-browser.mjs
+        run: |
+          node scripts/boar-robot-browser.mjs
+          node scripts/exit-handover-browser.mjs
       - name: Preserve replay reports and failure screenshots
         if: always()
         uses: actions/upload-artifact@v4
