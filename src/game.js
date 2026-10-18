@@ -1231,12 +1231,16 @@ function circleHitsTreeGeometry(x,z,r){
 // v101: rock collision follows the visible rounded footprint instead of the rotated Box3.
 // A Box3 turns a rotated rock into a large invisible rectangle, which was the source of the
 // "empty space around the stone" seen in the phone recording.
+const rockShapeCache=new WeakMap();
 function rockShape(mesh){
  mesh.updateWorldMatrix(true,false);
+ const matrix=mesh.matrixWorld.elements,cached=rockShapeCache.get(mesh);
+ if(cached&&cached.geometry===mesh.geometry&&cached.matrix.every((value,index)=>value===matrix[index]))return cached.shape;
  const sx=Math.max(.08,Math.abs(mesh.scale.x)),sz=Math.max(.08,Math.abs(mesh.scale.z));
  // DodecahedronGeometry(1) is roughly unit-radius. A tiny inset keeps the collision on the
  // visible stone rather than outside its silhouette.
- return {cx:mesh.position.x,cz:mesh.position.z,ax:sx*.92,az:sz*.92,yaw:mesh.rotation.y,top:new THREE.Box3().setFromObject(mesh).max.y};
+ const shape={cx:mesh.position.x,cz:mesh.position.z,ax:sx*.92,az:sz*.92,yaw:mesh.rotation.y,top:new THREE.Box3().setFromObject(mesh).max.y};
+ rockShapeCache.set(mesh,{matrix:Array.from(matrix),geometry:mesh.geometry,shape});return shape;
 }
 function rockEllipse(mesh,x,z,pad=0){
  const q=rockShape(mesh),dx=x-q.cx,dz=z-q.cz,c=Math.cos(q.yaw),sn=Math.sin(q.yaw);
@@ -2190,7 +2194,7 @@ if(__autoTest||__autoParams.get('openingtest')==='1')window.__KABANCHIKI_QA__={
  v164Death(cause){cinematicFinish?.();cineClear();cinematicRunning=false;deathSceneActive=deathSceneFinished=endShown=false;lastDeathCause=cause;life=0;showEnd(false);return {kind:movie?.kind,cause:movie?.deathCause,active:deathSceneActive}},
  v164Chewing(){this.season(0);this.load(1);const f=foes[0];updateBoarChewing(f,0,true);const first=f.g.userData.grazingJaw.position.y;updateBoarChewing(f,90,true);const moving=first!==f.g.userData.grazingJaw.position.y,grass=f.g.userData.grazingGrass.visible;updateBoarChewing(f,100,false);return {moving,grass,hidden:!f.g.userData.grazingGrass.visible}},
  v164Fishing(){this.v161Fish();fishStock=0;const sessions=[];for(let session=0;session<3;session++){keys.KeyW=true;updateFishing(.1,performance.now());keys.KeyW=false;for(let i=0;i<650;i++)updateFishing(.1,performance.now()+i*100);sessions.push({active:!!fishingTarget,stock:fishStock})} const initial=yaw;yaw+=1.2;for(let i=0;i<1200;i++)updateFishing(.1,performance.now()+i*100);const cameraFree=Math.abs(yaw-initial)>1,stock=fishStock;paused=false;throwCooldown=0;yellowAppleStock=yellowMushroomStock=0;feed();paused=true;return {cameraFree,stock,remaining:fishStock,type:shots.at(-1)?.type,sessions,stoppedAfterFeed:!fishingTarget}},
- v164Swim(){this.season(0);this.load(2);const f=makeBoar(-5, -17,false);f.g.rotation.y=-Math.PI/2;for(let i=0;i<100;i++)moveBoarToward(f,-18,-17,5,.05);resolveBoarClearance(f,false);const depth=boarWaterDepth(f),x=f.g.position.x;scene.remove(f.g);return {depth,x}},
+ v164Swim(){this.season(0);this.load(2);const f=makeBoar(-5, -17,false);f.g.rotation.y=-Math.PI/2;for(let i=0;i<100;i++)moveBoarToward(f,-18,-17,5,.05);resolveBoarClearance(f,false);const depth=boarWaterDepth(f),x=f.g.position.x;scene.remove(f.g);return {depth,x,z:f.g.position.z,remaining:Math.hypot(f.g.position.x+18,f.g.position.z+17)}},
 
  v163Inspect(){return {season:currentSeason,grass:grassBlades.visible,plants:forestVisual.children.filter(g=>g.userData.seasonPlant&&g.visible).length,borders:seasonVisual.children.filter(g=>g.userData.snowRoadBorder).length,treeBlocked:christmasSolid?circleHitsTreeGeometry(10,26,PLAYER_RADIUS):false,treeBoarBlocked:christmasSolid?boarTreeContacts({g:{position:{x:10,z:26},rotation:{y:0},scale:{x:1,y:1,z:1}}},10,26,0).length>0:false,headlights:movie?.car?.userData.headlights.map(l=>l.intensity),actors:movie?.people.map(p=>({x:p.position.x,z:p.position.z,visible:p.visible,yaw:p.rotation.y})),boars:movie?.boars.map(b=>({x:b.g.position.x,z:b.g.position.z,visible:b.g.visible}))}},
  v161Walls(){this.load(3);const h=familyHideout;h.updateWorldMatrix(true,true);const outside=new THREE.Vector3(-3.8,.8,0).applyMatrix4(h.matrixWorld),inside=new THREE.Vector3(-1.5,.8,0).applyMatrix4(h.matrixWorld);const blocked=!clearWallLine(outside,inside),open=clearWallLine(new THREE.Vector3(-8,1,8),new THREE.Vector3(8,1,8));const b=makeBoar(outside.x,outside.z,false);b.g.rotation.y=Math.PI/2;for(let i=0;i<120;i++)moveBoarToward(b,inside.x,inside.z,3,.05);resolveBoarClearance(b,false);const noseClear=boarWallContacts(b).length===0;scene.remove(b.g);return {blocked,open,noseClear,boar:[b.g.position.x,b.g.position.z]}},

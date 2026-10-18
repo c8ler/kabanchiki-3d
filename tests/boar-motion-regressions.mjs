@@ -63,3 +63,16 @@ test('movement rejects coordinates outside the actual depenetration boundary',()
  const blocked=new Function('locationExit','level','opening',extract('playerWorldBlocked')+';return playerWorldBlocked')(null,3,null);
  for(const [x,z] of [[43.10001,0],[-43.10001,0],[0,43.10001],[0,-43.10001]])assert.equal(blocked(x,z),true);
 });
+
+test('static rock geometry is reused and invalidated after a transform or geometry change',()=>{
+ let boxes=0;
+ const THREE={Box3:class{setFromObject(mesh){boxes++;this.max={y:mesh.position.y+mesh.scale.y};return this}}};
+ const shape=new Function('THREE','rockShapeCache',extract('rockShape')+';return rockShape')(THREE,new WeakMap());
+ const mesh={position:{x:1,y:.3,z:2},scale:{x:1,y:1,z:1},rotation:{y:0},geometry:{},matrixWorld:{elements:[]},updateWorldMatrix(){this.matrixWorld.elements=[this.position.x,this.position.y,this.position.z,this.scale.x,this.scale.y,this.scale.z,this.rotation.y]}};
+ for(let i=0;i<100;i++)assert.equal(shape(mesh).top,1.3);
+ assert.equal(boxes,1);
+ mesh.scale.y=2;assert.equal(shape(mesh).top,2.3);assert.equal(boxes,2);
+ mesh.position.x=4;assert.equal(shape(mesh).cx,4);assert.equal(boxes,3);
+ mesh.rotation.y=.4;assert.equal(shape(mesh).yaw,.4);assert.equal(boxes,4);
+ mesh.geometry={};shape(mesh);assert.equal(boxes,5);
+});
