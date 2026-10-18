@@ -8,6 +8,9 @@ on:
       - 'scripts/frame-profile-browser.mjs'
       - '.github/workflows/frame-profile.yml'
   workflow_dispatch:
+concurrency:
+  group: frame-profile-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
@@ -20,7 +23,7 @@ jobs:
           path: candidate
       - uses: actions/checkout@v4
         with:
-          ref: 6f7279f3f4d590a6b670936505976480ebf58186
+          ref: ${{ github.event.pull_request.base.sha || '6f7279f3f4d590a6b670936505976480ebf58186' }}
           path: baseline
       - uses: actions/setup-node@v4
         with:
