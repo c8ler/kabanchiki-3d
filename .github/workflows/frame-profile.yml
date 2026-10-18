@@ -1,0 +1,36 @@
+name: Frame performance comparison
+on:
+  push:
+    branches: [fix/v209-fps]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  profile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: candidate
+      - uses: actions/checkout@v4
+        with:
+          ref: 6f7279f3f4d590a6b670936505976480ebf58186
+          path: baseline
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: |
+          cd candidate
+          npm install --no-save --package-lock=false playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - run: |
+          python3 -m http.server 8080 --directory baseline > /tmp/baseline.log 2>&1 &
+          python3 -m http.server 8081 --directory candidate > /tmp/candidate.log 2>&1 &
+      - run: node scripts/frame-profile-browser.mjs
+        working-directory: candidate
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: frame-profile
+          path: candidate/logs/
