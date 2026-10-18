@@ -9,8 +9,8 @@ try{
  await page.addInitScript(()=>{const schedule=window.setTimeout;window.setTimeout=function(fn,...args){if(typeof fn==='function'&&fn.toString().includes('const __v156=runV156Audit()'))return 0;return schedule.call(this,fn,...args)}});
  await page.goto('http://127.0.0.1:8080/?autotest=1&level=1');
  await page.waitForFunction(()=>window.__KABANCHIKI_TEST__?.ready,null,{timeout:60000});
- for(let level=1;level<=5;level++)for(const mode of ['near','standing','mounted','blocking']){
-  const result=await page.evaluate(({level,mode})=>window.__KABANCHIKI_QA__.exitHandoverRobot(level,mode,30),{level,mode});
+ for(const fps of (engine==='chromium'?[30,60]:[30]))for(let level=1;level<=5;level++)for(const mode of ['near','standing','mounted','blocking']){
+  const result=await page.evaluate(({level,mode,fps})=>window.__KABANCHIKI_QA__.exitHandoverRobot(level,mode,fps),{level,mode,fps});
   report.push(result);console.log(JSON.stringify(result));
  }
  fs.mkdirSync('logs',{recursive:true});fs.writeFileSync('logs/exit-handover-'+engine+'.json',JSON.stringify({report,errors},null,2));

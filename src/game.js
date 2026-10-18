@@ -1,29 +1,29 @@
-import {forestEdgeAt,forestEdgeLimit,forestEdgeBlocked,RideHop} from './world-interactions.js?v=209';
-import {CinematicTreeGuard,visibleInTree,projectedBox} from './cinematic-tree-guard.js?v=209';
-import { FirstPersonFood } from './first-person-food.js?v=209';
-import { BOAR_WADING_DEPTH, boarWaterStep, updateBoarBreath, shoreGoal } from './boar-water.js?v=209';
-import { HomeConstruction, HOME_SITE, WOOD_PILES } from './home-construction.js?v=209';
-import { parseCheatCode } from './cheat-codes.js?v=209';
+import {forestEdgeAt,forestEdgeLimit,forestEdgeBlocked,RideHop} from './world-interactions.js?v=210';
+import {CinematicTreeGuard,visibleInTree,projectedBox} from './cinematic-tree-guard.js?v=210';
+import { FirstPersonFood } from './first-person-food.js?v=210';
+import { BOAR_WADING_DEPTH, boarWaterStep, updateBoarBreath, shoreGoal } from './boar-water.js?v=210';
+import { HomeConstruction, HOME_SITE, WOOD_PILES } from './home-construction.js?v=210';
+import { parseCheatCode } from './cheat-codes.js?v=210';
 window.__gameLoadProgress?.(84);let __loadFinished=false;
 import * as THREE from '../vendor/three/three.module.min.js';
-import { BOAR_MAX_WATER_DEPTH, attacksPlayer, shallowStepAllowed, capsuleAt, capsuleCircleContact, capsuleCapsuleContact } from './boar-physics.js?v=209';
-import { convexHull, polygonContact, FriendYield } from './movement-geometry.js?v=209';
-import { BOSS_HITS, riverCenterAt, riverDepthAt, onRiverBridge, lakeInletCenterAt, lakeInletHalfWidthAt, lakeInletDepthAt, bridgeRailBlocked, weatherDeadline, rainFillLimit, rainFillRate, WorldSurface, lakePointAt, lakeRadiusAt, lakeDepth } from './world-surface.js?v=209';
-import { Knockback } from './knockback.js?v=209';
-import { AdaptiveQuality, GRAPHICS_TIERS } from './adaptive-quality.js?v=209';
-import { AttemptProgress, seasonForAttempts } from './seasons.js?v=209';
-import { Soundscape } from './soundscape.js?v=209';
-import { BufferedMusic, gameScore, cinematicScore } from './music-player.js?v=209';
-import { StaticSceneryBatches } from './static-batching.js?v=209';
-import { lightBudget, selectEffectLights, OcclusionSchedule, distantActorDt } from './render-budget.js?v=209';
-import { LocationExit, LOCATION_EXITS } from './location-exits.js?v=209';
-import { OpeningAdventure, openingStreamDepth, forestExitBlocked } from './opening-adventure.js?v=209';
-import { introStagingAt, outroStagingAt } from './cinematic-staging.js?v=209';
-import { segmentHitsBox, findGridPath, StableRoute, smoothHeading, findClearEscape } from './navigation.js?v=209';
-import { CatLife } from './cat-life.js?v=209';
-import { BirdLife } from './bird-life.js?v=209';
-import { CAT_BERRY_CHANCE, CAT_FORM_SECONDS, CAT_JUMP_SPEED, isCatBerryRoll, formTimeAfterStep } from './form-rules.js?v=209';
-const GAME_VERSION='v209';
+import { BOAR_MAX_WATER_DEPTH, attacksPlayer, shallowStepAllowed, capsuleAt, capsuleCircleContact, capsuleCapsuleContact } from './boar-physics.js?v=210';
+import { convexHull, polygonContact, FriendYield } from './movement-geometry.js?v=210';
+import { BOSS_HITS, riverCenterAt, riverDepthAt, onRiverBridge, lakeInletCenterAt, lakeInletHalfWidthAt, lakeInletDepthAt, bridgeRailBlocked, weatherDeadline, rainFillLimit, rainFillRate, WorldSurface, lakePointAt, lakeRadiusAt, lakeDepth } from './world-surface.js?v=210';
+import { Knockback } from './knockback.js?v=210';
+import { AdaptiveQuality, GRAPHICS_TIERS } from './adaptive-quality.js?v=210';
+import { AttemptProgress, seasonForAttempts } from './seasons.js?v=210';
+import { Soundscape } from './soundscape.js?v=210';
+import { BufferedMusic, gameScore, cinematicScore } from './music-player.js?v=210';
+import { StaticSceneryBatches } from './static-batching.js?v=210';
+import { lightBudget, selectEffectLights, OcclusionSchedule, distantActorDt } from './render-budget.js?v=210';
+import { LocationExit, LOCATION_EXITS } from './location-exits.js?v=210';
+import { OpeningAdventure, openingStreamDepth, forestExitBlocked } from './opening-adventure.js?v=210';
+import { introStagingAt, outroStagingAt } from './cinematic-staging.js?v=210';
+import { segmentHitsBox, findGridPath, StableRoute, smoothHeading, findClearEscape } from './navigation.js?v=210';
+import { CatLife } from './cat-life.js?v=210';
+import { BirdLife } from './bird-life.js?v=210';
+import { CAT_BERRY_CHANCE, CAT_FORM_SECONDS, CAT_JUMP_SPEED, isCatBerryRoll, formTimeAfterStep } from './form-rules.js?v=210';
+const GAME_VERSION='v210';
 const attemptProgress=new AttemptProgress((()=>{try{return window.localStorage}catch{return null}})());let currentSeason=attemptProgress.season;
 let chosenSeason=null;try{chosenSeason=localStorage.getItem('kabanchiki3d_chosen_season')}catch{}
 function unlockedSeasons(){return attemptProgress.failed>=60?['summer','autumn','winter','spring']:attemptProgress.failed>=40?['summer','autumn','winter']:attemptProgress.failed>=20?['summer','autumn']:['summer']}
@@ -816,7 +816,10 @@ function updateExitBreaker(props,dt,z){
  if(!d.breaker){
   if(mountedFriend){mountedFriend=false;setRiderPose(false);py=vy=0;boy.position.y=0;}
   d.breaker=friend&&!friend.flee?friend:(()=>{let q=nearestSafeSpawn(8,z+8,1.8)||[8,z+8];if(Math.hypot(q[0]-boy.position.x,q[1]-boy.position.z)<3.2)q=nearestSafeSpawn(-8,z+8,1.8)||[-8,z+8];const helper=makeBoar(q[0],q[1],true);helper.exitHelper=true;exitHelpers.add(helper);return helper})();
-  d.breaker.exitBreaking=true;d.breaker.graze=0;d.approachX=boy.position.x>0?-2.5:2.5;
+  d.breaker.exitBreaking=true;d.breaker.graze=0;
+  d.breaker.route=null;d.breaker.tightEscape=null;d.breaker.escapeRetry=0;d.breaker.navigation=null;
+  if(d.breaker===friend){friendYield.reset();friendYieldActive=false;}
+  d.approachX=boy.position.x>0?-2.5:2.5;
   notice('🐗 Друг бежит разбить преграду!');
  }
  const f=d.breaker;
@@ -829,7 +832,7 @@ function updateExitBreaker(props,dt,z){
   notice('💥 Хрясь! Друг разбил преграду!');
  }
  d.breakerTime+=dt;animateBreakableExit(props,d.breakerTime/.85);
- if(d.breakerTime>=.85){d.breakerDone=true;f.exitBreaking=level===1&&f===friend;f.b.rotation.x=0;f.b.position.y=0;
+ if(d.breakerTime>=.85){d.breakerDone=true;f.exitBreaking=level===1&&f===friend;f.route=null;f.tightEscape=null;f.escapeRetry=0;f.b.rotation.x=0;f.b.position.y=0;
   if(f!==friend){exitHelpers.delete(f);sendBoarAway(f,'opened-passage');d.breaker=null;}
  }
  return !!d.breakerDone;
@@ -2037,7 +2040,7 @@ function updateFriendKnockback(dt){
 // the best free heading. This prevents it from repeatedly pushing into the same tree/rock/house.
 const friendYield=new FriendYield();let friendYieldActive=false,friendYieldOwner=null;
 function updateFriendYield(dx,dz,dt){
- friendYieldActive=false;if(!friend?.g||friend.flee||friend.knockback?.active||friendKnockbackActive||mountedFriend||py>.58){friendYield.reset();return}
+ friendYieldActive=false;if(!friend?.g||friend.flee||friend.exitBreaking||friend.knockback?.active||friendKnockbackActive||mountedFriend||py>.58){friendYield.reset();return}
  if(friendYieldOwner!==friend){friendYieldOwner=friend;friendYield.reset()}
  const ox=friend.g.position.x,oz=friend.g.position.z;
  const canMove=(x,z)=>Math.abs(x)<42.7&&Math.abs(z)<42.7&&!boarSceneryBlockedAt(friend,x,z)&&!blockedByBoar(x,z,friend,.72);
