@@ -222,26 +222,6 @@ jobs:
 
           node kabanchiki-runtime-test.mjs
 
-      - name: Water, navigation, winter, scenes and Safari gestures
-        if: ${{ !cancelled() }}
-        run: node scripts/feature-browser.mjs
-
-      - name: Intro, seasonal menus, vegetation and Christmas tree
-        if: ${{ !cancelled() }}
-        run: node scripts/seasons-intro-browser.mjs
-
-      - name: Spring, cats, repeated fishing and grazing
-        if: ${{ !cancelled() }}
-        run: node scripts/new-features-browser.mjs
-
-      - name: House door, cat berry, roof support and lake bottom
-        if: ${{ !cancelled() }}
-        run: node scripts/house-cats-browser.mjs
-
-      - name: Cat jump and immunity on all six locations
-        if: ${{ !cancelled() }}
-        run: node scripts/cat-jumps-browser.mjs
-
       - name: Save screenshots and audit logs
         if: always()
         uses: actions/upload-artifact@v4
@@ -251,3 +231,37 @@ jobs:
             screenshots/
             logs/
 
+
+  browser-features:
+    name: Browser features (${{ matrix.script }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        script: [feature-browser, seasons-intro-browser, new-features-browser, house-cats-browser, cat-jumps-browser]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browsers
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.1
+          npx playwright install --with-deps chromium webkit
+      - name: Serve game
+        run: |
+          mkdir -p screenshots logs
+          python3 -m http.server 8080 > /tmp/kabanchiki-features-server.log 2>&1 &
+      - name: Run independent browser scenario
+        run: node scripts/${{ matrix.script }}.mjs
+      - name: Save screenshots and server log
+        if: always()
+        run: cp /tmp/kabanchiki-features-server.log logs/server.log || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ${{ matrix.script }}-report
+          path: |
+            screenshots/
+            logs/
