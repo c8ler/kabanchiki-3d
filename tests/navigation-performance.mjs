@@ -62,3 +62,25 @@ test('replacement routes rejoin the actor position without walking back to the o
  assert.ok(Math.hypot(r.path[0].x-p.x,r.path[0].z-p.z)<1.5);
  for(let i=1;i<=20;i++)assert.equal(blocked(p.x+(r.path[0].x-p.x)*i/20,p.z+(r.path[0].z-p.z)*i/20),false);
 });
+
+test('an unreachable target yields a safe approach before exhausting the search',()=>{
+ const r=new StableRoute({incremental:true}),start={x:8,z:0},goal={x:0,z:0};
+ const blocked=(x,z)=>Math.abs(x)<=2&&Math.abs(z)<=2;
+ const waypoint=r.next(start,goal,blocked,1/60,{bound:20,step:.8});
+ assert.ok(r.pending,'the blocked target still has search work');
+ assert.ok(waypoint,'move toward the safe frontier immediately');
+ assert.ok(Math.hypot(waypoint.x,waypoint.z)<Math.hypot(start.x,start.z));
+ let p={...start};
+ for(let frame=0;frame<120;frame++){
+  const q=r.next(p,goal,blocked,1/30,{bound:20,step:.8});if(!q)continue;
+  const d=Math.hypot(q.x-p.x,q.z-p.z),s=Math.min(.1,d);if(d){p.x+=(q.x-p.x)/d*s;p.z+=(q.z-p.z)/d*s}
+  assert.equal(blocked(p.x,p.z),false);
+ }
+ assert.ok(p.x<7,'approach must not wait for the full sealed-target search');
+});
+
+test('a major target change abandons a stale pending destination',()=>{
+ const r=new StableRoute({incremental:true}),start={x:-15,z:-15},blocked=(x,z)=>Math.abs(x)<.4;
+ r.next(start,{x:15,z:15},blocked,1/60,{bound:20});const old=r.pending;assert.ok(old);
+ r.next(start,{x:-12,z:-12},blocked,1/60,{bound:20});assert.notEqual(r.pending,old);assert.deepEqual(r.goal,{x:-12,z:-12});
+});
