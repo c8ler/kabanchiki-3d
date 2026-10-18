@@ -1879,7 +1879,7 @@ function slideAroundTree(px,pz,nx,nz,r=.82){
 }
 function boarScale(f){return f.bodyScale??Math.max(Math.abs(f.g.scale.x),Math.abs(f.g.scale.z))}
 function boarBody(f,x=f.g.position.x,z=f.g.position.z,yaw=f.g.rotation.y){return capsuleAt(x,z,yaw,boarScale(f))}
-function playerBoarBody(){return {g:boy,bodyScale:boarFormTime>0?.86:(friend?boarScale(friend):1)}}
+function playerBoarBody(){return {g:boy,bodyScale:boarFormTime>0?.86:(friend?boarScale(friend):1),playerControlled:boarFormTime>0&&!mountedFriend,feet:py+terrainHeightAt(boy.position.x,boy.position.z)}}
 function playerBodyRadius(){return boarFormTime>0?.90:PLAYER_RADIUS}
 function boarWaterDepth(f,x=f.g.position.x,z=f.g.position.z){if(level!==2&&level!==4)return 0;const body=boarBody(f,x,z);let depth=0;for(const [px,pz] of [[body.ax,body.az],[x,z],[body.bx,body.bz]])for(const [ox,oz] of [[0,0],[body.r,0],[-body.r,0],[0,body.r],[0,-body.r]])depth=Math.max(depth,lakeDepthAt(px+ox,pz+oz));return depth}
 function controlledSwimmer(f){return (boarFormTime>0&&f.g===boy)||mountedFriend&&(f===friend||f.g===boy)}
@@ -1911,7 +1911,7 @@ function doorCollisionBox(door){
 }
 function wallGeometry(){if(wallCacheEpoch!==worldEpoch){wallCacheEpoch=worldEpoch;wallCache=[];if(level===3)for(const h of houseObjects){const walls=h.userData.cutawayWalls,objects=walls?[...walls.front,...walls.back,...walls.left,...walls.right,...(h===familyHideout?houseFurnishings.children:h===personalHouse&&home.stage>=3?homeParts.furnishings.children:[])]:[h];for(const o of objects){if(o.userData.doorLintel)continue;o.updateWorldMatrix(true,true);const box=new THREE.Box3().setFromObject(o);const shell=!!walls&&['front','back','left','right'].some(side=>walls[side].includes(o));const roofTop=walls?.roof?new THREE.Box3().setFromObject(walls.roof).max.y:box.max.y;wallCache.push({root:h,box,shell,roofTop,furniture:!!o.userData.furniture||h===personalHouse&&homeParts.furnishings.children.includes(o),polygon:[{x:box.min.x,z:box.min.z},{x:box.max.x,z:box.min.z},{x:box.max.x,z:box.max.z},{x:box.min.x,z:box.max.z}]})}}}const result=wallCache.filter(q=>q.root.visible);if(level===3&&familyHideout.visible&&familyDoor.userData.closed){const box=doorCollisionBox(familyDoor);result.push({root:familyHideout,box,polygon:[{x:box.min.x,z:box.min.z},{x:box.max.x,z:box.min.z},{x:box.max.x,z:box.max.z},{x:box.min.x,z:box.max.z}]})}if(level===3&&home.stage>=4&&personalHouse?.visible&&homeParts.door.userData.closed){const box=doorCollisionBox(homeParts.door);result.push({root:personalHouse,box,polygon:[{x:box.min.x,z:box.min.z},{x:box.max.x,z:box.min.z},{x:box.max.x,z:box.max.z},{x:box.min.x,z:box.max.z}]});}return result}
 function clearWallLine(a,b){const start={x:a.x,y:a.y??.8,z:a.z},end={x:b.x,y:b.y??.8,z:b.z};if(wallGeometry().some(w=>segmentHitsBox(start,end,w.box)))return false;if(level===3&&familyHideout.visible&&familyDoor.userData.closed){const box=new THREE.Box3().setFromObject(familyDoor);if(segmentHitsBox(start,end,box))return false}return true}
-function boarWallContacts(f,x=f.g.position.x,z=f.g.position.z,yaw=f.g.rotation.y){const body=boarBody(f,x,z,yaw),contacts=[];for(const w of wallGeometry()){const pad=body.r+.04;if(Math.max(body.ax,body.bx)+pad<w.box.min.x||Math.min(body.ax,body.bx)-pad>w.box.max.x||Math.max(body.az,body.bz)+pad<w.box.min.z||Math.min(body.az,body.bz)-pad>w.box.max.z)continue;for(const [px,pz] of [[body.ax,body.az],[(body.ax+body.bx)/2,(body.az+body.bz)/2],[body.bx,body.bz]]){const hit=polygonContact(w.polygon,px,pz,body.r+.04);if(hit)contacts.push(hit)}}return contacts}
+function boarWallContacts(f,x=f.g.position.x,z=f.g.position.z,yaw=f.g.rotation.y){const body=boarBody(f,x,z,yaw),contacts=[];for(const w of wallGeometry()){const top=w.shell&&w.root.userData.enterable?Math.max(w.box.max.y,w.roofTop):w.box.max.y;if(f.playerControlled&&f.feet>=top-.015)continue;const pad=body.r+.04;if(Math.max(body.ax,body.bx)+pad<w.box.min.x||Math.min(body.ax,body.bx)-pad>w.box.max.x||Math.max(body.az,body.bz)+pad<w.box.min.z||Math.min(body.az,body.bz)-pad>w.box.max.z)continue;for(const [px,pz] of [[body.ax,body.az],[(body.ax+body.bx)/2,(body.az+body.bz)/2],[body.bx,body.bz]]){const hit=polygonContact(w.polygon,px,pz,body.r+.04);if(hit)contacts.push(hit)}}return contacts}
 const companionChecks={checks:0,repairs:0,replans:0};
 function companionValid(f,x=f.g.position.x,z=f.g.position.z,yaw=f.g.rotation.y){return !boarSceneryBlockedAt(f,x,z,yaw)}
 function settleBoarOnGround(f){
@@ -1964,10 +1964,11 @@ function resolveBoarClearance(f,protectPlayer=true){
  if(level===2&&!lakeExitReady())f.g.position.z=Math.max(f.g.position.z,-37.2+.7*boarScale(f));
  if(level===1&&opening&&forestEdgeBlocked(f.g.position.x,f.g.position.z,.7*boarScale(f),opening.passageOpen))f.g.position.z=forestEdgeLimit(f.g.position.x,.7*boarScale(f));
  if(f.flee){for(let pass=0;pass<4;pass++){const contacts=boarWallContacts(f);if(!contacts.length)break;for(const hit of contacts){f.g.position.x+=hit.nx*(hit.depth+.004);f.g.position.z+=hit.nz*(hit.depth+.004)}}return}
- for(let pass=0;pass<4;pass++){
+ for(let pass=0;pass<(f.playerControlled?12:4);pass++){
   const contacts=[...boarTreeContacts(f),...boarWallContacts(f)];const playerHit=protectPlayer?boarPlayerContact(f):null;if(playerHit)contacts.push(playerHit);
   if(!contacts.length)break;
-  for(const hit of contacts){f.g.position.x+=hit.nx*(hit.depth+.004);f.g.position.z+=hit.nz*(hit.depth+.004)}
+  const moves=f.playerControlled?[contacts.reduce((a,b)=>a.depth>b.depth?a:b)]:contacts;
+  for(const hit of moves){f.g.position.x+=hit.nx*(hit.depth+.004);f.g.position.z+=hit.nz*(hit.depth+.004)}
  }
 
 }
@@ -2268,8 +2269,8 @@ if(__autoTest||__autoParams.get('openingtest')==='1')window.__KABANCHIKI_QA__={
  v211Clock(form='boar',dt=.5){
   cinematicFinish?.();paused=true;if(form==='cat')startCatForm();else startBoarForm();const start=Math.max(catFormTime,boarFormTime);
   for(let t=0;t<30-1e-8;t+=dt)if(form==='cat')updateCatForm(Math.min(dt,30-t),performance.now());else updateBoarForm(Math.min(dt,30-t));
-  if(form==='cat')startCatForm();else startBoarForm();const repeated=Math.max(catFormTime,boarFormTime);if(form==='cat')updateCatForm(31,performance.now());else updateBoarForm(31);
-  return {start,repeated,end:Math.max(catFormTime,boarFormTime)};
+  const expired=Math.max(catFormTime,boarFormTime);if(form==='cat')startCatForm();else startBoarForm();const repeated=Math.max(catFormTime,boarFormTime);if(form==='cat')updateCatForm(31,performance.now());else updateBoarForm(31);
+  return {start,expired,repeated,end:Math.max(catFormTime,boarFormTime)};
  },
  v211Scene(n=3,kind='normal'){
   cinematicFinish?.();this.season(0);this.load(n);paused=false;started=true;win=false;endShown=false;boarFormTime=catFormTime=0;mountedFriend=false;py=vy=0;invuln=999;keys={};stick.x=stick.y=0;foes.forEach(f=>f.flee=true);
