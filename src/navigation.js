@@ -27,3 +27,16 @@ export class StableRoute{
  key(p,step){return Math.round(p.x/step)+','+Math.round(p.z/step)}
  record(distance,dt){this.stuck=distance>.002?0:this.stuck+dt}
 }
+
+ // Escape a conservative navigation mask without ignoring physical collision.
+ // Keep the capsule heading fixed and validate every slice of the translation.
+export function findClearEscape(start,blocked,clear,{step=.3,range=4.2}={}){
+ for(let r=step;r<=range+1e-8;r+=step)for(let k=0;k<24;k++){
+  const angle=k*Math.PI/12,q={x:start.x+Math.sin(angle)*r,z:start.z+Math.cos(angle)*r};
+  if(blocked(q.x,q.z))continue;
+  const count=Math.ceil(r/.055);let safe=true;
+  for(let i=1;i<=count;i++)if(!clear(start.x+(q.x-start.x)*i/count,start.z+(q.z-start.z)*i/count)){safe=false;break;}
+  if(safe)return q;
+ }
+ return null;
+}
