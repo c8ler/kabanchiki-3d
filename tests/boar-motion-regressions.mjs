@@ -58,3 +58,8 @@ test('fallback recovery restores the safe heading as well as the safe position',
  const f={g:{position:{x:0,z:0},rotation:{y:0},userData:{}},lastSafe:{x:10,z:10,yaw:1},route:{}};
  repair(f,true);assert.ok(valid(f));assert.equal(f.route,null);assert.equal(checks.repairs,1);
 });
+
+test('movement rejects coordinates outside the actual depenetration boundary',()=>{
+ const blocked=new Function('locationExit','level','opening',extract('playerWorldBlocked')+';return playerWorldBlocked')(null,3,null);
+ for(const [x,z] of [[43.10001,0],[-43.10001,0],[0,43.10001],[0,-43.10001]])assert.equal(blocked(x,z),true);
+});

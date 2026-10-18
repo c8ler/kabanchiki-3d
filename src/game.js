@@ -1349,7 +1349,7 @@ function solidCircles(){
 }
 function playerWorldBlocked(x,z,pad=0){
  if(locationExit&&forestExitBlocked(x,z+4,mountedFriend?.7:PLAYER_RADIUS+pad,locationExitReady()))return true;
- if(x<-43.15||x>43.15||z<-43.15||z>43.15)return true;
+ if(x<-43.1||x>43.1||z<-43.1||z>43.1)return true;
  if(level===2&&forestExitBlocked(x,z+4,mountedFriend?.7:PLAYER_RADIUS+pad,lakeExitReady()))return true;
  if(level===1&&opening&&forestEdgeBlocked(x,z,mountedFriend?.7:PLAYER_RADIUS+pad,opening.passageOpen))return true;
  const rr=PLAYER_RADIUS+pad;if(helperBlocksPlayer(x,z)||debrisBlocks(x,z,rr))return true;
@@ -1623,6 +1623,8 @@ function runRockClimbAudit(){
  const dirs=[[1,0],[-1,0],[0,1],[0,-1]];let tested=0,passed=0;
  for(let ri=0;ri<rockPositions.length&&tested<12;ri++){
   const m=rockPositions[ri][3];if(!m||m.visible===false)continue;m.updateWorldMatrix(true,false);const b=new THREE.Box3().setFromObject(m),c=new THREE.Vector3();b.getCenter(c);
+  // Closed forest-edge scenery is deliberately unreachable before the exit opens.
+  if(level===1&&opening&&forestEdgeBlocked(c.x,c.z,PLAYER_RADIUS,opening.passageOpen))continue;
   // Normal jump apex is ~1.36 m. Test only genuinely reachable rocks.
   if(b.max.y<.22||b.max.y>1.34)continue;
   let landed=false,maxY=0,approaches=0;const attempts=[];
@@ -2273,7 +2275,7 @@ if(__autoTest||__autoParams.get('openingtest')==='1')window.__KABANCHIKI_QA__={
  openingGateAudit(){const positions=[-42,-20,-6,0,6,20,42],closed=positions.map(x=>({x,blocked:playerWorldBlocked(x,-35)}));const actor=friend||foes[0],boars=positions.map(x=>({x,blocked:boarSceneryBlockedAt(actor,x,-35)}));return {closed,boars,extensionNearZ:-39+openingProps.userData.trail.position.z+openingProps.userData.trail.geometry.parameters.height/2,roadEndZ:-48}},
  openingScenario(kind){keys={};stick.x=stick.y=0;jump=act=false;paused=false;invuln=100;if(kind==='crate'){food=0;boy.position.set(-2.9,0,24.3)}if(kind==='mother'){const m=familyMembers.find(f=>f.role===0);boy.position.set(m.x,0,m.z)}if(kind==='break'){const f=foes.find(f=>f.openingBoar);if(f)resolveMeat({g:new THREE.Group(),foe:f,type:'apple'});mountedFriend=true;setRiderPose(true);boy.position.set(0,1.18,-32.5);friend.g.position.set(0,0,-32.5);boy.rotation.y=yaw=Math.PI}return this.openingInspect()},
  openingInspect(){return {stage:opening?.stage,elapsed:opening?.elapsed,chasing:opening?.chasing,hit:opening?.hit,rode:opening?.rode,rescued:opening?.rescued,refills:opening?.refills,life,food,mounted:mountedFriend,position:boy.position.toArray(),heading:yaw,friend:friend?.g.position.toArray(),enemy:foes.map(f=>({position:f.g.position.toArray(),bolt:f.bolt.visible,opening:f.openingBoar})),family:familyMembers.map(f=>({role:f.role,done:f.done,position:f.g.position.toArray()})),completed:levelFamilyDone,total:levelFamilyTotal,cinematic:cinematicRunning,propsVisible:openingProps?.visible,portalVisible:portalObj?.g.visible,passageOpen:opening?.passageOpen,passageStarted:opening?.passageStarted,passageTime:opening?.passageTime,passageBroken:opening?.passageBroken,crateApples:opening?.crateApples,trunkVisible:openingProps?.userData.trunk.visible,debrisVisible:openingProps?.userData.debris.visible,exitBlockedDecor:boundaryDecor.filter(o=>o.visible&&Math.abs(o.position.x)<10&&o.position.z<-40).length,exitLakeVisible:openingProps?.userData.distantLake.visible,guideHidden:$('openingGuide').hidden}},
- state(){return {season:currentSeason,failedAttempts:attemptProgress.failed,camMode,level,version:GAME_VERSION,flashlight:hasFlashlight,friend:!!friend,apples:yellowAppleStock,mushrooms:yellowMushroomStock,form:boarFormTime,basins:puddleObjects.length,boss:foes.find(f=>f.isBoss)?.maxHp,redTrees:treeObjects.filter(t=>{let red=false;t.traverse(m=>{if(m.material?.emissive?.getHex())red=true});return red}).length}},
+ state(){return {difficulty:selectedDiff,life,maxLife:diffCfg().playerHP,season:currentSeason,failedAttempts:attemptProgress.failed,camMode,level,version:GAME_VERSION,flashlight:hasFlashlight,friend:!!friend,apples:yellowAppleStock,mushrooms:yellowMushroomStock,form:boarFormTime,basins:puddleObjects.length,boss:foes.find(f=>f.isBoss)?.maxHp,redTrees:treeObjects.filter(t=>{let red=false;t.traverse(m=>{if(m.material?.emissive?.getHex())red=true});return red}).length}},
  prepareRestart(){hasFlashlight=true;yellowAppleStock=2;yellowMushroomStock=2;boarFormTime=30;const t=treeObjects.find(t=>t.visible);if(t)igniteBossTree(t);friend=makeBoar(3,6,true);mountedFriend=true;return this.state()},
  restart(){restartGame();return this.state()},
  load(n,diff=2){selectedDiff=diff;loadLevel(n);return this.state()},
