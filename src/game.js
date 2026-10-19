@@ -42,7 +42,7 @@ window.__KABANCHIKI_VERSION__=GAME_VERSION;
 for(const id of ['loadingVersion']){const el=document.getElementById(id);if(el)el.textContent=GAME_VERSION;}
 document.title=`Кабанчики 3D ${GAME_VERSION}`;
 const SUPABASE_URL='https://usszaimdbepgexnigiau.supabase.co';
-const SUPABASE_KEY='sb_publishable_x3H1Px6JaDTwpyZy_ARyiA_OqEKLINZ'; const $=id=>document.getElementById(id), mobile=matchMedia('(pointer:coarse)').matches;if(mobile){$('message').textContent='🕹️ Джойстик — идти · проведи пальцем — камера · справа — Прыжок и Кормить';$('introControls').innerHTML='<b>На телефоне:</b> левый джойстик — движение, проведи пальцем по миру — поворот камеры, кнопки «Прыжок» и «Кормить» справа.';$('pauseControls').innerHTML='<b>Телефон:</b> левый джойстик — движение · проведи пальцем по миру — камера · кнопки «Прыжок» и «Кормить» справа.'}else{$('message').textContent='W/S — вперёд/назад · A/D и ←/→ — стрейф · мышь — камера · ЛКМ — кормить · ПКМ — прыжок';$('introControls').innerHTML='<b>На ПК:</b> W/S и ↑/↓ — вперёд/назад, A/D и ←/→ — стрейф, ПРОБЕЛ/ПКМ — прыжок, ЛКМ/E/F/Enter — бросить еду, V — сменить вид, ESC — пауза. Мышь сразу поворачивает камеру.';$('pauseControls').innerHTML='<b>Управление ПК:</b> W/S и ↑/↓ — вперёд/назад · A/D и ←/→ — стрейф · ПРОБЕЛ/ПКМ — прыжок · ЛКМ/E/F/Enter — кормить · мышь — камера без зажатия · V — вид · ESC — меню.'}let started=false,first=false,life=5,rescued=0,win=false,invuln=0,flash=0,camMode=(mobile?0:4),yaw=0,pitch=.18,move={x:0,z:0},jump=false,act=false,keys={},drag=null,stickPointer=null,stick={x:0,y:0};$('camera').textContent=`📷 Вид ${camMode+1}/10`;
+const SUPABASE_KEY='sb_publishable_x3H1Px6JaDTwpyZy_ARyiA_OqEKLINZ'; const $=id=>document.getElementById(id), mobile=matchMedia('(pointer:coarse)').matches;if(mobile){$('message').textContent='🕹️ Джойстик — идти · проведи пальцем — камера · справа — Прыжок и Кормить';$('introControls').innerHTML='<b>На телефоне:</b> левый джойстик — движение, проведи пальцем по миру — поворот камеры, кнопки «Прыжок» и «Кормить» справа.';$('pauseControls').innerHTML='<b>Телефон:</b> левый джойстик — движение · проведи пальцем по миру — камера · кнопки «Прыжок» и «Кормить» справа.'}else{$('message').textContent='W/S — вперёд/назад · A/D и ←/→ — стрейф · мышь — камера · ЛКМ — кормить · ПКМ — прыжок';$('introControls').innerHTML='<b>На ПК:</b> W/S и ↑/↓ — вперёд/назад, A/D и ←/→ — стрейф, ПРОБЕЛ/ПКМ — прыжок, ЛКМ/E/F/Enter — бросить еду, V — сменить вид, ESC — пауза. Мышь сразу поворачивает камеру.';$('pauseControls').innerHTML='<b>Управление ПК:</b> W/S и ↑/↓ — вперёд/назад · A/D и ←/→ — стрейф · ПРОБЕЛ/ПКМ — прыжок · ЛКМ/E/F/Enter — кормить · мышь — камера без зажатия · V — вид · Q — спрыгнуть · G — поставить бомбочку · C — крафт · ESC — меню.'}let started=false,first=false,life=5,rescued=0,win=false,invuln=0,flash=0,camMode=(mobile?0:4),yaw=0,pitch=.18,move={x:0,z:0},jump=false,act=false,keys={},drag=null,stickPointer=null,stick={x:0,y:0};$('camera').textContent=`📷 Вид ${camMode+1}/10`;
 const __autoParams=new URLSearchParams(location.search),__autoTest=__autoParams.get('autotest')==='1';
 window.__KABANCHIKI_TEST__={version:GAME_VERSION,ready:false,level:0,errors:[]};if(window.__KABANCHIKI_BUILD__&&window.__KABANCHIKI_BUILD__!==GAME_VERSION)window.__KABANCHIKI_TEST__.errors.push(`version-mismatch:${window.__KABANCHIKI_BUILD__}:${GAME_VERSION}`);if(__autoTest){let __seed=1337;Math.random=()=>{__seed=(__seed*1664525+1013904223)>>>0;return __seed/4294967296}}
 
@@ -1049,7 +1049,7 @@ function syncOpeningGuide(){
    move:['1/4 · НАЙДИ МАМУ','Мама впереди',mobile?'Иди по дорожке с помощью джойстика.':'W/S или стрелки — идти. Мышь — поворот камеры.'],
    feed:['2/4 · ПОГОНЯ','Угости кабанчика!',mobile?'Нажми «Кормить». Еда уже есть в кармане.':'Enter или левая кнопка мыши — бросить яблоко.'],
    ride:['3/4 · НОВЫЙ ДРУГ','Теперь он на твоей стороне',mobile?'Подойди к другу и нажми «Прыжок», чтобы сесть.':'Подойди к другу. Пробел — сесть верхом.'],
-   rescue:['4/4 · СПАСЕНИЕ','Поезжайте к маме!',mobile?'Езжай по меткам. «Прыжок» — спрыгнуть.':'Езжай по дорожке к метке «МАМА». Пробел — спрыгнуть.'],
+   rescue:['4/4 · СПАСЕНИЕ','Поезжайте к маме!',mobile?'Езжай по меткам. «Прыжок» — подскок; 🐗 — спрыгнуть.':'Езжай к метке «МАМА». Пробел — подскок; Q — спрыгнуть.'],
    complete:['ПЕРВОЕ ПРИКЛЮЧЕНИЕ ПРОЙДЕНО','Мама спасена!',!friend?'Подойди к дереву — помощник прибежит и освободит проход.':opening.passageOpen?'Тропа свободна! Езжай прямо к озеру.':opening.passageStarted?'Друг разбивает дерево. Берегись щепок!':'Езжай с другом к поваленному дереву. Он поможет открыть тропу.']
   }[stage];$('openingStep').textContent=copy[0];$('openingTitle').textContent=copy[1];$('openingHint').textContent=copy[2];
  }
@@ -2395,6 +2395,18 @@ if(__autoTest||__autoParams.get('openingtest')==='1')window.__KABANCHIKI_QA__={
  v212BlastHome(){
   this.v212Setup(3);home.stage=4;home.collected=[true,true,true,true];home.wood=0;syncHomeVisual();const lit=homeParts.lamp.visible&&homeParts.light.intensity>0;boy.position.set(HOME_SITE.x+9,0,HOME_SITE.z);life=diffCfg().playerHP;const b={g:bombModel(scene),ring:new THREE.Group(),x:HOME_SITE.x,z:HOME_SITE.z,y:0};explodeAdventureBomb(b);return {lit,stage:home.stage,refill:home.collected.every(v=>!v),life,lamp:homeParts.lamp.visible};
  },
+
+ v212BlastDamage(distance=3){
+  this.v212Setup(3);if(friend)scene.remove(friend.g);friend=makeBoar(2,20,true);friendHP=diffCfg().friendHP;boy.position.set(distance,0,20);const b={g:bombModel(scene),ring:new THREE.Group(),x:0,z:20,y:0};explodeAdventureBomb(b);return {distance,life,maxLife:diffCfg().playerHP,friendHP};
+ },
+ v212BlastRescue(){
+  this.v212Setup(3);const member=familyMembers.find(f=>f.role===2),at=familyHideout.position.clone();boy.position.set(0,0,20);member.g.position.copy(at);member.x=at.x;member.z=at.z;
+  const b={g:bombModel(scene),ring:new THREE.Group(),x:at.x,z:at.z,y:0};explodeAdventureBomb(b);return {destroyed:!familyHideout.visible,present:member.g.parent===scene,unfinished:!member.done,distance:member.g.position.distanceTo(at),safe:!worldObstacleAt(member.x,member.z,.5)};
+ },
+ v212RebuildHome(){
+  const before=this.v212BlastHome();for(let i=0;i<4;i++)home.collect(i);boy.position.set(HOME_SITE.x,0,HOME_SITE.z+3.8);paused=false;for(let i=0;i<4;i++)interactHome();paused=true;return {destroyed:before.stage===0,stage:home.stage,lit:homeParts.lamp.visible};
+ },
+
  v212Reunion(form='cat',role=0,time=6){this.v212Setup(role===0?1:role===2?3:5);if(form==='cat')startCatForm();else if(form==='boar')startBoarForm();const member=familyMembers.find(f=>f.role===role);showFamilyPopup(role,member);movie.elapsedOverride=time;updateCinematic(performance.now(),new THREE.Vector3());movie.people[0].userData.qaDraws=0;movie.people[0].traverse(o=>{if(o.isMesh)o.onBeforeRender=()=>movie?.people[0]&&(movie.people[0].userData.qaDraws++)});return {form:movie.heroForm,role,people:movie.people.length,text:$('cinematicText').textContent};},
  v212ReunionInspect(){const person=movie?.people[0];if(!person)return null;const box=new THREE.Box3().setFromObject(person),rect=projectedBox(THREE,box,camera);return {draws:person.userData.qaDraws,visible:visibleInTree(person),rect};},
  v212Scene(kind='storm'){
