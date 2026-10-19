@@ -2034,7 +2034,7 @@ function boarPlayerContact(f,x=f.g.position.x,z=f.g.position.z,yaw=f.g.rotation.
  return capsuleCircleContact(body,playerX,playerZ,PLAYER_RADIUS+.07)
 }
 function boarsInContact(a,b,padding=0){const body=boarBody(a);body.r+=padding;return !!capsuleCapsuleContact(body,boarBody(b))}
-function boarShouldChasePlayer(f,d){if(f.waterEscaping)return false;if(level===1&&f.openingBoar&&opening)return opening.chasing&&attacksPlayer(boarFormTime+catFormTime)&&d>1.05;return attacksPlayer(boarFormTime+catFormTime)&&d<13&&d>1.05}
+function boarShouldChasePlayer(f,d){if(f.waterEscaping)return false;if(level===1&&f.openingBoar&&opening)return opening.chasing&&attacksPlayer(boarFormTime+catFormTime)&&d>1.05;return attacksPlayer(boarFormTime+catFormTime)&&(f.isMinion||d<13)&&d>1.05}
 function boarAttackDistance(f){return 1.65*boarScale(f)+playerBodyRadius()+.18}
 let wallCacheEpoch=-1,wallCache=[];
 const doorCollisionCache=new WeakMap();
