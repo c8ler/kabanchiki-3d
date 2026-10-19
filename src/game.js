@@ -1029,10 +1029,10 @@ function updateCinematic(now,look){if(!movie)return;const m=movie,t=m.elapsedOve
  }else{
   const meet=ease(t/2.5),hug=ease((t-4.4)/1.1)*ease((8.5-t)/.9);m.hero.position.x=-.7+meet*.3+hug*.13;m.people[0].position.x=.85-meet*.22-hug*.31;cinemaHug(m.people[0],hug);m.gift.visible=t>2.8&&t<4.5;m.gift.position.set(.25,1.1,0);from=world(3.8,2.2,5);to=world(2.6,1.8,3.8);target=world(.2,1.25,0);k=ease(t/8);
   if(m.heroForm!=='human'){
-   const pose=reunionPose(m.heroForm,t);m.hero.position.x=-.85+meet*.35+pose.nuzzle;m.hero.position.y=pose.hop;m.hero.rotation.z=pose.roll;
+   const pose=reunionPose(m.heroForm,t);m.hero.position.x=(m.heroForm==='cat'?-.95:-1.25)+meet*.15+pose.nuzzle;m.people[0].position.x=1.1-meet*.1;m.hero.position.y=pose.hop;m.hero.rotation.z=pose.roll;
    cinemaHug(m.people[0],pose.pet*.55);m.people[0].rotation.z=-pose.pet*.08;
    if(m.heroForm==='cat'){const tail=m.hero.children.find(o=>o.isGroup&&o.position.z<-.3);if(tail)tail.rotation.y=Math.sin(t*6)*.6;for(const leg of m.hero.children.filter(o=>o.isMesh&&o.position.y<.3))leg.rotation.x=pose.paw;}
-   m.gift.position.y=m.heroForm==='cat'?.55:.8;target=world(0,.95,0);
+   m.gift.position.set(.2,m.heroForm==='cat'?.55:.8,.3);m.gift.scale.setScalar(.55);from=world(0,2.3,6.5);to=world(.3,1.9,5.7);target=world(0,.85,0);
   }
 
  }
