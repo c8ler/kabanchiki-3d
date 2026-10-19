@@ -1,0 +1,24 @@
+name: Tornado and crafting review
+on:
+  push:
+    branches: [fix/v212-tornado-crafting]
+  pull_request:
+jobs:
+  survival:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm test
+      - run: npm run validate
+      - run: npm install --no-save playwright@1.56.1
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Play new survival mechanics
+        run: |
+          python3 -m http.server 8080 > /tmp/game-server.log 2>&1 &
+          node scripts/v212-browser.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: tornado-crafting-previews
+          path: screenshots/v212-*

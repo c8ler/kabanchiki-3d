@@ -19,7 +19,7 @@ try{
  const splash=await qa('v161Water');assert.ok(splash.spray>0&&splash.rings>0);
  const drowning=await qa('v161Drown');assert.ok(drowning.dead&&drowning.after<drowning.before);await qa('restart');
  for(const failed of [0,20,40]){const deadline=await qa('v161BossSeason',failed);assert.equal(deadline.carry,0);assert.equal(deadline.ice,false);const state=await qa('v161Inspect');assert.equal(state.birds.visible,failed<40);if(failed<40)assert.ok(state.birds.count>0)}
- const frozen=await qa('v161Freeze',4);assert.ok(frozen.ice&&frozen.tree&&frozen.life===0);await qa('restart');
+ const winterStorm=await qa('v212Tornado',310,false,2,4);assert.ok(winterStorm.active&&winterStorm.farCarry===0);await qa('restart');
  const snowfall=[];for(let minute=0;minute<5;minute++){const s=await qa('v161Snow',minute);assert.ok(s.iceWater&&s.roadSnow);if(minute)assert.ok(s.driftHeight>snowfall.at(-1).driftHeight&&s.snowStrength>snowfall.at(-1).snowStrength);snowfall.push(s)}
  await qa('season',0);await qa('load',4);await qa('lamp');for(let role=0;role<4;role++){await qa('movie','family',6,role);await page.waitForTimeout(100);const s=await qa('v161Inspect');assert.ok(s.movie.light>0&&s.movie.hug<-.7);await qa('movieDone')}
  await qa('load',6);await qa('movie','outro',1);await page.waitForTimeout(100);const finale=await qa('v161Inspect');assert.ok(finale.movie.boss&&finale.movie.headlights===2);await qa('movieDone');
