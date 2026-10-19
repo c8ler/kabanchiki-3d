@@ -11,3 +11,5 @@
 @media(max-width:420px){.menuOverlay>div,#intro>div,#pauseMenu>div,#endScreen>div,#familyPopup>div,#statsScreen>div{padding:14px!important;border-radius:18px}#statsTable [style*="grid-template-columns"]{grid-template-columns:22px minmax(0,1fr) 38px 40px 40px!important;font-size:10px!important;gap:3px!important}#pauseMenu .pauseHeader h2{font-size:22px}.difficultyCard{gap:8px}.difficultyCard small{line-height:1.4}.menuBtns{gap:6px!important}.menuBtns button{padding:10px!important;font-size:13px}.craftRecipes button{padding:10px}}
 @media(max-height:420px){.menuOverlay>div,#intro>div,#pauseMenu>div,#endScreen>div,#familyPopup>div,#statsScreen>div{padding:12px 16px!important}.menuMascot{width:44px;height:44px}.menuEyebrow{margin-bottom:8px}.pauseHeader{padding-top:3px;padding-bottom:6px}#pauseMenu h2{font-size:21px}.menuLead{margin-block:8px;font-size:12px}.difficultyPanel h2{font-size:27px}.menuFooter{margin-top:8px}}
 @media(pointer:coarse){#openingGuide{bottom:176px}body:has(#stormMeter:not([hidden])) #openingGuide{bottom:234px}}
+
+.pauseHeader{box-shadow:0 -24px 0 #1b3f34}

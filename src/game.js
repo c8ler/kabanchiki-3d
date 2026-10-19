@@ -2391,9 +2391,9 @@ if(__autoTest||__autoParams.get('openingtest')==='1')window.__KABANCHIKI_QA__={
  v213MountInspect(){return {mounted:mountedFriend,py,vy,x:boy.position.x,z:boy.position.z,friendX:friend?.g.position.x,friendZ:friend?.g.position.z,distance:friend?Math.hypot(boy.position.x-friend.g.position.x,boy.position.z-friend.g.position.z):0,blocked:playerWorldBlocked(boy.position.x,boy.position.z),latched:dismountLatch.active};},
  v213Clock(seconds,n=3){this.v212Setup(n);levelTime=seconds;hud();adventureHud.active(true);adventureHud.active(true);return {hidden:$('stormMeter').hidden,clock:stormClock(seconds,n)};},
  v213Menu(id='pauseMenu'){
-  this.v212Setup(3);for(const name of ['intro','pauseMenu','difficultyScreen','familyPopup','endScreen','statsScreen'])$(name).style.display='none';
+  if(!paused||level!==3)this.v212Setup(3);for(const name of ['intro','pauseMenu','difficultyScreen','familyPopup','endScreen','statsScreen'])$(name).style.display='none';
   if(id==='pauseMenu'){setPause(true);for(const d of $('pauseMenu').querySelectorAll('details'))d.open=true}
-  else {$(id).style.display='grid';if(id==='statsScreen')$('statsTable').innerHTML=localStatsHtml();if(id==='familyPopup'){$('familyTitle').textContent='Семья найдена!';$('familyText').textContent='Тимур, наконец-то ты пришёл! Мы так долго тебя ждали.'}}
+  else {$(id).style.display='grid';if(id==='statsScreen'){const before=localStorage.getItem('kabanchiki3d_results');localStorage.setItem('kabanchiki3d_results',JSON.stringify(Array.from({length:20},(_,i)=>({name:'ДлинноеИмяИгрока12345',score:999999,time:99999,win:i%2===0}))));$('statsTable').innerHTML=localStatsHtml();if(before===null)localStorage.removeItem('kabanchiki3d_results');else localStorage.setItem('kabanchiki3d_results',before);}if(id==='familyPopup'){$('familyTitle').textContent='Семья найдена!';$('familyText').textContent='Тимур, наконец-то ты пришёл! Мы так долго тебя ждали.'}}
   return true;
  },
  v213BossLive(){this.v212Setup(6);if(friend){scene.remove(friend.g);friend=null}boy.position.set(0,0,0);bossSummon=.01;paused=false;return true;},
