@@ -1,18 +1,25 @@
 import * as T from '../vendor/three/three.module.min.js';
-import {orbitPose} from './tornado-rules.js?v=212';
+import {orbitPose} from './tornado-rules.js?v=214';
 export class TornadoVisual{
- constructor(scene,mobile=false){this.root=new T.Group();scene.add(this.root);this.root.visible=false;this.items=[];this.dummy=new T.Object3D();
- const haze=new T.Mesh(new T.CylinderGeometry(5.3,.55,16,20,1,true),new T.MeshBasicMaterial({color:0x8a969b,transparent:true,opacity:.2,side:T.DoubleSide,depthWrite:false}));haze.position.y=8;this.root.add(haze);this.haze=haze;
- this.rings=new T.InstancedMesh(new T.TorusGeometry(1,.1,4,20),new T.MeshBasicMaterial({color:0xb3b9b5,transparent:true,opacity:.38,depthWrite:false}),24);this.rings.frustumCulled=false;this.root.add(this.rings);
- this.debris=new T.InstancedMesh(new T.BoxGeometry(1,1,1),new T.MeshLambertMaterial({color:0xffffff}),96);this.debris.instanceMatrix.setUsage(T.DynamicDrawUsage);this.debris.frustumCulled=false;this.debris.count=0;scene.add(this.debris);this.capacity=mobile?12:24;
+ constructor(scene,mobile=false){this.scene=scene;this.root=new T.Group();scene.add(this.root);this.root.visible=false;this.items=[];this.actors=[];this.waterSources=[];this.capacity=mobile?12:24;this.actorCapacity=mobile?5:10;this.dummy=new T.Object3D();this.color=new T.Color();
+ this.haze=new T.Mesh(new T.CylinderGeometry(7,.7,23,20,1,true),new T.MeshBasicMaterial({color:0x7b898f,transparent:true,opacity:.25,side:T.DoubleSide,depthWrite:false}));this.haze.position.y=11.5;this.root.add(this.haze);
+ this.rings=new T.InstancedMesh(new T.TorusGeometry(1,.14,4,20),new T.MeshBasicMaterial({color:0xafb6ac,transparent:true,opacity:.42,depthWrite:false}),30);this.rings.frustumCulled=false;this.root.add(this.rings);
+ this.debris=new T.InstancedMesh(new T.BoxGeometry(1,1,1),new T.MeshLambertMaterial({color:0xffffff}),96);this.debris.instanceMatrix.setUsage(T.DynamicDrawUsage);this.debris.frustumCulled=false;this.debris.count=0;scene.add(this.debris);
+ this.grass=new T.InstancedMesh(new T.BoxGeometry(1,1,1),new T.MeshBasicMaterial({color:0xffffff}),mobile?64:128);this.grass.frustumCulled=false;scene.add(this.grass);
+ this.water=new T.InstancedMesh(new T.SphereGeometry(1,5,3),new T.MeshBasicMaterial({color:0x8ad7ec,transparent:true,opacity:.78,depthWrite:false}),mobile?32:64);this.water.frustumCulled=false;scene.add(this.water);this.water.count=0;
  }
- reset(){this.root.visible=false;this.items.length=0;this.debris.count=0}
+ release(actor){actor.g.removeFromParent();for(const geometry of actor.geometries)geometry.dispose()}
+ reset(){this.root.visible=this.debris.visible=this.grass.visible=this.water.visible=false;this.items.length=0;this.debris.count=0;for(const actor of this.actors)this.release(actor);this.actors.length=0;this.waterSources=[]}
  capture(kind,now,size=1){if(this.items.length>=this.capacity)return false;this.items.push({kind,start:now,size:Math.max(.25,Math.min(2,size)),index:this.items.length});return true}
- update(now,eye,ground=0){this.root.visible=eye.active;this.debris.visible=eye.active;if(!eye.active)return;this.root.position.set(eye.x,ground,eye.z);this.haze.rotation.y=now*.8;
- for(let i=0;i<24;i++){const y=.25+i*.66,r=.55+y*.29,a=now*3-i*.6;this.dummy.position.set(Math.cos(a)*r*.12,y,Math.sin(a)*r*.12);this.dummy.rotation.set(Math.PI/2,0,a);this.dummy.scale.set(r,r,.75);this.dummy.updateMatrix();this.rings.setMatrixAt(i,this.dummy.matrix)}this.rings.instanceMatrix.needsUpdate=true;
- this.items=this.items.filter(q=>now-q.start<7);let n=0;const color=new T.Color();
+ captureActor(kind,source,now){if(this.actors.length>=this.actorCapacity||!source)return false;const g=source.clone(true),geometries=[];g.visible=true;g.traverse(mesh=>{if(mesh.isMesh){mesh.geometry=mesh.geometry.clone();geometries.push(mesh.geometry);mesh.castShadow=false;mesh.receiveShadow=false}});g.position.set(0,0,0);this.scene.add(g);this.actors.push({g,kind,start:now,index:this.actors.length,geometries});return true}
+ update(now,eye,ground=0){const active=eye.active;this.root.visible=this.debris.visible=this.grass.visible=this.water.visible=active;if(!active)return;this.root.position.set(eye.x,ground,eye.z);this.haze.rotation.y=now*.8;
+ for(let i=0;i<30;i++){const y=.25+i*.75,r=.7+y*.28,a=now*4-i*.6;this.dummy.position.set(Math.cos(a)*r*.12,y,Math.sin(a)*r*.12);this.dummy.rotation.set(Math.PI/2,0,a);this.dummy.scale.set(r,r,.8);this.dummy.updateMatrix();this.rings.setMatrixAt(i,this.dummy.matrix)}this.rings.instanceMatrix.needsUpdate=true;
+ this.items=this.items.filter(q=>now-q.start<8);let n=0;
  for(const q of this.items){const p=orbitPose(eye,now-q.start,q.index),shapes=q.kind==='tree'?[[0,.5,0,.24,2,.24,0x70533c],[0,1.5,0,1.6,1.2,1.6,0x497746]]:q.kind==='house'?[[0,0,0,2,.18,1.5,0x966b42],[0,.6,0,1.7,.2,1.7,0xa46146],[.7,.3,0,.18,1.1,1.5,0x966b42]]:[[0,0,0,q.kind==='food'?.35:1,.6,1,q.kind==='rock'?0x879095:0x98633f]];
- for(const [x,y,z,sx,sy,sz,c] of shapes){this.dummy.position.set(p.x+x,ground+p.y+y,p.z+z);this.dummy.rotation.set(p.angle*.7,p.angle,p.angle*.4);this.dummy.scale.set(sx*q.size,sy*q.size,sz*q.size);this.dummy.updateMatrix();this.debris.setMatrixAt(n,this.dummy.matrix);this.debris.setColorAt(n++,color.setHex(c))}}
+ for(const [x,y,z,sx,sy,sz,color] of shapes){this.dummy.position.set(p.x+x,ground+p.y+y,p.z+z);this.dummy.rotation.set(p.angle*.7,p.angle,p.angle*.4);this.dummy.scale.set(sx*q.size,sy*q.size,sz*q.size);this.dummy.updateMatrix();this.debris.setMatrixAt(n,this.dummy.matrix);this.debris.setColorAt(n++,this.color.setHex(color))}}
  this.debris.count=n;this.debris.instanceMatrix.needsUpdate=true;if(this.debris.instanceColor)this.debris.instanceColor.needsUpdate=true;
+ for(let i=0;i<this.grass.instanceMatrix.count;i++){const phase=(now*.3+i*.618)%1,h=phase*21,r=1.2+h*.22+(i%5)*.14,a=now*(3+i%3*.25)+i*2.399;this.dummy.position.set(eye.x+Math.cos(a)*r,ground+h,eye.z+Math.sin(a)*r);this.dummy.rotation.set(a*.3,a,a);this.dummy.scale.set(i%4?.045:.18,i%4?.6:.12,.045);this.dummy.updateMatrix();this.grass.setMatrixAt(i,this.dummy.matrix);this.grass.setColorAt(i,this.color.setHex(i%5===0?0x9d784b:i%3?0x7fa75b:0xb8c68b))}this.grass.instanceMatrix.needsUpdate=true;this.grass.instanceColor.needsUpdate=true;
+ this.water.count=this.waterSources.length?this.water.instanceMatrix.count:0;for(let i=0;i<this.water.count;i++){const source=this.waterSources[i%this.waterSources.length],t=(now*.38+i*.618)%1,a=now*5+i*2.4,r=2+3*t;this.dummy.position.set(source.x+(eye.x-source.x)*t+Math.cos(a)*r*t,source.y+(ground+18-source.y)*t+Math.sin(t*Math.PI)*2,source.z+(eye.z-source.z)*t+Math.sin(a)*r*t);this.dummy.rotation.set(0,a,a*.5);this.dummy.scale.set(.12+.12*t,.25+.35*t,.12+.12*t);this.dummy.updateMatrix();this.water.setMatrixAt(i,this.dummy.matrix)}this.water.instanceMatrix.needsUpdate=true;
+ for(let i=this.actors.length-1;i>=0;i--){const actor=this.actors[i],age=now-actor.start;if(age>8){this.release(actor);this.actors.splice(i,1);continue}const p=orbitPose(eye,age,actor.index);actor.g.position.set(p.x,ground+p.y+1,p.z);actor.g.rotation.set(Math.sin(age*4)*.3,p.angle+Math.PI/2,Math.sin(age*3)*.6)}
  }
 }

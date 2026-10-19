@@ -18,7 +18,7 @@ test('both transformations last 30 active seconds, including slow frames and rep
  }
 });
 test('animal reunion dialogue is distinct for every relative and form',()=>{
- const lines=new Set();for(const form of ['cat','boar'])for(let role=0;role<4;role++){const p=reunionProfile(form,role);assert.ok(p.line&&p.after&&p.name);assert.ok(!lines.has(p.line));lines.add(p.line);assert.notEqual(p.gesture,'hug');for(const t of [0,1,2.5,4,6,8])for(const n of Object.values(reunionPose(form,t)))assert.ok(Number.isFinite(n))}
+ const lines=new Set();for(const form of ['cat','boar'])for(let role=0;role<4;role++){const p=reunionProfile(form,role);assert.ok(p.line&&p.after&&p.name);assert.ok(!lines.has(p.line));lines.add(p.line);assert.equal(p.gesture,'hug');for(const t of [0,1,2.5,4,6,8])for(const n of Object.values(reunionPose(form,t)))assert.ok(Number.isFinite(n))}
  assert.equal(reunionProfile('human',0).gesture,'hug');
 });
 
