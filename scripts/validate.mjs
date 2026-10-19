@@ -14,7 +14,7 @@ const checks=[
  ['v207 uniform grass on all locations',/one evenly seeded grass layer/.test(game)&&/meadowGrassCount=grassCount/.test(game)&&/meadowGrassRoot.visible=currentSeason!=='winter'/.test(game)],
  ['v207 calm friend',/d>4\.2/.test(game)&&/Math\.exp\(-3\.2\*dt\)/.test(game)],
 
- ['v207 desktop mouse actions',/if\(e\.button===0\)/.test(game)&&/if\(e\.button===2\)/.test(game)&&/queuePlayerJump\(\)/.test(game)&&/requestDesktopMouseLock\(\)/.test(game)],
+ ['v207 desktop mouse actions',/e\.button===0[^}]*feed\(\)/s.test(game)&&/e\.button===2[^}]*queuePlayerJump\(\)/s.test(game)],
  ['v207 cinematic ground safety',/heroGround=Math\.max\(0,terrainHeightAt/.test(game)&&/const ground=Math\.max\(0,terrainHeightAt\(q\.x,q\.z\)\)/.test(game)],
  ['v207 intro boar entrance',/b\.g\.scale\.setScalar\(q\.scale\?\?1\)/.test(game)],
 
