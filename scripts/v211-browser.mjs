@@ -11,7 +11,7 @@ for(const [engine,mobile] of [[chromium,false],[webkit,true]]){
  const shot=async(name)=>{await page.waitForTimeout(250);const b=await page.screenshot({path:'screenshots/v211-'+name+'.jpg',type:'jpeg',quality:45});if(!mobile||name.includes('low')||name.includes('normal')){const s=b.toString('base64');for(let i=0;i<s.length;i+=6000)console.log('REVIEW_IMAGE:'+name+':'+Math.floor(i/6000)+':'+s.slice(i,i+6000));}};
  for(const n of [1,2,3,4,5]){const scene=await qa('v211Scene',n,'exit');console.log('EXIT',JSON.stringify(scene));if(n===3)assert.deepEqual(scene.fence,{left:-48,right:48,opening:11});await shot((mobile?'mobile-':'desktop-')+'exit-'+n);}
  for(const kind of ['normal','low','pickup']){await qa('v211Scene',3,kind);await shot((mobile?'mobile-':'desktop-')+kind);}
- for(const form of ['cat','boar']){await qa('v211Reunion',form,2,3);await shot((mobile?'mobile-':'desktop-')+'reunion-'+form);}
+ for(const form of ['cat','boar']){await qa('v211Reunion',form,2,3);await shot((mobile?'mobile-':'desktop-')+'reunion-'+form);const inspect=await qa('v211ReunionInspect');console.log('ANIMAL_DRAW',form,JSON.stringify(inspect));assert.ok(inspect.draws>5);}
  await qa('v211Scene',3,'normal');await page.click('#pauseBtn');await shot((mobile?'mobile-':'desktop-')+'pause');const resume=await page.locator('#resume').boundingBox();assert.ok(resume.y>=0&&resume.y+resume.height<=page.viewportSize().height);assert.deepEqual(furnitureIssues,[]);assert.deepEqual(errors,[]);console.log('v211 browser PASS',mobile?'webkit-mobile':'chromium-desktop');
  }finally{await browser.close();}
 }
