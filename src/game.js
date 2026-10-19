@@ -705,7 +705,7 @@ function applySeason(){
 function growSnowDrifts(minute){if(minute<1)return;while(winterDrifts.length<Math.min(24,minute*6)){const i=winterDrifts.length;let found=null;for(let n=0;n<500;n++){const x=rand(-37,37),z=rand(-37,35);if(Math.abs(x)<7||(level===2&&(lakeRadiusAt(x,z)<16.5||lakeInletDepthAt(x,z)>0))||(level===4&&Math.abs(z-riverCenterAt(x))<7)||worldObstacleAt(x,z,1.8)||winterDrifts.some(d=>Math.hypot(d.x-x,d.z-z)<5))continue;found={x,z};break}if(!found)break;const r=rand(1.2,2.5),m=new THREE.Mesh(new THREE.SphereGeometry(1,12,8),winterRoadMaterial);m.position.set(found.x,worldSurface.height(found.x,found.z)-.015,found.z);m.receiveShadow=!mobile;seasonVisual.add(m);winterDrifts.push({...found,r,height:0,m})}for(const d of winterDrifts){d.height=.16+minute*.17;d.m.scale.set(d.r,d.height,d.r)}const p=surfaceGeometry.attributes.position;for(let i=0;i<p.count;i++)p.setZ(i,groundSurfaceHeightAt(p.getX(i),-p.getY(i)));p.needsUpdate=true;surfaceGeometry.computeVertexNormals()}
 function updateSnow(dt,now){
  const minute=Math.min(4,Math.floor(levelTime/60));weatherStage=Math.min(4,minute+1);if(minute!==winterSnowMinute){winterSnowMinute=minute;growSnowDrifts(minute);if(minute>0)notice('❄️ Снегопад усиливается, сугробы растут!')}scene.fog.far=Math.max(level>=5?28:36,(level>=5?48:68)-minute*7);snowMaterial.size=.13+minute*.018;
- nextLightningAt=0;lightningFlash=0;lightningSky.intensity=0;lightningSun.intensity=0;hurricaneCarry=0;weatherGroup.visible=false;snowGroup.visible=true;snowGroup.position.set(boy.position.x,0,boy.position.z);snowGeometry.setDrawRange(0,Math.floor(snowCount*graphicsParticleFactor*Math.min(1,.35+minute*.2)));for(let i=0;i<snowCount;i++){const j=i*3;snowPositions[j]+=dt*(1.5+Math.sin(now*.001+i)*.75);snowPositions[j+1]-=dt*(3.2+minute*.8+(i%7)*.22);snowPositions[j+2]+=dt*(2.4+Math.cos(now*.0012+i)*.45);if(snowPositions[j+1]<-.5){snowPositions[j]=rand(-26,26);snowPositions[j+1]=rand(23,29);snowPositions[j+2]=rand(-26,26)}if(snowPositions[j]>26)snowPositions[j]=-26;if(snowPositions[j+2]>26)snowPositions[j+2]=-26}snowGeometry.attributes.position.needsUpdate=true;updateStormClouds(dt,now);for(const cloud of weatherClouds)if(cloud.visible)cloud.userData.cloudMat.color.set(0xcdd8e2);updateStormFires(dt,now);
+ nextLightningAt=0;lightningFlash=0;lightningSky.intensity=0;lightningSun.intensity=0;weatherGroup.visible=false;snowGroup.visible=true;snowGroup.position.set(boy.position.x,0,boy.position.z);snowGeometry.setDrawRange(0,Math.floor(snowCount*graphicsParticleFactor*Math.min(1,.35+minute*.2)));for(let i=0;i<snowCount;i++){const j=i*3;snowPositions[j]+=dt*(1.5+Math.sin(now*.001+i)*.75);snowPositions[j+1]-=dt*(3.2+minute*.8+(i%7)*.22);snowPositions[j+2]+=dt*(2.4+Math.cos(now*.0012+i)*.45);if(snowPositions[j+1]<-.5){snowPositions[j]=rand(-26,26);snowPositions[j+1]=rand(23,29);snowPositions[j+2]=rand(-26,26)}if(snowPositions[j]>26)snowPositions[j]=-26;if(snowPositions[j+2]>26)snowPositions[j+2]=-26}snowGeometry.attributes.position.needsUpdate=true;updateStormClouds(dt,now);for(const cloud of weatherClouds)if(cloud.visible)cloud.userData.cloudMat.color.set(0xcdd8e2);updateStormFires(dt,now);
 }
 
 
@@ -786,20 +786,21 @@ function updateTornado(dt,now){
  tornadoSweep-=dt;if(tornadoSweep>0)return;tornadoSweep=.22;let grabbed=0;
  const close=(o,r)=>{const q=objectWorldPoint(o);return Math.hypot(q.x-tornadoState.x,q.z-tornadoState.z)<r};
  for(const a of apples){if(grabbed>=3)break;if(!a.done&&close(a.g,TORNADO_REACH)&&tornadoVisual.capture('food',now/1000,.65)){a.done=true;scene.remove(a.g);grabbed++}}
+ for(let i=adventurePickups.length-1;i>=0&&grabbed<3;i--){const q=adventurePickups[i];if(close(q.g,10)&&tornadoVisual.capture(q.kind==='wood'?'log':'food',now/1000,.6)){adventureCollected.add(q.key);disposePickupVisual(q.g);adventurePickups.splice(i,1);grabbed++}}
  for(const [kind,objects] of [['tree',treeObjects],['house',houseObjects],['rock',rockPositions.map(q=>q[3])],['log',logObstacles.map(o=>o.g)]]){
   if(grabbed>=3)break;
   for(const obj of objects){if(!obj?.visible||!obj.parent||!close(obj,kind==='house'?4:kind==='tree'?6:9))continue;let shown=true;for(let q=obj.parent;q;q=q.parent)if(!q.visible)shown=false;if(!shown)continue;
    if(tornadoVisual.capture(kind,now/1000,kind==='tree'?1.2:1)){destroyAdventureObject(obj,kind,'tornado');grabbed++;break}
   }
  }
- for(const f of [...foes])if(!f.flee&&close(f.g,5)&&tornadoVisual.capture('boar',now/1000,1)){if(f.isBoss)continue;removeAdventureFoe(f,'tornado')}
+ for(const f of [...foes])if(!f.flee&&close(f.g,5)&&tornadoVisual.capture('boar',now/1000,1)){if(f.isBoss)continue;if(removeAdventureFoe(f,'tornado'))f.g.visible=false}
  if(friend?.g&&!mountedFriend&&close(friend.g,5)){tornadoVisual.capture('boar',now/1000,1);const safe=nearestSafeSpawn(tornadoState.x>0?-8:8,12,1.8,{allowRoad:true})||[0,12];friend.g.position.set(safe[0],0,safe[1]);friend.route=null;friend.knockback=null;friendHP=Math.max(1,friendHP-1);settleBoarOnGround(friend);notice('🐗 Друг вырвался из вихря. Его можно подкормить.')}
 }
 function bombModel(parent){const g=new THREE.Group();parent.add(g);const ball=new THREE.Mesh(new THREE.SphereGeometry(.24,8,6),bombShellMat);ball.position.y=.26;g.add(ball);const fuse=block(g,bombFuseMat,.08,.54,0,.06,.18,.06);fuse.rotation.z=-.4;return g}
 function disposePickupVisual(o){o.removeFromParent();o.traverse(m=>{if(m.geometry&&m.geometry!==cube)m.geometry.dispose()})}
 function syncAdventureItems(){
  for(const a of adventurePickups)disposePickupVisual(a.g);adventurePickups.length=0;
- for(const b of armedBombs){disposePickupVisual(b.g);b.ring.removeFromParent()}armedBombs.length=0;
+ for(const b of armedBombs){disposePickupVisual(b.g);b.ring.removeFromParent();b.ring.geometry?.dispose()}armedBombs.length=0;
  for(const b of blastEffects)b.g.removeFromParent();blastEffects.length=0;
  if(level>=6){syncCraftUI();return}
  for(const obj of adventureDestroyed.get(level)||[])obj.visible=false;
@@ -813,7 +814,7 @@ function syncAdventureItems(){
  syncCraftUI();
 }
 function syncCraftUI(){
- const stock=$('craftStock');if(!stock)return;stock.textContent='Доски: '+adventureInventory.wood+' · Бомбочки: '+adventureInventory.bombs+' · Еда: '+food;
+ const stock=$('craftStock');if(!stock)return;stock.textContent='Обломки: '+adventureInventory.wood+' · Бомбочки: '+adventureInventory.bombs+' · Еда: '+food;
  for(const [kind,recipe] of Object.entries(RECIPES)){const button=$('craft-'+kind);button.disabled=!craftResult(kind,{...adventureInventory,food})||kind==='lamp'&&hasFlashlight||kind==='aid'&&life>=diffCfg().playerHP}
  $('bombAction').hidden=!started||paused||cinematicRunning||endShown||mountedFriend||adventureInventory.bombs<=0;$('dismountAction').hidden=!started||paused||cinematicRunning||endShown||!mountedFriend;
  $('bombAction').textContent='💣 Поставить · '+adventureInventory.bombs;
@@ -832,7 +833,7 @@ function placeAdventureBomb(){
  const x=boy.position.x+Math.sin(boy.rotation.y)*1.6,z=boy.position.z+Math.cos(boy.rotation.y)*1.6;
  if(py>playerSupportHeightAt(boy.position.x,boy.position.z)+.25||waterAt(x,z)||playerWorldBlocked(x,z)){notice('💣 Нужен свободный сухой участок рядом.');return false}
  const g=bombModel(scene),y=terrainHeightAt(x,z)+familyFloorAt(x,z);g.position.set(x,y,z);
- const ring=new THREE.Mesh(blastRingGeo,blastRingMat);ring.rotation.x=-Math.PI/2;ring.position.set(x,y+.035,z);ring.scale.setScalar(BOMB_RADIUS);scene.add(ring);
+ const ring=new THREE.Mesh(new THREE.RingGeometry(BOMB_RADIUS*.96,BOMB_RADIUS,40),blastRingMat);const points=ring.geometry.attributes.position;for(let i=0;i<points.count;i++){const wx=x+points.getX(i),wz=z-points.getY(i);points.setZ(i,Math.max(forageGroundAt(wx,wz),terrainHeightAt(wx,wz)+familyFloorAt(wx,wz))+.04-y)}ring.geometry.computeBoundingSphere();ring.rotation.x=-Math.PI/2;ring.position.set(x,y,z);scene.add(ring);
  armedBombs.push({g,ring,left:BOMB_FUSE,x,z,y});adventureInventory.bombs--;stopFishing();notice('💣 4 секунды! Отойди за красный круг.');hud();return true;
 }
 function explodeAdventureBomb(b){
@@ -845,11 +846,11 @@ function explodeAdventureBomb(b){
  for(const obj of houseObjects)if(obj.visible&&d(obj.position.x,obj.position.z)<BOMB_RADIUS)destroyAdventureObject(obj,'house');
  for(const obj of logObstacles)if(obj.g.visible&&d(obj.g.position.x,obj.g.position.z)<BOMB_RADIUS)destroyAdventureObject(obj.g,'log');
  for(const a of apples)if(!a.done&&d(a.x,a.z)<BOMB_RADIUS){a.done=true;scene.remove(a.g)}
- disposePickupVisual(b.g);b.ring.removeFromParent();const flash=new THREE.Mesh(new THREE.SphereGeometry(1,12,8),new THREE.MeshBasicMaterial({color:0xffbd70,transparent:true,opacity:.65,depthWrite:false}));flash.position.set(b.x,b.y+1,b.z);scene.add(flash);blastEffects.push({g:flash,t:0});softEffectTone(85,.42,'triangle',.04,0,40);worldEpoch++;hud();
+ disposePickupVisual(b.g);b.ring.removeFromParent();b.ring.geometry?.dispose();const flash=new THREE.Mesh(new THREE.SphereGeometry(1,12,8),new THREE.MeshBasicMaterial({color:0xffbd70,transparent:true,opacity:.65,depthWrite:false}));flash.position.set(b.x,b.y+1,b.z);scene.add(flash);blastEffects.push({g:flash,t:0});softEffectTone(85,.42,'triangle',.04,0,40);worldEpoch++;hud();
 }
 function updateAdventureItems(dt){
- for(let i=adventurePickups.length-1;i>=0;i--){const a=adventurePickups[i];if(a.g.position.distanceTo(boy.position)>1.6)continue;adventureCollected.add(a.key);if(a.kind==='bomb')adventureInventory.bombs++;else adventureInventory.wood+=2;disposePickupVisual(a.g);adventurePickups.splice(i,1);notice(a.kind==='bomb'?'💣 Нашёл спрятанную бомбочку. G — поставить; после установки отойди!':'🪵 Нашёл материалы. Крафт — в меню паузы или C.');hud()}
- for(let i=armedBombs.length-1;i>=0;i--){const b=armedBombs[i];b.left=advanceFuse(b.left,dt);b.g.children[1].scale.y=.5+b.left/BOMB_FUSE;if(b.left===0){armedBombs.splice(i,1);explodeAdventureBomb(b)}}
+ for(let i=adventurePickups.length-1;i>=0;i--){const a=adventurePickups[i];if(a.g.position.distanceTo(boy.position)>1.6)continue;adventureCollected.add(a.key);if(a.kind==='bomb')adventureInventory.bombs++;else adventureInventory.wood+=2;disposePickupVisual(a.g);adventurePickups.splice(i,1);notice(a.kind==='bomb'?'💣 Нашёл спрятанную бомбочку. G — поставить; после установки отойди!':'🪵 Нашёл обломки для крафта. Крафт — в меню паузы или C.');hud()}
+ for(let i=armedBombs.length-1;i>=0;i--){const b=armedBombs[i];b.left=advanceFuse(b.left,dt);b.g.children[1].scale.y=.18*(.25+.75*b.left/BOMB_FUSE);if(b.left===0){armedBombs.splice(i,1);explodeAdventureBomb(b)}}
  for(let i=blastEffects.length-1;i>=0;i--){const b=blastEffects[i];b.t+=dt;b.g.scale.setScalar(.5+b.t*8);b.g.material.opacity=Math.max(0,.65-b.t);if(b.t>.65){b.g.removeFromParent();b.g.geometry.dispose();b.g.material.dispose();blastEffects.splice(i,1)}}
 }
 function resetAdventureItems(fresh){if(fresh){for(const objects of adventureDestroyed.values())for(const o of objects)o.visible=true;adventureInventory.wood=adventureInventory.bombs=0;adventureCollected.clear();adventureDestroyed.clear()}}
@@ -2358,7 +2359,7 @@ if(__autoTest||__autoParams.get('openingtest')==='1')window.__KABANCHIKI_QA__={
   cineClear();cinematicRunning=false;cinematicFinish=null;$('cinematic').style.display='none';$('pauseMenu').style.display='none';endShown=win=false;started=true;paused=true;boarFormTime=catFormTime=0;mountedFriend=false;py=vy=0;keys={};stick.x=stick.y=0;jump=act=false;invuln=999;resetAdventureItems(true);this.season(0);this.load(n);paused=true;life=diffCfg().playerHP;food=4;stopFishing();boy.position.set(0,0,20);return true;
  },
  v212Tornado(seconds=300,near=false,season=0,n=3){
-  this.v212Setup(n);this.season(season);levelTime=seconds;boy.position.set(0,0,20);updateTornado(0,performance.now());const farCarry=hurricaneCarry;
+  this.v212Setup(n);this.season(season*20);levelTime=seconds;boy.position.set(0,0,20);updateTornado(0,performance.now());const farCarry=hurricaneCarry;
   if(near&&tornadoState.active){boy.position.set(tornadoState.x+.5,0,tornadoState.z);updateTornado(0,performance.now())}
   hud();return {clock:stormClock(levelTime,level),active:tornadoState.active,farCarry,carry:hurricaneCarry,movie:movie?.kind,eye:{x:tornadoState.x,z:tornadoState.z},text:$('message').textContent};
  },
