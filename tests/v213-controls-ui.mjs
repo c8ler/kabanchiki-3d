@@ -15,3 +15,5 @@ test('menus follow visible viewport resize, keyboard and panning',()=>{
  const handlers={},props={},frames=[],visualViewport={width:390,height:844,offsetTop:0,offsetLeft:0,addEventListener:(k,f)=>handlers['v'+k]=f},win={visualViewport,innerWidth:390,innerHeight:844,addEventListener:(k,f)=>handlers[k]=f,requestAnimationFrame:f=>frames.push(f)},doc={documentElement:{style:{setProperty:(k,v)=>props[k]=v}}};
  installMenuViewport(win,doc);assert.equal(props['--menu-vh'],'844px');visualViewport.height=300;visualViewport.offsetTop=40;handlers.vresize();handlers.vscroll();assert.equal(frames.length,1);frames.shift()();assert.equal(props['--menu-vh'],'300px');assert.equal(props['--menu-top'],'40px');visualViewport.width=568;handlers.resize();frames.shift()();assert.equal(props['--menu-vw'],'568px');
 });
+import {parseCheatCode} from '../src/cheat-codes.js';
+test('bomb cheat supports English and Russian names',()=>{for(const code of ['BOMB',' bomb ','БОМБА','бомбочка'])assert.deepEqual(parseCheatCode(code),{type:'bomb'})});

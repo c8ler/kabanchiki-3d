@@ -407,3 +407,5 @@ Robot rock probes now use the same rotated rounded ellipse as gameplay instead o
 
 
 v213: reliable Q/touch dismount without automatic remount, viewport-fitting scrollable menus, brief minute/tornado countdown windows, clear boss-minion spawns and crowd-aware navigation. Regression checks: `node scripts/v213-browser.mjs` (Chromium and WebKit).
+
+Cheat: pause → «Чит-коды» → BOMB (also «бомба» / «бомбочка») grants one bomb; place with G or the bomb button after resuming.
