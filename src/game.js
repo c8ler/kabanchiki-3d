@@ -1496,6 +1496,16 @@ function movePlayerCollisionStep(mx,mz){
  for(const hit of mountainContactsAt(tx,tz,mountedFriend?MOUNTED_ROCK_RADIUS:PLAYER_RADIUS)){if(hit.depth<nd||!nearest){nd=hit.depth;nearest={x:hit.x,z:hit.z,r:0}}}
  if(nearest){const rx=px-nearest.x,rz=pz-nearest.z,rl=Math.hypot(rx,rz)||1,txv=-rz/rl,tzv=rx/rl,sgn=(mx*txv+mz*tzv)>=0?1:-1,mag=Math.hypot(mx,mz);const sx=px+txv*mag*sgn,sz=pz+tzv*mag*sgn;if(!movementBlocked(sx,sz)){boy.position.x=sx;boy.position.z=sz}}
 }
+function playerCrossesHouseWall(ax,az,bx,bz){
+ if(level!==3)return false;
+ for(const w of wallGeometry()){
+  if(w.furniture)continue;const top=w.shell&&w.root.userData.enterable?Math.max(w.box.max.y,w.roofTop):w.box.max.y;
+  if(py+terrainHeightAt(ax,az)>=top-.015)continue;
+  const y=(w.box.min.y+w.box.max.y)/2;
+  if(segmentHitsBox({x:ax,y,z:az},{x:bx,y,z:bz},w.box))return true;
+ }
+ return false;
+}
 function movePlayerCollision(mx,mz){
  // v107 swept/sub-stepped motion prevents a fast mounted boar from tunnelling through
  // a narrow rock between rendered frames. Every slice re-runs the full collision solver.
@@ -1503,6 +1513,7 @@ function movePlayerCollision(mx,mz){
  for(let i=0;i<n;i++){
   const safeX=boy.position.x,safeZ=boy.position.z;
   movePlayerCollisionStep(mx/n,mz/n);
+  if(playerCrossesHouseWall(safeX,safeZ,boy.position.x,boy.position.z)){boy.position.x=safeX;boy.position.z=safeZ;}
   // v119: resolve the whole neighbouring-rock cluster, then require a globally valid mounted
   // footprint. If overlapping ellipses cannot be resolved simultaneously, keep the last safe
   // position instead of allowing one rock's push-out to place the boar inside another rock.
@@ -1967,7 +1978,8 @@ function resolveBoarClearance(f,protectPlayer=true){
  for(let pass=0;pass<(f.playerControlled?12:4);pass++){
   const contacts=[...boarTreeContacts(f),...boarWallContacts(f)];const playerHit=protectPlayer?boarPlayerContact(f):null;if(playerHit)contacts.push(playerHit);
   if(!contacts.length)break;
-  const moves=f.playerControlled?[contacts.reduce((a,b)=>a.depth>b.depth?a:b)]:contacts;
+  const moves=f.playerControlled?contacts.filter(hit=>!playerCrossesHouseWall(f.g.position.x,f.g.position.z,f.g.position.x+hit.nx*(hit.depth+.004),f.g.position.z+hit.nz*(hit.depth+.004))).sort((a,b)=>b.depth-a.depth).slice(0,1):contacts;
+  if(!moves.length)break;
   for(const hit of moves){f.g.position.x+=hit.nx*(hit.depth+.004);f.g.position.z+=hit.nz*(hit.depth+.004)}
  }
 
@@ -2244,17 +2256,17 @@ if(__autoTest||__autoParams.get('openingtest')==='1')window.__KABANCHIKI_QA__={
      boy.position.set(start.x,0,start.z);py=box.max.y-terrainHeightAt(start.x,start.z)+.02;vy=form==='cat'?CAT_JUMP_SPEED:7;catFormTime=form==='cat'?30:0;boarFormTime=form==='boar'?30:0;
      const worldCam=h.localToWorld(new THREE.Vector3(side==='left'?-8:side==='right'?8:0,4,side==='back'?-8:side==='front'?8:0));camera.position.copy(worldCam);
      updateFamilyHouseReveal=()=>{reveal();setDadHouseCutaway(h===familyHideout&&cutaway);setHomeHouseCutaway(h===personalHouse&&cutaway)};
-     let escaped=false,headClip=false;
+     let escaped=false,headClip=false,firstEscape=null;
      for(let frame=0;frame<fps*1.5;frame++){
       boarCollisionEpoch++;const dx=goal.x-boy.position.x,dz=goal.z-boy.position.z,d=Math.hypot(dx,dz);if(d)movePlayerCollision(dx/d*6/fps,dz/d*6/fps);movePlayerVertical(1/fps);
       const q=h.worldToLocal(new THREE.Vector3(boy.position.x,0,boy.position.z)),wallX=h===familyHideout?2.6:2.4,wallZ=h===familyHideout?2.18:2.4;
-      if(Math.abs(q.x)>wallX+.12||q.z<-wallZ-.12||(q.z>wallZ+.12&&Math.abs(q.x)>1.2))escaped=true;
+      if(Math.abs(q.x)>wallX+.12||q.z<-wallZ-.12||(q.z>wallZ+.12&&Math.abs(q.x)>1.2)){escaped=true;firstEscape??={frame,x:q.x,z:q.z,py};}
       const roof=doorCollisionBox(h.userData.cutawayWalls.roof),head=py+terrainHeightAt(boy.position.x,boy.position.z)+playerPhysicalHeight();
       if(Math.abs(q.x)<wallX-.4&&Math.abs(q.z)<wallZ-.4&&py<roof.min.y&&head>roof.min.y+.06)headClip=true;
      }
      if(escaped)issues.push('wall-'+(h===familyHideout?'family':'home')+'-'+index+'-'+form+'-'+side+'-'+fps+'-'+cutaway);
      if(headClip)issues.push('ceiling-'+(h===familyHideout?'family':'home')+'-'+index+'-'+form+'-'+fps);
-     samples.push({house:h===familyHideout?'family':'home',index,form,side,fps,cutaway,escaped,headClip});
+     samples.push({house:h===familyHideout?'family':'home',index,form,side,fps,cutaway,escaped,headClip,firstEscape});
     }
    }
   }finally{updateFamilyHouseReveal=reveal;boarFormTime=catFormTime=0;py=vy=0;boy.position.set(0,0,12);setDadHouseCutaway(false);setHomeHouseCutaway(false);}
