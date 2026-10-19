@@ -2396,10 +2396,12 @@ if(__autoTest||__autoParams.get('openingtest')==='1')window.__KABANCHIKI_QA__={
   else {$(id).style.display='grid';if(id==='statsScreen')$('statsTable').innerHTML=localStatsHtml();if(id==='familyPopup'){$('familyTitle').textContent='Семья найдена!';$('familyText').textContent='Тимур, наконец-то ты пришёл! Мы так долго тебя ждали.'}}
   return true;
  },
- v213MinionRobot(angle=0,fps=60){
+ v213BossLive(){this.v212Setup(6);if(friend){scene.remove(friend.g);friend=null}boy.position.set(0,0,0);bossSummon=.01;paused=false;return true;},
+ v213BossInspect(){return foes.filter(f=>f.isMinion).map(f=>({x:f.g.position.x,z:f.g.position.z,entering:!!f.entering,blocked:boarSceneryBlockedAt(f,f.g.position.x,f.g.position.z)}));},
+ v213MinionRobot(angle=0,fps=60,crowd=false){
   this.v212Setup(6);for(const f of foes)scene.remove(f.g);foes.length=0;if(friend){scene.remove(friend.g);friend=null}
   boy.position.set(0,0,0);const m=makeBoar(0,0,false);m.isMinion=true;const q=minionSpawnPoint(m,angle);
-  if(!q){scene.remove(m.g);return {spawn:false}}m.g.position.set(q.x,0,q.z);m.g.rotation.y=Math.atan2(-q.x,-q.z);foes.push(m);const initial=Math.hypot(q.x,q.z);let maxStep=0,penetrations=0,reversals=0,last=null,moved=0;
+  if(!q){scene.remove(m.g);return {spawn:false}}m.g.position.set(q.x,0,q.z);m.g.rotation.y=Math.atan2(-q.x,-q.z);foes.push(m);if(crowd){const boss=makeBoar(q.x*.48,q.z*.48,false);boss.g.scale.setScalar(2.3);boss.isBoss=true;foes.push(boss)}const initial=Math.hypot(q.x,q.z);let maxStep=0,penetrations=0,reversals=0,last=null,moved=0;
   for(let i=0;i<fps*24;i++){boarCollisionEpoch++;const x=m.g.position.x,z=m.g.position.z;moveBoarToward(m,0,0,2.1,1/fps);resolveBoarClearance(m);settleBoarOnGround(m);const dx=m.g.position.x-x,dz=m.g.position.z-z,d=Math.hypot(dx,dz);maxStep=Math.max(maxStep,d);moved+=d;if(boarSceneryBlockedAt(m,m.g.position.x,m.g.position.z))penetrations++;if(d>.008){if(last&&last.x*dx+last.z*dz<-.5*last.d*d)reversals++;last={x:dx,z:dz,d}}if(Math.hypot(m.g.position.x,m.g.position.z)<4)break}
   return {spawn:true,initial,remaining:Math.hypot(m.g.position.x,m.g.position.z),maxStep,penetrations,reversals,moved,plans:m.route?.plans};
  },

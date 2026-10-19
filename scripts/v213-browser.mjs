@@ -12,8 +12,11 @@ for(const [engine,mobile] of [[chromium,false],[webkit,true]]){
  const start=await qa('v213Mounted',n);assert.ok(start.ok&&start.mounted);
  if(mobile)await page.locator('#dismountAction').tap();else await page.keyboard.press('q');
  await page.waitForTimeout(1600);const r=await qa('v213MountInspect');console.log('DISMOUNT',n,r);assert.equal(r.mounted,false);assert.ok(r.py<.1&&Math.abs(r.vy)<.1);assert.ok(r.distance>1.25&&!r.blocked);});
+ await check('fresh intentional jump mounts again',async()=>{await page.keyboard.press('Space');await page.waitForTimeout(150);const r=await qa('v213MountInspect');assert.equal(r.mounted,true)});
  await check('countdown DOM survives active update',async()=>{for(const t of [0,54.9,55,59.9,60,115,120,175,180,235,240,284.9,285,299.9,300,301]){const r=await qa('v213Clock',t);assert.equal(r.hidden,!r.clock.shown,'DOM at '+t)}});
  await check('minions traverse arena from all directions',async()=>{for(const fps of [15,60])for(let k=0;k<8;k++){const r=await qa('v213MinionRobot',k*Math.PI/4,fps);console.log('MINION',fps,k,r);assert.ok(r.spawn&&r.remaining<8);assert.equal(r.penetrations,0);assert.ok(r.maxStep<=2.1/fps+.01&&r.reversals<8)}});
+ await check('minions route around a stationary boss',async()=>{for(let k=0;k<4;k++){const r=await qa('v213MinionRobot',k*Math.PI/2,30,true);console.log('MINION_TRAFFIC',k,r);assert.ok(r.spawn&&r.remaining<8);assert.equal(r.penetrations,0);assert.ok(r.reversals<8)}});
+ await check('real boss summons mobile unobstructed minions',async()=>{await qa('v213BossLive');await page.waitForTimeout(400);const before=await qa('v213BossInspect');assert.equal(before.length,2);await page.waitForTimeout(2400);const after=await qa('v213BossInspect');console.log('MINIONS_LIVE',before,after);assert.equal(after.length,2);for(let i=0;i<2;i++){assert.equal(after[i].entering,false);assert.equal(after[i].blocked,false);assert.ok(Math.hypot(after[i].x-before[i].x,after[i].z-before[i].z)>.6)}});
  const menus=['intro','difficultyScreen','pauseMenu','familyPopup','endScreen','statsScreen'];
  for(const [width,height] of [[320,568],[568,320],[390,844],[844,390],[1024,600],[240,320],[320,240]])for(const id of menus)await check('menu '+id+' '+width+'x'+height,async()=>{
  await page.setViewportSize({width,height});await qa('v213Menu',id);await page.waitForTimeout(80);
