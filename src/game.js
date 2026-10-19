@@ -1,29 +1,33 @@
-import {forestEdgeAt,forestEdgeLimit,forestEdgeBlocked,RideHop} from './world-interactions.js?v=210';
-import {CinematicTreeGuard,visibleInTree,projectedBox} from './cinematic-tree-guard.js?v=210';
-import { FirstPersonFood } from './first-person-food.js?v=210';
-import { BOAR_WADING_DEPTH, boarWaterStep, updateBoarBreath, shoreGoal } from './boar-water.js?v=210';
-import { HomeConstruction, HOME_SITE, WOOD_PILES } from './home-construction.js?v=210';
-import { parseCheatCode } from './cheat-codes.js?v=210';
+import {AdventureHud,briefNotice} from './adventure-hud.js?v=211';
+import {makeExitBarrier,animateExitBarrier,buildExitLandscape,makeExitFence,refreshExitLandscape} from './exit-scenery.js?v=211';
+import {ceilingMotion,PLAYER_HEIGHTS} from './player-house-physics.js?v=211';
+import {reunionProfile,reunionPose} from './family-reunion.js?v=211';
+import {forestEdgeAt,forestEdgeLimit,forestEdgeBlocked,RideHop} from './world-interactions.js?v=211';
+import {CinematicTreeGuard,visibleInTree,projectedBox} from './cinematic-tree-guard.js?v=211';
+import { FirstPersonFood } from './first-person-food.js?v=211';
+import { BOAR_WADING_DEPTH, boarWaterStep, updateBoarBreath, shoreGoal } from './boar-water.js?v=211';
+import { HomeConstruction, HOME_SITE, WOOD_PILES } from './home-construction.js?v=211';
+import { parseCheatCode } from './cheat-codes.js?v=211';
 window.__gameLoadProgress?.(84);let __loadFinished=false;
 import * as THREE from '../vendor/three/three.module.min.js';
-import { BOAR_MAX_WATER_DEPTH, attacksPlayer, shallowStepAllowed, capsuleAt, capsuleCircleContact, capsuleCapsuleContact } from './boar-physics.js?v=210';
-import { convexHull, polygonContact, FriendYield } from './movement-geometry.js?v=210';
-import { BOSS_HITS, riverCenterAt, riverDepthAt, onRiverBridge, lakeInletCenterAt, lakeInletHalfWidthAt, lakeInletDepthAt, bridgeRailBlocked, weatherDeadline, rainFillLimit, rainFillRate, WorldSurface, lakePointAt, lakeRadiusAt, lakeDepth } from './world-surface.js?v=210';
-import { Knockback } from './knockback.js?v=210';
-import { AdaptiveQuality, GRAPHICS_TIERS } from './adaptive-quality.js?v=210';
-import { AttemptProgress, seasonForAttempts } from './seasons.js?v=210';
-import { Soundscape } from './soundscape.js?v=210';
-import { BufferedMusic, gameScore, cinematicScore } from './music-player.js?v=210';
-import { StaticSceneryBatches } from './static-batching.js?v=210';
-import { lightBudget, selectEffectLights, OcclusionSchedule, distantActorDt } from './render-budget.js?v=210';
-import { LocationExit, LOCATION_EXITS } from './location-exits.js?v=210';
-import { OpeningAdventure, openingStreamDepth, forestExitBlocked } from './opening-adventure.js?v=210';
-import { introStagingAt, outroStagingAt } from './cinematic-staging.js?v=210';
-import { segmentHitsBox, findGridPath, StableRoute, smoothHeading, findClearEscape } from './navigation.js?v=210';
-import { CatLife } from './cat-life.js?v=210';
-import { BirdLife } from './bird-life.js?v=210';
-import { CAT_BERRY_CHANCE, CAT_FORM_SECONDS, CAT_JUMP_SPEED, isCatBerryRoll, formTimeAfterStep } from './form-rules.js?v=210';
-const GAME_VERSION='v210';
+import { BOAR_MAX_WATER_DEPTH, attacksPlayer, shallowStepAllowed, capsuleAt, capsuleCircleContact, capsuleCapsuleContact } from './boar-physics.js?v=211';
+import { convexHull, polygonContact, FriendYield } from './movement-geometry.js?v=211';
+import { BOSS_HITS, riverCenterAt, riverDepthAt, onRiverBridge, lakeInletCenterAt, lakeInletHalfWidthAt, lakeInletDepthAt, bridgeRailBlocked, weatherDeadline, rainFillLimit, rainFillRate, WorldSurface, lakePointAt, lakeRadiusAt, lakeDepth } from './world-surface.js?v=211';
+import { Knockback } from './knockback.js?v=211';
+import { AdaptiveQuality, GRAPHICS_TIERS } from './adaptive-quality.js?v=211';
+import { AttemptProgress, seasonForAttempts } from './seasons.js?v=211';
+import { Soundscape } from './soundscape.js?v=211';
+import { BufferedMusic, gameScore, cinematicScore } from './music-player.js?v=211';
+import { StaticSceneryBatches } from './static-batching.js?v=211';
+import { lightBudget, selectEffectLights, OcclusionSchedule, distantActorDt } from './render-budget.js?v=211';
+import { LocationExit, LOCATION_EXITS } from './location-exits.js?v=211';
+import { OpeningAdventure, openingStreamDepth, forestExitBlocked } from './opening-adventure.js?v=211';
+import { introStagingAt, outroStagingAt } from './cinematic-staging.js?v=211';
+import { segmentHitsBox, findGridPath, StableRoute, smoothHeading, findClearEscape } from './navigation.js?v=211';
+import { CatLife } from './cat-life.js?v=211';
+import { BirdLife } from './bird-life.js?v=211';
+import { BOAR_FORM_SECONDS, CAT_BERRY_CHANCE, CAT_FORM_SECONDS, CAT_JUMP_SPEED, isCatBerryRoll, formTimeAfterStep } from './form-rules.js?v=211';
+const GAME_VERSION='v211';
 const attemptProgress=new AttemptProgress((()=>{try{return window.localStorage}catch{return null}})());let currentSeason=attemptProgress.season;
 let chosenSeason=null;try{chosenSeason=localStorage.getItem('kabanchiki3d_chosen_season')}catch{}
 function unlockedSeasons(){return attemptProgress.failed>=60?['summer','autumn','winter','spring']:attemptProgress.failed>=40?['summer','autumn','winter']:attemptProgress.failed>=20?['summer','autumn']:['summer']}
@@ -163,7 +167,7 @@ function applyGraphicsQuality(tier){
  window.__KABANCHIKI_TEST__.graphics={auto:true,tier,name:preset.name,pixelRatio:renderer.getPixelRatio(),shadows,grass:meadowGrass.count,particles:graphicsParticleFactor};
 }
 applyGraphicsQuality(adaptiveGraphics.tier);
-document.addEventListener('visibilitychange',()=>adaptiveGraphics.resetSample());
+document.addEventListener('visibilitychange',()=>{adaptiveGraphics.resetSample();last=performance.now()});
 if(__autoTest)window.__KABANCHIKI_ADAPTIVE__={controller:adaptiveGraphics,apply:applyGraphicsQuality,tiers:GRAPHICS_TIERS};
 const flowerMats=[0xffe26b,0xf7f0ff,0x89c9ff,0xff9ab2].map(c=>new THREE.MeshBasicMaterial({color:c}));
 for(let i=0;i<(mobile?24:46);i++){let x=rand(-40,40),z=rand(-40,40);if(Math.abs(x)<3.5)continue;const g=new THREE.Group();g.position.set(x,0,z);
@@ -750,7 +754,7 @@ function updateHomeUI(){if(level===3&&homeParts?.doorHinge){const near=Math.hypo
 function interactHome(){const action=homeInteraction();if(!action)return;if(action.kind==='wood'){home.collect(action.i);notice(`🪵 Собраны доски: ${home.wood}. Неси их к площадке «Мой домик».`)}else{if(!home.build()){notice('🪵 Нужны 2 доски. Найди штабели рядом с поляной.');return}worldEpoch++;tagStormTargetsForCurrentLocation();notice(home.stage===4?'🚪 Дверь готова! Домик достроен.':home.stage===3?'🏠 Крыша готова! Найди ещё брёвна для двери.':['','🏠 Пол готов. Теперь нужны стены.','🏠 Стены готовы. Осталось построить крышу.'][home.stage])}saveHome();syncHomeVisual();syncHomeLocation(level);updateHomeUI();}
 $('homeAction').onclick=interactHome;
 function buildForestCorridor(parent){const woods=new THREE.Group();parent.add(woods);const leafMaterial=mats.leaf.clone(),wood=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),mats.wood,20),leaf=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),leafMaterial,40),matrix=new THREE.Matrix4();for(let i=0;i<20;i++){const side=i%2?1:-1,row=Math.floor(i/2),x=side*(8+.5*Math.sin(row*2.1)),z=-44-row*2.4,h=3.8+.7*Math.sin(row*1.7);matrix.makeScale(.6,h,.6).setPosition(x,h/2,z);wood.setMatrixAt(i,matrix);for(let layer=0;layer<2;layer++){matrix.makeScale(3.8-layer*.5,1.8,3.8-layer*.5).setPosition(x,h+layer*.9,z);leaf.setMatrixAt(i*2+layer,matrix)}}woods.add(wood,leaf);woods.userData.leafMaterial=leafMaterial;parent.userData.forestCorridor=woods;syncForestCorridor(parent);}
-function syncForestCorridor(parent){const material=parent?.userData.forestCorridor?.userData.leafMaterial;if(material)material.color.set(currentSeason==='winter'?0xe9eff2:currentSeason==='autumn'?0xb67f34:0x4d9854);}
+function syncForestCorridor(parent){const land=parent?.userData.exitLandscape;if(land){refreshExitLandscape(land,terrainHeightAt);land.userData.groundMaterial.color.set(currentSeason==='winter'?0xe5eceb:currentSeason==='autumn'?0xa59669:level>=4?0x737c6c:0x779752);if(land.userData.water)land.userData.water.material=currentSeason==='winter'?iceWaterMaterial:land.userData.waterMaterial;}const material=parent?.userData.forestCorridor?.userData.leafMaterial;if(material)material.color.set(currentSeason==='winter'?0xe9eff2:currentSeason==='autumn'?0xb67f34:0x4d9854);}
 function loadLevel(n){rideHop.reset();resetFallingSigns();for(const props of [openingProps,lakeExitProps,...locationExitProps.values()]){const breaker=props?.userData.breaker;if(breaker){breaker.exitBreaking=false;if(breaker!==friend){exitHelpers.delete(breaker);scene.remove(breaker.g);}props.userData.breaker=null;}}locationExit=LOCATION_EXITS[n]?new LocationExit(n):null;for(const [lv,props] of locationExitProps)props.visible=lv===n;opening=n===1?new OpeningAdventure():null;if(openingProps)openingProps.visible=n===1;if(lakeExitProps)lakeExitProps.visible=n===2;resetWaterActivity();const carriedMounted=mountedFriend;mountedFriend=false;setRiderPose(false);const carriedFriend=friend,carriedFriendHP=friendHP;resetStormLocationState();worldEpoch++;level=n;syncHomeLocation(n);if(started&&!cinematicRunning&&!paused&&!win)startMusic();rescued=0;bossHits=0;levelTime=0;weatherStage=0;underwaterTime=0;underwaterDamageCd=0;hurricaneCarry=0;weatherGroup.visible=false;for(const q of stormLeaves)scene.remove(q.g);stormLeaves.length=0;forageTimer=18;if(n===1){totalTime=0;statsData={fed:0,forage:0,berries:0,damage:0,family:0,minions:0,bossHits:0};endShown=false;}bossRage=1;bossSummon=7;bossVictoryTimer=null;bossFireworkTimer=0;levelBoarsDone=0;levelFamilyDone=0;clearEntities(friends);clearEntities(foes);clearEntities(familyMembers);clearEntities(crates);fireballs.forEach(f=>scene.remove(f.g));fireballs=[];defeatedBoars.forEach(f=>scene.remove(f.g));defeatedBoars.length=0;for(const [t,b] of [...burningTrees]){if(b.light)t.remove(b.light);if(b.flames)t.remove(b.flames);t.visible=true}burningTrees.clear();friendKnockbackActive=false;friend=carriedFriend;friendHP=carriedFriendHP;if(friend){friend.route=null;friend.tightEscape=null;friend.escapeRetry=0;friend.lastSafe=null;friend.knockback=null;if(!friend.g.parent)scene.add(friend.g);friend.g.position.set(1.8,0,5.2);friend.g.rotation.set(0,0,0);friend.g.visible=true;friend.friendly=true;friend.aura.material.color.set(0x4cff72);friend.aura.material.opacity=.24}for(const a of apples)scene.remove(a.g);apples.length=0
 const enemyCounts=[3,4,5,5,6,1];const enemyCount=n===1||n===6?1:Math.max(1,Math.min(8,Math.round(enemyCounts[n-1]*diffCfg().enemyMult)));levelBoarsTotal=enemyCount;const spawnSets=[[-18,-10],[18,-13],[-15,-25],[16,-29],[-20,-36],[20,-39],[-8,-42],[9,-43]];if(n<6){for(let i=0;i<enemyCount;i++){const pos=n===1?[-6,14]:[spawnSets[i][0],Math.max(-31,spawnSets[i][1])];const foe=makeBoar(pos[0],pos[1],false);if(n===1){foe.openingBoar=true;foe.roamPause=999;foe.roamTimer=999}foes.push(foe)}}else{const b=makeBoar(0,-31,false);b.g.scale.setScalar(2.3);b.hp=BOSS_HITS[selectedDiff];b.maxHp=b.hp;b.isBoss=true;b.baseSpeed=2.05;b.rage=1;foes.push(b)}
 // v112: tree visibility must be finalized before spawning apples. Otherwise an apple can be attached to a tree that this level hides.
@@ -793,20 +797,15 @@ function prepareLakeExit(){
  for(const [x,z,,mesh] of rockPositions)if(Math.abs(x)<7&&z<-28)mesh.visible=false;
 }
 
-function buildBreakableExit(props,z){
- const pieces=[];
- for(let i=0;i<8;i++){const x=(i%4-1.5)*2.4,y=.55+Math.floor(i/4)*.7;
-  const p=block(props,mats.wood,x,y,z,2.7,.42,.45);p.rotation.z=(i%2?1:-1)*.12;
-  pieces.push({g:p,x,y,z,side:x<0?-1:1});
- }
- props.userData.breakPieces=pieces;
-}
+function buildBreakableExit(props,z){props.userData.exitBarrier=makeExitBarrier(props,level===2?'gate':locationExit?.config.kind||'gate',z,mats);animateExitBarrier(props.userData.exitBarrier,0);}
+
 function resetExitBreaker(props){
  const d=props.userData;if(d.breaker&&d.breaker!==friend){exitHelpers.delete(d.breaker);scene.remove(d.breaker.g);}
  d.breaker=null;d.approachX=null;d.approachCooldown=0;d.approachStall=0;d.lastApproachDistance=undefined;d.breakerTime=0;d.breakerHit=false;d.breakerDone=false;
  animateBreakableExit(props,0);
 }
 function animateBreakableExit(props,p){
+ if(props.userData.exitBarrier){animateExitBarrier(props.userData.exitBarrier,p);return;}
  for(const q of props.userData.breakPieces||[]){const k=Math.min(1,p);
  q.g.visible=k<1;q.g.position.set(q.x+q.side*5*k,q.y*(1-k)+Math.sin(k*Math.PI)*2,q.z+(q.x%2)*k);
  q.g.rotation.set(k*q.side,k*2,q.side*(.12+k*1.4));}
@@ -820,7 +819,7 @@ function updateExitBreaker(props,dt,z){
   d.breaker.route=null;d.breaker.tightEscape=null;d.breaker.escapeRetry=0;d.breaker.navigation=null;
   if(d.breaker===friend){friendYield.reset();friendYieldActive=false;}
   d.approachX=boy.position.x>0?-2.5:2.5;
-  notice('🐗 Друг бежит разбить преграду!');
+  notice('Друг открывает путь');
  }
  const f=d.breaker;
  if(!d.breakerHit){
@@ -829,7 +828,7 @@ function updateExitBreaker(props,dt,z){
   f.b.position.y=moved?Math.abs(Math.sin(f.breakStride*16))*.08:0;
   if(Math.abs(f.g.position.x)>3.3||f.g.position.z>z+4.3||f.g.position.z<z+2.4)return false;
   d.breakerHit=true;f.b.rotation.x=-.3;bossBattleImpact(f.g.position.x,z+1.8);effect('woodBreak');
-  notice('💥 Хрясь! Друг разбил преграду!');
+  notice(({gate:'Друг распахнул ворота',bridge:'Мост опускается',rocks:'Камни освободили дорогу'})[props.userData.exitBarrier?.kind]||'Друг разбил ствол');
  }
  d.breakerTime+=dt;animateBreakableExit(props,d.breakerTime/.85);
  if(d.breakerTime>=.85){d.breakerDone=true;f.exitBreaking=level===1&&f===friend;f.route=null;f.tightEscape=null;f.escapeRetry=0;f.b.rotation.x=0;f.b.position.y=0;
@@ -841,7 +840,7 @@ function updateExitBreaker(props,dt,z){
 function setupLakeExit(){
  if(!lakeExitProps){lakeExitProps=new THREE.Group();scene.add(lakeExitProps);
  const trail=new THREE.Mesh(new THREE.PlaneGeometry(6.2,9),mats.path);trail.rotation.x=-Math.PI/2;trail.position.set(0,.05,-52.5);lakeExitProps.add(trail);lakeExitProps.userData.trail=trail;
- buildForestCorridor(lakeExitProps);buildBreakableExit(lakeExitProps,-37.2);buildExitFence(lakeExitProps,-37.2);physicalSign(lakeExitProps,'К ДЕРЕВНЕ →',4,2,-34,3.4,.85);}
+ buildForestCorridor(lakeExitProps);buildExitLandscape(lakeExitProps,2,mats,terrainHeightAt);buildBreakableExit(lakeExitProps,-37.2);buildExitFence(lakeExitProps,-37.2);physicalSign(lakeExitProps,'К ДЕРЕВНЕ →',4,2,-34,3.4,.85);}
  syncForestCorridor(lakeExitProps);lakeExitProps.visible=true;lakeExitProps.userData.gateProgress=0;resetExitBreaker(lakeExitProps);
  lakeExitProps.userData.trail.material=currentSeason==='winter'?winterRoadMaterial:mats.path;
 }
@@ -853,7 +852,7 @@ function setupLocationExit(){
  let props=locationExitProps.get(level);
  if(!props){props=new THREE.Group();scene.add(props);locationExitProps.set(level,props);
  const trail=new THREE.Mesh(new THREE.PlaneGeometry(6.2,9),mats.path);trail.rotation.x=-Math.PI/2;trail.position.set(0,.05,-52.5);props.add(trail);props.userData.trail=trail;
- buildForestCorridor(props);buildBreakableExit(props,-37.2);
+ if(level===3)buildForestCorridor(props);buildExitLandscape(props,level,mats,terrainHeightAt);buildBreakableExit(props,-37.2);if(level===3)buildExitFence(props,-37.2);
  physicalSign(props,locationExit.config.destination+' →',4,2,-34,3.4,.85);}
  syncForestCorridor(props);props.visible=true;props.userData.trail.material=currentSeason==='winter'?winterRoadMaterial:mats.path;resetExitBreaker(props);
 }
@@ -881,16 +880,10 @@ function updateFallingSigns(dt){
  }
 }
 
-function buildExitFence(props,z){
- props.userData.fenceExtent={left:-48,right:48,opening:11};
- for(const side of [-1,1]){
-  for(const y of [.65,1.55])block(props,mats.wood,side*26.75,y,z,42.5,.22,.22);
-  for(let x=5.5;x<=48;x+=2.5)block(props,mats.wood,side*x,1.05,z,.2,2.1,.2);
- }
-}
+function buildExitFence(props,z){makeExitFence(props,z,mats)}
 function openingLabel(text){
  const canvas=document.createElement('canvas');canvas.width=320;canvas.height=80;const ctx=canvas.getContext('2d');
- ctx.font='bold 34px Trebuchet MS,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineWidth=9;ctx.strokeStyle='#173b33';ctx.strokeText(text,160,40);ctx.fillStyle='#fff0cf';ctx.fillText(text,160,40);
+ let fontSize=28;ctx.font='800 '+fontSize+'px Trebuchet MS,sans-serif';while(ctx.measureText(text).width>292&&fontSize>16){fontSize--;ctx.font='800 '+fontSize+'px Trebuchet MS,sans-serif';}ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineWidth=9;ctx.strokeStyle='#173b33';ctx.strokeText(text,160,40);ctx.fillStyle='#fff0cf';ctx.fillText(text,160,40);
  const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;return texture;
 }
 
@@ -922,10 +915,10 @@ function setupOpeningProps(){
   const debris=new THREE.Group();exit.add(debris);openingProps.userData.debris=debris;
   for(let i=0;i<18;i++){const side=i%2?1:-1,chip=i<2?new THREE.Mesh(new THREE.CylinderGeometry(.64,.7,4.5,9),mats.wood):block(debris,mats.wood,0,0,0,.12+(i%3)*.07,.12,.25);if(i<2)debris.add(chip);chip.userData={large:i<2,side,offset:i<2?4.4:3.3+(i%5)*.35,height:i<2?.5:.15,spread:(i%4-1.5)*.7};}
   for(const x of [-3,1,3.8]){const branch=block(trunk,mats.wood,x,.65,0,.28,1.5,.28);branch.rotation.z=.5}
-  physicalSign(exit,'К ОЗЕРУ →',3.6,2.15,2,2.6,.75);
+  physicalSign(exit,'К ОЗЕРУ →',3.6,2.15,2,2.6,.75);buildExitLandscape(openingProps,1,mats,terrainHeightAt);openingProps.userData.distantLake.visible=false;
  }
  openingProps.visible=true;resetExitBreaker(openingProps);openingProps.userData.label='';openingProps.userData.trunk.position.set(0,.72,5.8);openingProps.userData.trunk.rotation.set(0,0,0);openingProps.userData.trunk.visible=true;openingProps.userData.debris.visible=false;openingProps.userData.distantLake.material=currentSeason==='winter'?iceWaterMaterial:openingProps.userData.distantWater;for(const fruit of openingProps.userData.crateFruit)fruit.visible=true;
- const brook=openingProps.userData.brook;brook.position.y=Math.max(.04,terrainHeightAt(0,-5)+.025);brook.material=currentSeason==='winter'?iceWaterMaterial:openingProps.userData.waterMaterial;
+ syncForestCorridor(openingProps);const brook=openingProps.userData.brook;brook.position.y=Math.max(.04,terrainHeightAt(0,-5)+.025);brook.material=currentSeason==='winter'?iceWaterMaterial:openingProps.userData.waterMaterial;
 }
 function updateOpeningAdventure(dt){
  if(level!==1||!opening)return;
@@ -944,7 +937,7 @@ function updateOpeningAdventure(dt){
 function guideRefresh(){$('openingGuide').dataset.stage=''}
 function syncOpeningGuide(){
  const guide=$('openingGuide');if(!guide)return;
- guide.hidden=!(started&&level===1&&opening&&!paused&&!cinematicRunning&&!endShown&&!win);if(guide.hidden)return;
+ guide.hidden=!(started&&level===1&&opening&&!paused&&!cinematicRunning&&!endShown&&!win)||['rescue','complete'].includes(opening?.stage);if(guide.hidden)return;
  const stage=opening.stage;
  if(guide.dataset.stage!==stage){
   guide.dataset.stage=stage;
@@ -986,15 +979,16 @@ const cinematicAssets=new THREE.Group();cinematicAssets.visible=false;scene.add(
 function prepareCinematicAssets(){visualOnly(()=>{cachedCinemaCar=buildCinemaCar();cinematicAssets.add(cachedCinemaCar);for(let role=0;role<4;role++){const person=buildCinemaPerson(role);cinematicAssets.add(person);cachedCinemaPeople.push(person)}})}
 function cinemaCar(){const car=cachedCinemaCar;movieRoot.add(car);for(const light of car.userData.headlights)light.intensity=32;for(const lens of car.userData.headlightLenses){lens.material.color.set(0xffefcb);if(lens.material.emissive)lens.material.emissiveIntensity=1}return car}
 function cinemaPerson(role){const person=cachedCinemaPeople[role].clone(true);movieRoot.add(person);return person}
-function cinemaHug(person,amount){const model=person.children.find(c=>c.isGroup)||person;const arms=model.children.filter(o=>o.isMesh&&Math.abs(o.position.x)>.49&&Math.abs(o.position.x)<.62&&o.position.y>1&&o.position.y<1.5);for(const arm of arms){arm.rotation.x=-1.2*amount;arm.rotation.z=(arm.position.x<0?-.5:.5)*amount;arm.position.z=.22*amount}for(const i of [5,6]){movie.hero.children[i].rotation.x=-1.25*amount;movie.hero.children[i].rotation.z=(i===5?-.35:.35)*amount}}
+function cinemaHug(person,amount){const model=person.children.find(c=>c.isGroup)||person;const arms=model.children.filter(o=>o.isMesh&&Math.abs(o.position.x)>.49&&Math.abs(o.position.x)<.62&&o.position.y>1&&o.position.y<1.5);for(const arm of arms){arm.rotation.x=-1.2*amount;arm.rotation.z=(arm.position.x<0?-.5:.5)*amount;arm.position.z=.22*amount}if(movie.heroForm==='human')for(const i of [5,6]){movie.hero.children[i].rotation.x=-1.25*amount;movie.hero.children[i].rotation.z=(i===5?-.35:.35)*amount}}
 function cineSetup(kind,detail={}){sceneryBatches?.dispose();sceneryBatches=null;sceneryEpoch=-1;
  $('cinematicScene').innerHTML='';$('cinematicScene').style.background='none';
  const existingGeometries=new Set(),existingMaterials=new Set(),capture=o=>{if(o.geometry)existingGeometries.add(o.geometry);if(o.material)for(const m of Array.isArray(o.material)?o.material:[o.material])existingMaterials.add(m)};scene.traverse(capture);detail.member?.g?.traverse(capture);
  const visibility=[boy,catLife.root,catFormModel?.g,friend?.g,...foes.map(f=>f.g),...familyMembers.map(f=>f.g),...apples.map(a=>a.g)].filter(Boolean).map(o=>[o,o.visible]);const saved={visibility,sky:scene.background.clone(),fog:scene.fog.color.clone(),sun:sun.intensity,hemi:hemi.intensity,fov:camera.fov};for(const [o] of visibility)o.visible=false;
  if(kind==='family'&&detail.role===2){saved.doorMaterial=familyDoorSlab.material;familyDoorSlab.material=familyDoorSlab.material.clone();familyDoorSlab.material.transparent=true;familyDoorSlab.material.opacity=.12;familyDoorSlab.material.depthWrite=false}
  movie={kind,detail,saved,start:performance.now(),elapsed:0,people:[],boars:[],car:null};camera.fov=kind==='family'?48:55;camera.updateProjectionMatrix();
- const hero=boy.clone(true);hero.visible=true;hero.children.forEach(o=>{o.rotation.x=0;o.rotation.z=0});hero.traverse(o=>{if(o.isMesh&&o.userData._cameraFade)o.userData._cameraFade=false});const lamp=hero.children.find(o=>o.type==='Group');if(lamp)lamp.visible=false;
- if(hasFlashlight){const held=new THREE.Group();block(held,mats.black,.6,1.0,.5,.22,.22,.55);block(held,flashlightLensMat,.6,1.0,.79,.19,.19,.04);hero.add(held);movie.lamp=held;const light=new THREE.SpotLight(0xfff0cd,38,28,.48,.58,1.1),target=new THREE.Object3D();movieRoot.add(light,target);light.target=target;movie.lampLight=light}
+ const heroForm=kind==='family'?(detail.form||(catFormTime>0?'cat':boarFormTime>0?'boar':'human')):'human';movie.heroForm=heroForm;movie.reunion=reunionProfile(heroForm,detail.role);
+ let hero;if(heroForm==='cat'){hero=catLife.model(2,movieRoot).g;hero.scale.setScalar(1.35)}else if(heroForm==='boar'){const actor=makeBoar(0,0,true);hero=actor.g;scene.remove(hero);actor.aura.visible=false;actor.bolt.visible=false;for(const o of hero.children)if(o.isMesh&&o.geometry.type==='RingGeometry')o.visible=false;hero.scale.setScalar(.86)}else hero=boy.clone(true);hero.visible=true;if(heroForm==='human')hero.children.forEach(o=>{o.rotation.x=0;o.rotation.z=0});hero.traverse(o=>{if(o.isMesh&&o.userData._cameraFade)o.userData._cameraFade=false});const lamp=heroForm==='human'?hero.children.find(o=>o.type==='Group'):null;if(lamp)lamp.visible=false;
+ if(hasFlashlight&&heroForm==='human'){const held=new THREE.Group();block(held,mats.black,.6,1.0,.5,.22,.22,.55);block(held,flashlightLensMat,.6,1.0,.79,.19,.19,.04);hero.add(held);movie.lamp=held;const light=new THREE.SpotLight(0xfff0cd,38,28,.48,.58,1.1),target=new THREE.Object3D();movieRoot.add(light,target);light.target=target;movie.lampLight=light}
 movieRoot.add(hero);movie.hero=hero;
  if(kind==='death'){movieRoot.position.set(boy.position.x,detail.cause==='water'?.05:terrainHeightAt(boy.position.x,boy.position.z),boy.position.z);hero.position.set(0,0,0);hero.rotation.y=boy.rotation.y;movie.deathCause=detail.cause;if(detail.cause==='boar'){const b=lastDeathBoar?.g.clone(true)||makeBoar(0,0,false).g;scene.remove(b);b.position.set(-2,0,0);b.rotation.y=Math.PI/2;b.visible=true;movieRoot.add(b);movie.deathBoar=b}if(detail.cause==='water'){const ring=new THREE.Mesh(new THREE.RingGeometry(.5,.65,24),new THREE.MeshBasicMaterial({color:0xc3e3ef,transparent:true,opacity:.65,side:THREE.DoubleSide}));ring.rotation.x=-Math.PI/2;movieRoot.add(ring);movie.deathRing=ring}
  }else if(kind==='storm'){movieRoot.position.copy(boy.position);hero.position.set(0,0,0);hero.rotation.y=boy.rotation.y;movie.stormHeading=boy.rotation.y;movie.people=[];
@@ -1034,14 +1028,21 @@ function updateCinematic(now,look){if(!movie)return;const m=movie,t=m.elapsedOve
   if(t<3){from=world(-11,4,9);to=world(-9,3.5,5);target=world(m.fleeingBoss.g.position.x,1.8,m.fleeingBoss.g.position.z);k=ease(t/3)}else if(t<6){from=world(7,3.2,12);to=world(5,2.4,9);target=world(0,1.2,6);k=ease((t-3)/3)}else if(t<10){from=world(-6,3,15);to=world(-5,3,13);target=world(0,1,8);k=ease((t-6)/4)}else{from=world(-7,4,15);to=world(-9,6,18);target=world(0,1,8);k=ease((t-10)/5)}
  }else{
   const meet=ease(t/2.5),hug=ease((t-4.4)/1.1)*ease((8.5-t)/.9);m.hero.position.x=-.7+meet*.3+hug*.13;m.people[0].position.x=.85-meet*.22-hug*.31;cinemaHug(m.people[0],hug);m.gift.visible=t>2.8&&t<4.5;m.gift.position.set(.25,1.1,0);from=world(3.8,2.2,5);to=world(2.6,1.8,3.8);target=world(.2,1.25,0);k=ease(t/8);
+  if(m.heroForm!=='human'){
+   const pose=reunionPose(m.heroForm,t);m.hero.position.x=(m.heroForm==='cat'?-.95:-1.25)+meet*.15+pose.nuzzle;m.people[0].position.x=1.1-meet*.1;m.hero.position.y=pose.hop;m.hero.rotation.z=pose.roll;
+   cinemaHug(m.people[0],pose.pet*.55);m.people[0].rotation.z=-pose.pet*.08;
+   if(m.heroForm==='cat'){const tail=m.hero.children.find(o=>o.isGroup&&o.position.z<-.3);if(tail)tail.rotation.y=Math.sin(t*6)*.6;for(const leg of m.hero.children.filter(o=>o.isMesh&&o.position.y<.3))leg.rotation.x=pose.paw;}
+   m.gift.position.set(.2,m.heroForm==='cat'?.55:.8,.3);m.gift.scale.setScalar(.55);from=world(0,2.3,6.5);to=world(.3,1.9,5.7);target=world(0,.85,0);
+  }
+
  }
  updateCinematicLamp(m);
  camera.up.set(0,1,0);camera.position.lerpVectors(from,to,k);if(camera.aspect<1)camera.position.sub(target).multiplyScalar(Math.min(1.7,1/camera.aspect)).add(target);look.copy(target);camera.lookAt(look);protectCinematicAction(m);$('cinematic').dataset.kind=m.kind;
 }
 function updateCinematicLamp(m){if(m.lampLight){const origin=m.hero.localToWorld(new THREE.Vector3(.6,1.0,.8)),direction=new THREE.Vector3(Math.sin(m.hero.rotation.y),-.035,Math.cos(m.hero.rotation.y));m.lampLight.position.copy(movieRoot.worldToLocal(origin.clone()));m.lampLight.target.position.copy(movieRoot.worldToLocal(origin.addScaledVector(direction,14)));m.lampLight.visible=m.hero.visible}}
 function playCinematic(kind,onDone,detail={}){
- stopFishing();cineClear();cinematicRunning=true;paused=true;if(boarFormVisual)boarFormVisual.visible=false;$('cinematic').style.display='block';cineSetup(kind,detail);startCinematicMusic(kind);
- const steps=kind==='intro'?[["Семья приехала отдохнуть в лесу.",0],["У озера их ждал пикник…",4200],["Но из чащи появились кабанчики.",8000],["Все разбежались в разные стороны.",12000],["Тимур остался один. Ему предстоит найти родных.",15000]]:kind==='outro'?[["Босс сбежал. Семья снова вместе.",0],["Верный кабанчик помог найти дорогу домой.",3200],["Пора возвращаться к машине.",6300],["Спасибо, кабанчик! Пора домой.",10000]]:[[detail.line||'Тимур нашёл родного человека.',0],["Здоровье и припасы восстановлены. Путешествие продолжается.",5500]];
+ stopFishing();cineClear();if(kind==='family'){const form=catFormTime>0?'cat':boarFormTime>0?'boar':'human';if(form!=='human'){const profile=reunionProfile(form,detail.role);detail={...detail,form,line:profile.line,after:profile.after};}}cinematicRunning=true;paused=true;if(boarFormVisual)boarFormVisual.visible=false;$('cinematic').style.display='block';cineSetup(kind,detail);startCinematicMusic(kind);
+ const steps=kind==='intro'?[["Семья приехала отдохнуть в лесу.",0],["У озера их ждал пикник…",4200],["Но из чащи появились кабанчики.",8000],["Все разбежались в разные стороны.",12000],["Тимур остался один. Ему предстоит найти родных.",15000]]:kind==='outro'?[["Босс сбежал. Семья снова вместе.",0],["Верный кабанчик помог найти дорогу домой.",3200],["Пора возвращаться к машине.",6300],["Спасибо, кабанчик! Пора домой.",10000]]:[[detail.line||'Тимур нашёл родного человека.',0],[detail.after||"Здоровье и припасы восстановлены. Путешествие продолжается.",5500]];
  const text=$('cinematicText');for(const [line,at] of steps)if(at===0)text.textContent=line;else cineLater(()=>text.textContent=line,at);if(kind==='intro')cineLater(softBoarAttackSound,8000);else if(kind==='family')bonusSound();
  const finish=()=>{if(!cinematicRunning)return;cinematicRunning=false;cinematicFinish=null;cineClear();stopCinematicMusic();$('cinematic').style.display='none';onDone?.();startMusic()};cinematicFinish=finish;$('cinematicSkip').onclick=finish;cineLater(finish,kind==='intro'?18500:kind==='outro'?15500:kind==='storm'?6500:kind==='death'?4500:8500);
 }
@@ -1073,7 +1074,12 @@ function localStatsHtml(){let a=[];try{a=JSON.parse(localStorage.getItem('kabanc
 async function globalStatsHtml(){try{const q='select=player_name,score,play_time,difficulty,family,game_version&order=score.desc,play_time.asc&limit=20';const r=await fetch(`${SUPABASE_URL}/rest/v1/leaderboard?${q}`,{headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`}});if(!r.ok)throw new Error(`HTTP ${r.status}`);const rows=await r.json();if(!rows.length)return '<p>🌍 Мировой рейтинг пока пуст. Стань первым победителем!</p>';return '<div style="display:grid;grid-template-columns:30px 1fr 62px 66px 42px;gap:6px;align-items:center;font-size:13px"><b>№</b><b>Игрок</b><b>Очки</b><b>Время</b><b>Сл.</b>'+rows.map((x,i)=>`<span>${i+1}</span><b>${escStat(x.player_name||'Аноним')}</b><span>🏆${x.score||0}</span><span>⏱${formatTime(x.play_time||0)}</span><span>${Number(x.difficulty)+1}</span>`).join('')+'</div>'}catch(e){console.warn('Global leaderboard load failed',e);return '<p>⚠️ Не удалось загрузить мировой рейтинг. Проверь интернет — локальная статистика продолжает работать.</p>'}}
 async function showPlayerStats(mode='global'){const box=$('statsTable');$('statsScreen').style.display='grid';box.innerHTML='<div style="display:flex;gap:8px;justify-content:center;margin-bottom:12px"><button id="globalStatsTab">🌍 Мир</button><button id="localStatsTab">📱 Мои</button></div><div id="statsRows">Загрузка…</div>';const rows=$('statsRows'),g=$('globalStatsTab'),l=$('localStatsTab');const showLocal=()=>{rows.innerHTML=localStatsHtml();g.disabled=false;l.disabled=true};const showGlobal=async()=>{g.disabled=true;l.disabled=false;rows.textContent='🌍 Загружаю мировой ТОП-20…';rows.innerHTML=await globalStatsHtml()};g.onclick=showGlobal;l.onclick=showLocal;if(mode==='local')showLocal();else await showGlobal()}
 $('showStatsIntro').onclick=()=>showPlayerStats('global');$('showStatsEnd').onclick=()=>showPlayerStats('global');$('closeStats').onclick=()=>$('statsScreen').style.display='none';
-let flashlightDropUntil=0;let noticeTimer=null;function notice(t){const m=$('message');m.textContent=t;m.classList.remove('hidden');flash=3;clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>m.classList.add('hidden'),3200)}let lastHudUpdate=-Infinity;function hud(force=true){const now=performance.now();if(!force&&now-lastHudUpdate<150)return;lastHudUpdate=now;if(level===1&&opening&&!opening.complete){$('stats').textContent=` · ❤️ ${life} · 🍎 ${food}`;$('quest').textContent=questState();return}$('stats').textContent=` · ${GAME_VERSION}${currentSeason==='winter'?' · ❄️ Зима':currentSeason==='autumn'?' · 🍂 Осень':currentSeason==='spring'?' · 🌸 Весна':''} · 📍 Локация ${level}/${levels.length}: ${levels[level-1]} · ❤️ ${life}/${diffCfg().playerHP} · 🍎 ${food}/${diffCfg().foodMax} · 🏆 ${score} · 🎮 ${DIFF_NAMES[selectedDiff]} · 👨‍👩‍👦 ${familyFound}/4${friend?` · 🐗❤️ ${friendHP}/${diffCfg().friendHP}`:''}${yellowMushroomStock?` · 🟡🍄 ${yellowMushroomStock}`:''}${yellowAppleStock?` · 🟡🍎 ${yellowAppleStock}`:''}${fishStock?' · 🐟 '+fishStock:''}${catFormTime>0?' · 🐱 '+Math.ceil(catFormTime)+'с':''}${hasFlashlight?' · 🔦':''}`+(level===6&&foes.find(f=>f.isBoss)?` · 👑 ${foes.find(f=>f.isBoss).hp}/${foes.find(f=>f.isBoss).maxHp}`:``); $('quest').textContent=win?'🎉 Тимур нашёл семью!':questState()}$('start').onclick=()=>{$('intro').style.display='none';$('difficultyScreen').style.display='grid'};$('difficultyBack').onclick=()=>{$('difficultyScreen').style.display='none';$('intro').style.display='grid'};$('difficultyStart').onclick=()=>{try{if(!mobile)requestDesktopMouseLock();selectedDiff=Number(document.querySelector('input[name="diff3d"]:checked')?.value??2);life=diffCfg().playerHP;food=diffCfg().foodMax;friendHP=diffCfg().friendHP;$('difficultyScreen').style.display='none';resetNewRun();applySeason();started=true;paused=false;loadLevel(1);startMusic();notice('👩 Мама впереди. Иди по дорожке!')}catch(e){window.__showGameError('Ошибка запуска игры',e.stack||String(e))}};$('camera').onclick=()=>{camMode=(camMode+1)%10;first=camMode===9;if(first)pitch=0;$('camera').textContent=`📷 Вид ${camMode+1}/10`;$('cross').style.display='none';notice(['Высоко · далеко','Средне · далеко','Низко · близко','Очень высоко','За плечом','Низко · далеко','Сверху под углом','Близко · средне','Строго сверху · 90°','От первого лица · еда в руке'][camMode])};$('restart').onclick=restartGame;$('menuRestart').onclick=restartGame;$('jump').onpointerdown=e=>{e.preventDefault();jump=true};$('interact').onpointerdown=e=>{e.preventDefault();feed()};function setPause(on){if(!started)return;paused=on;if(on)$('homeAction').hidden=true;if(on)stopMusic();else startMusic();$('pauseMenu').style.display=on?'grid':'none';$('pauseBtn').textContent=on?'▶':'☰';if(on&&!mobile){try{(document.exitPointerLock||document.webkitExitPointerLock)?.call(document)}catch{}}}function togglePause(){if(difficultyFromPause){closeDifficultyChoice();return}setPause(!paused)}$('pauseBtn').onclick=togglePause;$('resume').onclick=()=>{setPause(false);requestDesktopMouseLock()};
+let flashlightDropUntil=0;let noticeTimer=null;const adventureHud=new AdventureHud(document);
+function notice(t){adventureHud.log(t);const m=$('message');m.textContent=briefNotice(t);m.classList.remove('hidden');flash=3;clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>m.classList.add('hidden'),3200)}let lastHudUpdate=-Infinity;function hud(force=true){const now=performance.now();if(!force&&now-lastHudUpdate<150)return;lastHudUpdate=now;
+ adventureHud.update({life,maxLife:diffCfg().playerHP,food:food+fishStock+yellowAppleStock+yellowMushroomStock,maxFood:diffCfg().foodMax,form:catFormTime>0?'cat':boarFormTime>0?'boar':null,seconds:Math.max(catFormTime,boarFormTime)},now);
+ $('stats').textContent=`${levels[level-1]} · ${{summer:'Лето',autumn:'Осень',winter:'Зима',spring:'Весна'}[currentSeason]}\nСложность: ${DIFF_NAMES[selectedDiff]} · Семья: ${familyFound}/4 · Очки: ${score}\nПрипасы: обычные ${food}, рыба ${fishStock}, жёлтые яблоки ${yellowAppleStock}, мухоморы ${yellowMushroomStock}${friend?'\nДруг: '+friendHP+'/'+diffCfg().friendHP+' здоровья':''}${hasFlashlight?' · Фонарик есть':''}`;
+ $('quest').textContent=win?'Семья снова вместе!':questState();
+}$('start').onclick=()=>{$('intro').style.display='none';$('difficultyScreen').style.display='grid'};$('difficultyBack').onclick=()=>{$('difficultyScreen').style.display='none';$('intro').style.display='grid'};$('difficultyStart').onclick=()=>{try{if(!mobile)requestDesktopMouseLock();selectedDiff=Number(document.querySelector('input[name="diff3d"]:checked')?.value??2);life=diffCfg().playerHP;food=diffCfg().foodMax;friendHP=diffCfg().friendHP;$('difficultyScreen').style.display='none';resetNewRun();applySeason();started=true;paused=false;loadLevel(1);startMusic();notice('👩 Мама впереди. Иди по дорожке!')}catch(e){window.__showGameError('Ошибка запуска игры',e.stack||String(e))}};$('camera').onclick=()=>{camMode=(camMode+1)%10;first=camMode===9;if(first)pitch=0;$('camera').textContent=`📷 Вид ${camMode+1}/10`;$('cross').style.display='none';notice(['Высоко · далеко','Средне · далеко','Низко · близко','Очень высоко','За плечом','Низко · далеко','Сверху под углом','Близко · средне','Строго сверху · 90°','От первого лица · еда в руке'][camMode])};$('restart').onclick=restartGame;$('menuRestart').onclick=restartGame;$('jump').onpointerdown=e=>{e.preventDefault();jump=true};$('interact').onpointerdown=e=>{e.preventDefault();feed()};function setPause(on){if(!started)return;paused=on;if(on)$('homeAction').hidden=true;if(on)stopMusic();else startMusic();$('pauseMenu').style.display=on?'grid':'none';$('pauseBtn').textContent=on?'▶':'☰';if(on&&!mobile){try{(document.exitPointerLock||document.webkitExitPointerLock)?.call(document)}catch{}}}function togglePause(){if(difficultyFromPause){closeDifficultyChoice();return}setPause(!paused)}$('pauseBtn').onclick=togglePause;$('resume').onclick=()=>{setPause(false);requestDesktopMouseLock()};
 $('cheatForm').addEventListener('submit',e=>{e.preventDefault();const result=$('cheatResult'),code=parseCheatCode($('cheatCode').value);if(!code){result.textContent='Неизвестный код. Используй LEVEL1–LEVEL6, BOAR, CAT, TIMUR или LIGHT.';return}if(!started||endShown||win||life<=0||cinematicRunning){result.textContent='Примени код во время игры через меню паузы.';return}keys={};stick.x=stick.y=0;jump=false;stopFishing();if(code.type==='level'){for(const shot of shots)scene.remove(shot.g);shots.length=0;throwCooldown=0;endBoarForm();life=diffCfg().playerHP;invuln=3;py=vy=0;hasFlashlight=false;torch.intensity=0;loadLevel(code.level);result.textContent=`Локация ${code.level}: ${levels[code.level-1]}. Нажми «Продолжить».`}else if(code.type==='light'){hasFlashlight=!hasFlashlight;torch.intensity=hasFlashlight?42:0;if(hasFlashlight){if(flashlightObj){scene.remove(flashlightObj);flashlightObj=null}result.textContent='Фонарик получен.';}else{if(flashlightObj)scene.remove(flashlightObj);const point=nearestSafeSpawn(boy.position.x+Math.sin(yaw)*2.8,boy.position.z+Math.cos(yaw)*2.8,.5)||[boy.position.x,boy.position.z];flashlightObj=group(point[0],point[1]);flashlightObj.position.y=terrainHeightAt(point[0],point[1]);block(flashlightObj,mats.gold,0,.45,0,.35,.35,.8);block(flashlightObj,mats.white,0,.45,.55,.28,.28,.28);flashlightDropUntil=performance.now()+3000;result.textContent='Фонарик выброшен рядом. Его можно подобрать или вернуть кодом LIGHT.';}}else{if(code.form==='boar')startBoarForm();else if(code.form==='cat')startCatForm();else endBoarForm();result.textContent=code.form==='human'?'Тимур снова мальчик.':`Тимур стал ${code.form==='cat'?'котиком':'кабанчиком'} на 30 секунд.`}hud();$('cheatCode').value='';});
 function syncAudioButtons(){const m=$('toggleMusic'),s=$('toggleSfx');if(m)m.textContent=musicEnabled?'🎵 Музыка: ВКЛ':'🔇 Музыка: ВЫКЛ';if(s)s.textContent=sfxEnabled?'🔊 Звуки: ВКЛ':'🔈 Звуки: ВЫКЛ'}
 $('toggleMusic').onclick=()=>{musicEnabled=!musicEnabled;localStorage.setItem('kabanchiki3d_music',musicEnabled?'1':'0');if(audio)audioBus('music').gain.setTargetAtTime(musicEnabled?.62:0,audio.currentTime,.03);if(musicEnabled){if(cinematicRunning)startCinematicMusic(movie?.kind||'intro');else startMusic()}else{stopMusic();stopCinematicMusic()}syncAudioButtons()};
@@ -1216,6 +1222,7 @@ function updateFamilyHouseReveal(){
 }
 function houseBlockAt(x,z,pad=.45,allowJump=false){
  if(level!==3)return false;
+ if(allowJump)for(const box of houseLintelContacts(x,z,pad)){const ground=terrainHeightAt(x,z);if(py<box.max.y-ground&&py+playerPhysicalHeight()>box.min.y-ground+.01)return true;}
  for(const wall of wallGeometry()){
   const top=wall.shell&&wall.root.userData.enterable?Math.max(wall.box.max.y,wall.roofTop):wall.box.max.y;
   if(allowJump&&!mountedFriend&&py>=top-.015)continue;
@@ -1373,10 +1380,38 @@ function playerWorldBlocked(x,z,pad=0){
 }
 function roofHeightAt(x,z){let top=0;if(level!==3)return top;for(const h of houseObjects){if(!h.visible)continue;h.updateWorldMatrix(true,true);for(const m of h.children){if((!m.visible&&!h.userData.enterable)||!m.isMesh||(!m.userData.dadRoof&&(seasonBaseMaterials.get(m)||m.material).map!==mats.roof.map))continue;m.geometry.computeBoundingBox();const q=m.worldToLocal(new THREE.Vector3(x,0,z)),b=m.geometry.boundingBox;if(q.x>b.min.x+PLAYER_RADIUS*.12&&q.x<b.max.x-PLAYER_RADIUS*.12&&q.z>b.min.z+PLAYER_RADIUS*.12&&q.z<b.max.z-PLAYER_RADIUS*.12){const world=m.localToWorld(new THREE.Vector3(q.x,b.max.y,q.z));top=Math.max(top,world.y)}}}return top}
 function playerSupportHeightAtNoRock(x,z){return roofHeightAt(x,z)}
-function familyFloorAt(x,z){if(level===3&&home.stage>0&&Math.abs(x-HOME_SITE.x)<2.35&&Math.abs(z-HOME_SITE.z)<2.35)return .16;if(level===4&&locationExitReady()&&Math.abs(x)<5.4&&z<-39&&z>-47)return .26;if(level!==3||!familyHideout.visible)return 0;const p=familyHideout.worldToLocal(new THREE.Vector3(x,0,z));return Math.abs(p.x)<2.4&&p.z>-1.95&&p.z<2.08?.16:0}
+function familyFloorAt(x,z){if(level===3&&home.stage>0&&Math.abs(x-HOME_SITE.x)<2.35&&Math.abs(z-HOME_SITE.z)<2.35)return .16;if(level===4&&locationExitReady()&&Math.abs(x)<5.4&&z<-37&&z>-47)return .26;if(level!==3||!familyHideout.visible)return 0;const p=familyHideout.worldToLocal(new THREE.Vector3(x,0,z));return Math.abs(p.x)<2.4&&p.z>-1.95&&p.z<2.08?.16:0}
 function branchStepHeightAt(x,z){
  let top=familyFloorAt(x,z);if(level===1&&forestVisual.visible)for(const o of logObstacles)if(o?.g?.visible!==false&&logDistance(o,x,z).distance<o.r+PLAYER_RADIUS+.015)top=Math.max(top,o.top);return top;
 }
+
+function playerPhysicalHeight(){return PLAYER_HEIGHTS[catFormTime>0?'cat':boarFormTime>0?'boar':'human']}
+
+function houseLintelContacts(x,z,pad){
+ const result=[];if(level!==3)return result;
+ for(const h of houseObjects){if(!h.visible)continue;for(const m of h.userData.cutawayWalls?.front||[])if(m.userData.doorLintel){const box=doorCollisionBox(m);if(x+pad>box.min.x&&x-pad<box.max.x&&z+pad>box.min.z&&z-pad<box.max.z)result.push(box);}}
+ return result;
+}
+
+function houseCeilingAt(x,z){
+ if(level!==3)return Infinity;let ceiling=Infinity;
+ for(const h of houseObjects){
+  if(!h.visible||!h.userData.enterable||(h===personalHouse&&home.stage<3))continue;
+  const roof=h.userData.cutawayWalls?.roof;if(!roof)continue;
+  const box=doorCollisionBox(roof);
+  if(x>box.min.x+.05&&x<box.max.x-.05&&z>box.min.z+.05&&z<box.max.z-.05)ceiling=Math.min(ceiling,box.min.y-terrainHeightAt(x,z));
+ }
+ for(const box of houseLintelContacts(x,z,PLAYER_RADIUS*.7))ceiling=Math.min(ceiling,box.min.y-terrainHeightAt(x,z));
+ return ceiling;
+}
+function movePlayerVertical(dt){
+ const prevPy=py;vy-=18*dt;let nextPy=py+vy*dt;
+ const ceiling=ceilingMotion(py,vy,nextPy,houseCeilingAt(boy.position.x,boy.position.z),playerPhysicalHeight());nextPy=ceiling.feet;vy=ceiling.velocity;
+ const support=playerSupportHeightAt(boy.position.x,boy.position.z);
+ if(vy<=0&&prevPy>=support-.10&&nextPy<=support){if(vy<-2){if(waterAt(boy.position.x,boy.position.z))spawnWaterSplash(boy.position.x,boy.position.z,2.8);else effect('land');}py=support;vy=0}else{py=Math.max(0,nextPy);if(py===0)vy=0}
+ boy.position.y=py;
+}
+
 function playerSupportHeightAt(x,z){
  let top=Math.max(familyFloorAt(x,z),level===4&&onRiverBridge(x,z)?.28:0);if(currentSeason==='winter'&&((level===2&&(lakeDepth(x,z)>0||lakeInletDepthAt(x,z)>0))||(level===4&&riverDepthAt(x,z)>0)))top=Math.max(top,level===2?.12:.05);
  // v121: a low branch creates a small physical step while crossing it; it never blocks horizontal motion.
@@ -1386,6 +1421,8 @@ function playerSupportHeightAt(x,z){
   if(!m||m.visible===false)continue;const e=rockEllipse(m,x,z,PLAYER_RADIUS*.12);
   if(e.n<1)top=Math.max(top,e.q.top);
  }
+ // Furniture supports descending feet, while its sides remain solid.
+ if(level===3)for(const q of wallGeometry())if(q.furniture&&py>=q.box.max.y-terrainHeightAt(x,z)-.10&&polygonContact(q.polygon,x,z,PLAYER_RADIUS*.08))top=Math.max(top,q.box.max.y-terrainHeightAt(x,z));
  // Each roof section supports only its own physical footprint.
  for(const q of openingDebrisCapsules())if(py>=q.top-.1&&capsuleCircleContact(q.body,x,z,PLAYER_RADIUS*.1))top=Math.max(top,q.top);
  const roofTop=roofHeightAt(x,z);if(py>=roofTop-.10)top=Math.max(top,roofTop);
@@ -1458,6 +1495,16 @@ function movePlayerCollisionStep(mx,mz){
  for(const hit of mountainContactsAt(tx,tz,mountedFriend?MOUNTED_ROCK_RADIUS:PLAYER_RADIUS)){if(hit.depth<nd||!nearest){nd=hit.depth;nearest={x:hit.x,z:hit.z,r:0}}}
  if(nearest){const rx=px-nearest.x,rz=pz-nearest.z,rl=Math.hypot(rx,rz)||1,txv=-rz/rl,tzv=rx/rl,sgn=(mx*txv+mz*tzv)>=0?1:-1,mag=Math.hypot(mx,mz);const sx=px+txv*mag*sgn,sz=pz+tzv*mag*sgn;if(!movementBlocked(sx,sz)){boy.position.x=sx;boy.position.z=sz}}
 }
+function playerCrossesHouseWall(ax,az,bx,bz){
+ if(level!==3)return false;
+ for(const w of wallGeometry()){
+  if(w.furniture)continue;const top=w.shell&&w.root.userData.enterable?Math.max(w.box.max.y,w.roofTop):w.box.max.y;
+  if(py+terrainHeightAt(ax,az)>=top-.015)continue;
+  const y=(w.box.min.y+w.box.max.y)/2;
+  if(segmentHitsBox({x:ax,y,z:az},{x:bx,y,z:bz},w.box))return true;
+ }
+ return false;
+}
 function movePlayerCollision(mx,mz){
  // v107 swept/sub-stepped motion prevents a fast mounted boar from tunnelling through
  // a narrow rock between rendered frames. Every slice re-runs the full collision solver.
@@ -1465,6 +1512,7 @@ function movePlayerCollision(mx,mz){
  for(let i=0;i<n;i++){
   const safeX=boy.position.x,safeZ=boy.position.z;
   movePlayerCollisionStep(mx/n,mz/n);
+  if(playerCrossesHouseWall(safeX,safeZ,boy.position.x,boy.position.z)){boy.position.x=safeX;boy.position.z=safeZ;}
   // v119: resolve the whole neighbouring-rock cluster, then require a globally valid mounted
   // footprint. If overlapping ellipses cannot be resolved simultaneously, keep the last safe
   // position instead of allowing one rock's push-out to place the boar inside another rock.
@@ -1783,7 +1831,8 @@ function canCollectForage(a){
  const appleReach=a.type!=='apple'||mountedFriend||(py>.58&&Math.abs((a.y||0)-boy.position.y)<1.18);
  return nearForage&&appleReach;
 }
-function startBoarForm(){catFormTime=0;if(catFormModel)catFormModel.g.visible=false;boarFormTime=30;if(mountedFriend){mountedFriend=false;setRiderPose(false);py=0;vy=0;boy.position.y=0}if(!boarFormVisual){const q=makeBoar(boy.position.x,boy.position.z,true);boarFormVisual=q.g;q.aura.visible=false;q.bolt.visible=false;for(const mesh of q.g.children)if(mesh.isMesh&&mesh.geometry.type==='RingGeometry')mesh.visible=false;q.g.scale.setScalar(.86)}boarFormVisual.visible=true;boy.visible=false;bonusSound();notice('🟡 Ягода превратила Тимура в кабанчика на 30 секунд! Можно ходить, собирать еду и кормить кабанчиков. Враги принимают Тимура за своего!')}
+function updateBoarForm(dt){if(boarFormTime>0){boarFormTime=formTimeAfterStep(boarFormTime,dt);if(boarFormVisual){boarFormVisual.visible=true;boarFormVisual.position.set(boy.position.x,boy.position.y,boy.position.z);boarFormVisual.rotation.y=boy.rotation.y}if(boarFormTime<=0)endBoarForm()}}
+function startBoarForm(){catFormTime=0;if(catFormModel)catFormModel.g.visible=false;boarFormTime=BOAR_FORM_SECONDS;if(mountedFriend){mountedFriend=false;setRiderPose(false);py=0;vy=0;boy.position.y=0}if(!boarFormVisual){const q=makeBoar(boy.position.x,boy.position.z,true);boarFormVisual=q.g;q.aura.visible=false;q.bolt.visible=false;for(const mesh of q.g.children)if(mesh.isMesh&&mesh.geometry.type==='RingGeometry')mesh.visible=false;q.g.scale.setScalar(.86)}boarFormVisual.visible=true;boy.visible=false;bonusSound();notice('🟡 Ягода превратила Тимура в кабанчика на 30 секунд! Можно ходить, собирать еду и кормить кабанчиков. Враги принимают Тимура за своего!')}
 function startCatForm(){stopFishing();boarFormTime=0;if(boarFormVisual)boarFormVisual.visible=false;catFormTime=CAT_FORM_SECONDS;if(mountedFriend){mountedFriend=false;setRiderPose(false);py=vy=0}if(!catFormModel){catFormModel=catLife.model(2,scene);catFormModel.g.scale.setScalar(1.35)}catFormModel.g.visible=true;boy.visible=false;bonusSound();notice('🌸🐱 Тимур стал котиком на 30 секунд! Высоко прыгай и корми кабанчиков — они не атакуют.');hud()}
 function updateCatForm(dt,now){if(catFormTime<=0)return;catFormTime=formTimeAfterStep(catFormTime,dt);if(catFormTime===0){catFormModel.g.visible=false;boy.visible=true;bonusSound();notice('✨ Тимур снова стал собой!')}else{catFormModel.g.position.copy(boy.position);catFormModel.g.rotation.y=boy.rotation.y;catFormModel.tail.rotation.y=Math.sin(now*.006)*.5;for(const [i,leg] of catFormModel.legs.entries())leg.rotation.x=Math.hypot(stick.x,stick.y)>.08||keys.KeyW||keys.KeyA||keys.KeyS||keys.KeyD?Math.sin(now*.018+i%2*Math.PI)*.6:0}}
 function endBoarForm(){boarFormTime=0;catFormTime=0;if(catFormModel)catFormModel.g.visible=false;if(boarFormVisual)boarFormVisual.visible=false;boy.visible=true;bonusSound();notice('✨ Тимур снова стал собой!')}
@@ -1796,7 +1845,7 @@ function collectForageItem(a,silent=false){
  else if(a.bonus&&a.type==='mushroom'){yellowMushroomStock++;statsData.forage++;bonusSound();if(!silent)notice(`🟡 Жёлтый мухомор! Следующее кормление накормит и навсегда окрасит кабанчика или босса. Запас: ${yellowMushroomStock}`)}
  else if(a.bonus&&a.type==='apple'){yellowAppleStock++;statsData.forage++;if(a.tree&&!a.tree.userData.yellowAppleGrown){a.tree.userData.beforeYellowScale=a.tree.scale.clone();a.tree.scale.y*=3;a.tree.userData.yellowAppleGrown=true;repairTreeApples([],[])}bonusSound();if(!silent)notice(`🍏✨ Жёлтое яблоко в запасе: ${yellowAppleStock}. Дерево стало втрое выше! Накорми кабанчика — он вырастет в 1,5 раза по высоте.`)}
  else if(a.type==='berry'){const before=life;life=Math.min(diffCfg().playerHP,life+1);statsData.berries++;if(!silent){sound(760,.16,'sine');notice(before<diffCfg().playerHP?'🫐 Ягоды восстановили 1❤️!':'🫐 Ягоды собраны, но здоровье уже полное.')}}
- else{food=Math.min(diffCfg().foodMax,food+1);statsData.forage++;if(!silent){sound(560,.12,'triangle');notice(`🌿 Собрано: ${foodLabel(a.type)} · еда ${food}/${diffCfg().foodMax}`)}}
+ else{food=Math.min(diffCfg().foodMax,food+1);statsData.forage++;if(!silent){sound(560,.12,'triangle');adventureHud.log(`Собрано: ${foodLabel(a.type)} · запас еды ${food}/${diffCfg().foodMax}`)}}
  return true;
 }
 function runMountedAppleAudit(){
@@ -1840,7 +1889,7 @@ function slideAroundTree(px,pz,nx,nz,r=.82){
 }
 function boarScale(f){return f.bodyScale??Math.max(Math.abs(f.g.scale.x),Math.abs(f.g.scale.z))}
 function boarBody(f,x=f.g.position.x,z=f.g.position.z,yaw=f.g.rotation.y){return capsuleAt(x,z,yaw,boarScale(f))}
-function playerBoarBody(){return {g:boy,bodyScale:boarFormTime>0?.86:(friend?boarScale(friend):1)}}
+function playerBoarBody(){return {g:boy,bodyScale:boarFormTime>0?.86:(friend?boarScale(friend):1),playerControlled:boarFormTime>0&&!mountedFriend,feet:py+terrainHeightAt(boy.position.x,boy.position.z)}}
 function playerBodyRadius(){return boarFormTime>0?.90:PLAYER_RADIUS}
 function boarWaterDepth(f,x=f.g.position.x,z=f.g.position.z){if(level!==2&&level!==4)return 0;const body=boarBody(f,x,z);let depth=0;for(const [px,pz] of [[body.ax,body.az],[x,z],[body.bx,body.bz]])for(const [ox,oz] of [[0,0],[body.r,0],[-body.r,0],[0,body.r],[0,-body.r]])depth=Math.max(depth,lakeDepthAt(px+ox,pz+oz));return depth}
 function controlledSwimmer(f){return (boarFormTime>0&&f.g===boy)||mountedFriend&&(f===friend||f.g===boy)}
@@ -1870,9 +1919,9 @@ function doorCollisionBox(door){
  doorCollisionCache.set(door,{frame:boarCollisionEpoch,epoch:worldEpoch,matrix:Array.from(matrix),box});
  return box;
 }
-function wallGeometry(){if(wallCacheEpoch!==worldEpoch){wallCacheEpoch=worldEpoch;wallCache=[];if(level===3)for(const h of houseObjects){const walls=h.userData.cutawayWalls,objects=walls?[...walls.front,...walls.back,...walls.left,...walls.right,...(h===familyHideout?houseFurnishings.children:h===personalHouse&&home.stage>=3?homeParts.furnishings.children:[])]:[h];for(const o of objects){if(o.userData.doorLintel)continue;o.updateWorldMatrix(true,true);const box=new THREE.Box3().setFromObject(o);const shell=!!walls&&['front','back','left','right'].some(side=>walls[side].includes(o));const roofTop=walls?.roof?new THREE.Box3().setFromObject(walls.roof).max.y:box.max.y;wallCache.push({root:h,box,shell,roofTop,polygon:[{x:box.min.x,z:box.min.z},{x:box.max.x,z:box.min.z},{x:box.max.x,z:box.max.z},{x:box.min.x,z:box.max.z}]})}}}const result=wallCache.filter(q=>q.root.visible);if(level===3&&familyHideout.visible&&familyDoor.userData.closed){const box=doorCollisionBox(familyDoor);result.push({root:familyHideout,box,polygon:[{x:box.min.x,z:box.min.z},{x:box.max.x,z:box.min.z},{x:box.max.x,z:box.max.z},{x:box.min.x,z:box.max.z}]})}if(level===3&&home.stage>=4&&personalHouse?.visible&&homeParts.door.userData.closed){const box=doorCollisionBox(homeParts.door);result.push({root:personalHouse,box,polygon:[{x:box.min.x,z:box.min.z},{x:box.max.x,z:box.min.z},{x:box.max.x,z:box.max.z},{x:box.min.x,z:box.max.z}]});}return result}
+function wallGeometry(){if(wallCacheEpoch!==worldEpoch){wallCacheEpoch=worldEpoch;wallCache=[];if(level===3)for(const h of houseObjects){const walls=h.userData.cutawayWalls,objects=walls?[...walls.front,...walls.back,...walls.left,...walls.right,...(h===familyHideout?houseFurnishings.children:h===personalHouse&&home.stage>=3?homeParts.furnishings.children:[])]:[h];for(const o of objects){if(o.userData.doorLintel)continue;o.updateWorldMatrix(true,true);const box=new THREE.Box3().setFromObject(o);const shell=!!walls&&['front','back','left','right'].some(side=>walls[side].includes(o));const roofTop=walls?.roof?new THREE.Box3().setFromObject(walls.roof).max.y:box.max.y;wallCache.push({root:h,box,shell,roofTop,furniture:!!o.userData.furniture||h===personalHouse&&homeParts.furnishings.children.includes(o),polygon:[{x:box.min.x,z:box.min.z},{x:box.max.x,z:box.min.z},{x:box.max.x,z:box.max.z},{x:box.min.x,z:box.max.z}]})}}}const result=wallCache.filter(q=>q.root.visible);if(level===3&&familyHideout.visible&&familyDoor.userData.closed){const box=doorCollisionBox(familyDoor);result.push({root:familyHideout,box,polygon:[{x:box.min.x,z:box.min.z},{x:box.max.x,z:box.min.z},{x:box.max.x,z:box.max.z},{x:box.min.x,z:box.max.z}]})}if(level===3&&home.stage>=4&&personalHouse?.visible&&homeParts.door.userData.closed){const box=doorCollisionBox(homeParts.door);result.push({root:personalHouse,box,polygon:[{x:box.min.x,z:box.min.z},{x:box.max.x,z:box.min.z},{x:box.max.x,z:box.max.z},{x:box.min.x,z:box.max.z}]});}return result}
 function clearWallLine(a,b){const start={x:a.x,y:a.y??.8,z:a.z},end={x:b.x,y:b.y??.8,z:b.z};if(wallGeometry().some(w=>segmentHitsBox(start,end,w.box)))return false;if(level===3&&familyHideout.visible&&familyDoor.userData.closed){const box=new THREE.Box3().setFromObject(familyDoor);if(segmentHitsBox(start,end,box))return false}return true}
-function boarWallContacts(f,x=f.g.position.x,z=f.g.position.z,yaw=f.g.rotation.y){const body=boarBody(f,x,z,yaw),contacts=[];for(const w of wallGeometry()){const pad=body.r+.04;if(Math.max(body.ax,body.bx)+pad<w.box.min.x||Math.min(body.ax,body.bx)-pad>w.box.max.x||Math.max(body.az,body.bz)+pad<w.box.min.z||Math.min(body.az,body.bz)-pad>w.box.max.z)continue;for(const [px,pz] of [[body.ax,body.az],[(body.ax+body.bx)/2,(body.az+body.bz)/2],[body.bx,body.bz]]){const hit=polygonContact(w.polygon,px,pz,body.r+.04);if(hit)contacts.push(hit)}}return contacts}
+function boarWallContacts(f,x=f.g.position.x,z=f.g.position.z,yaw=f.g.rotation.y){const body=boarBody(f,x,z,yaw),contacts=[];for(const w of wallGeometry()){const top=w.shell&&w.root.userData.enterable?Math.max(w.box.max.y,w.roofTop):w.box.max.y;if(f.playerControlled&&f.feet>=top-.015)continue;const pad=body.r+.04;if(Math.max(body.ax,body.bx)+pad<w.box.min.x||Math.min(body.ax,body.bx)-pad>w.box.max.x||Math.max(body.az,body.bz)+pad<w.box.min.z||Math.min(body.az,body.bz)-pad>w.box.max.z)continue;for(const [px,pz] of [[body.ax,body.az],[(body.ax+body.bx)/2,(body.az+body.bz)/2],[body.bx,body.bz]]){const hit=polygonContact(w.polygon,px,pz,body.r+.04);if(hit)contacts.push(hit)}}return contacts}
 const companionChecks={checks:0,repairs:0,replans:0};
 function companionValid(f,x=f.g.position.x,z=f.g.position.z,yaw=f.g.rotation.y){return !boarSceneryBlockedAt(f,x,z,yaw)}
 function settleBoarOnGround(f){
@@ -1925,10 +1974,12 @@ function resolveBoarClearance(f,protectPlayer=true){
  if(level===2&&!lakeExitReady())f.g.position.z=Math.max(f.g.position.z,-37.2+.7*boarScale(f));
  if(level===1&&opening&&forestEdgeBlocked(f.g.position.x,f.g.position.z,.7*boarScale(f),opening.passageOpen))f.g.position.z=forestEdgeLimit(f.g.position.x,.7*boarScale(f));
  if(f.flee){for(let pass=0;pass<4;pass++){const contacts=boarWallContacts(f);if(!contacts.length)break;for(const hit of contacts){f.g.position.x+=hit.nx*(hit.depth+.004);f.g.position.z+=hit.nz*(hit.depth+.004)}}return}
- for(let pass=0;pass<4;pass++){
+ for(let pass=0;pass<(f.playerControlled?12:4);pass++){
   const contacts=[...boarTreeContacts(f),...boarWallContacts(f)];const playerHit=protectPlayer?boarPlayerContact(f):null;if(playerHit)contacts.push(playerHit);
   if(!contacts.length)break;
-  for(const hit of contacts){f.g.position.x+=hit.nx*(hit.depth+.004);f.g.position.z+=hit.nz*(hit.depth+.004)}
+  const moves=f.playerControlled?contacts.filter(hit=>!playerCrossesHouseWall(f.g.position.x,f.g.position.z,f.g.position.x+hit.nx*(hit.depth+.004),f.g.position.z+hit.nz*(hit.depth+.004))).sort((a,b)=>b.depth-a.depth).slice(0,1):contacts;
+  if(!moves.length)break;
+  for(const hit of moves){f.g.position.x+=hit.nx*(hit.depth+.004);f.g.position.z+=hit.nz*(hit.depth+.004)}
  }
 
 }
@@ -2191,6 +2242,58 @@ if(__autoTest||__autoParams.get('openingtest')==='1')window.__KABANCHIKI_QA__={
   return {level:n,mode,fps,done,frames,seconds:frames/fps,activeYield,oldRouteRetained,reversals,maxStep,position:friend.g.position.toArray(),goal:friend.route?.goal,issues};
  },
 
+
+ v211FurnitureJumps(){
+  this.v207BuildDoor();this.season(0);this.load(3);paused=true;mountedFriend=false;boarFormTime=catFormTime=0;foes.forEach(f=>f.flee=true);if(friend){scene.remove(friend.g);friend=null;}
+  const samples=[],issues=[],reveal=updateFamilyHouseReveal;
+  try{
+   for(const h of [familyHideout,personalHouse]){
+    const furniture=h===familyHideout?houseFurnishings.children:homeParts.furnishings.children.filter((o,i)=>[0,6,8].includes(i));
+    for(let index=0;index<furniture.length;index++)for(const form of ['human','cat','boar'])for(const cutaway of [false,true])for(const side of ['left','right','back','front'])for(const fps of [30,60]){
+     const item=furniture[index],box=new THREE.Box3().setFromObject(item),start=new THREE.Vector3((box.min.x+box.max.x)/2,0,(box.min.z+box.max.z)/2),local=h.worldToLocal(start.clone());
+     const goalLocal=side==='left'?new THREE.Vector3(-4,0,local.z):side==='right'?new THREE.Vector3(4,0,local.z):side==='back'?new THREE.Vector3(local.x,0,-4):new THREE.Vector3(local.x<0?-1.9:1.9,0,4),goal=h.localToWorld(goalLocal);
+     boy.position.set(start.x,0,start.z);py=box.max.y-terrainHeightAt(start.x,start.z)+.02;vy=form==='cat'?CAT_JUMP_SPEED:7;catFormTime=form==='cat'?30:0;boarFormTime=form==='boar'?30:0;
+     const worldCam=h.localToWorld(new THREE.Vector3(side==='left'?-8:side==='right'?8:0,4,side==='back'?-8:side==='front'?8:0));camera.position.copy(worldCam);
+     updateFamilyHouseReveal=()=>{reveal();setDadHouseCutaway(h===familyHideout&&cutaway);setHomeHouseCutaway(h===personalHouse&&cutaway)};
+     let escaped=false,headClip=false,firstEscape=null;
+     for(let frame=0;frame<fps*1.5;frame++){
+      boarCollisionEpoch++;const dx=goal.x-boy.position.x,dz=goal.z-boy.position.z,d=Math.hypot(dx,dz);if(d)movePlayerCollision(dx/d*6/fps,dz/d*6/fps);movePlayerVertical(1/fps);
+      const q=h.worldToLocal(new THREE.Vector3(boy.position.x,0,boy.position.z)),wallX=h===familyHideout?2.6:2.4,wallZ=h===familyHideout?2.18:2.4;
+      if(Math.abs(q.x)>wallX+.12||q.z<-wallZ-.12||(q.z>wallZ+.12&&Math.abs(q.x)>1.2)){escaped=true;firstEscape??={frame,x:q.x,z:q.z,py};}
+      const roof=doorCollisionBox(h.userData.cutawayWalls.roof),head=py+terrainHeightAt(boy.position.x,boy.position.z)+playerPhysicalHeight();
+      if(Math.abs(q.x)<wallX-.4&&Math.abs(q.z)<wallZ-.4&&py<roof.min.y&&head>roof.min.y+.06)headClip=true;
+     }
+     if(escaped)issues.push('wall-'+(h===familyHideout?'family':'home')+'-'+index+'-'+form+'-'+side+'-'+fps+'-'+cutaway);
+     if(headClip)issues.push('ceiling-'+(h===familyHideout?'family':'home')+'-'+index+'-'+form+'-'+fps);
+     samples.push({house:h===familyHideout?'family':'home',index,form,side,fps,cutaway,escaped,headClip,firstEscape});
+    }
+   }
+  }finally{updateFamilyHouseReveal=reveal;boarFormTime=catFormTime=0;py=vy=0;boy.position.set(0,0,12);setDadHouseCutaway(false);setHomeHouseCutaway(false);}
+  return {cases:samples.length,issues:[...new Set(issues)],samples:samples.filter(s=>s.escaped||s.headClip)};
+ },
+ v211Reunion(form='human',role=0,time=6){
+  cinematicFinish?.();this.season(0);this.load(3);paused=true;boarFormTime=catFormTime=0;
+  boy.position.set(0,0,12);if(form==='cat')startCatForm();else if(form==='boar')startBoarForm();
+  const member=familyMembers.find(f=>f.role===role);showFamilyPopup(role,member);movie.elapsedOverride=time;updateCinematic(performance.now(),new THREE.Vector3());
+  movie.hero.userData.qaDraws=0;movie.hero.traverse(o=>{if(o.isMesh)o.onBeforeRender=()=>movie?.hero&&(movie.hero.userData.qaDraws++)});
+  return {form:movie.heroForm,gesture:movie.reunion.gesture,text:$('cinematicText').textContent,after:movie.reunion.after,heroVisible:movie.hero.visible,cat:catFormTime,boar:boarFormTime,heroY:movie.hero.position.y};
+ },
+ v211ReunionInspect(){const meshes=[];movie?.hero.traverse(o=>{if(o.isMesh)meshes.push({visible:o.visible,opacity:o.material.opacity,position:o.position.toArray(),scale:o.scale.toArray()})});return {draws:movie?.hero.userData.qaDraws,meshes};},
+ v211Clock(form='boar',dt=.5){
+  cinematicFinish?.();paused=true;if(form==='cat')startCatForm();else startBoarForm();const start=Math.max(catFormTime,boarFormTime);
+  for(let t=0;t<30-1e-8;t+=dt)if(form==='cat')updateCatForm(Math.min(dt,30-t),performance.now());else updateBoarForm(Math.min(dt,30-t));
+  const expired=Math.max(catFormTime,boarFormTime);if(form==='cat')startCatForm();else startBoarForm();const repeated=Math.max(catFormTime,boarFormTime);if(form==='cat')updateCatForm(31,performance.now());else updateBoarForm(31);
+  return {start,expired,repeated,end:Math.max(catFormTime,boarFormTime)};
+ },
+ v211Scene(n=3,kind='normal'){
+  cinematicFinish?.();this.season(0);this.load(n);paused=false;started=true;win=false;endShown=false;boarFormTime=catFormTime=0;mountedFriend=false;py=vy=0;invuln=999;keys={};stick.x=stick.y=0;foes.forEach(f=>f.flee=true);
+  boy.position.set(0,0,kind==='exit'?-26:12);yaw=boy.rotation.y=Math.PI;camMode=kind==='exit'?3:1;
+  life=kind==='low'?1:diffCfg().playerHP-1;food=kind==='low'?0:3;yellowAppleStock=yellowMushroomStock=fishStock=0;hud(true);
+  if(kind==='pickup'){food++;life=Math.min(diffCfg().playerHP,life+1);hud(true);}
+  const props=n===1?openingProps:n===2?lakeExitProps:locationExitProps.get(n);
+  return {version:GAME_VERSION,barrier:props?.userData.exitBarrier?.kind||'trunk',fence:props?.userData.fenceExtent,landscape:props?.userData.exitLandscape?.userData.destination,trail:props?.userData.exitLandscape?.userData.trailRange};
+ },
+
  // Deterministic browser robot: real navigation, real scenery and real movement.
  boarRobot(n=1,season=0,fps=30,seed=208){
   this.season(season);this.load(n);paused=true;mountedFriend=false;
@@ -2275,7 +2378,7 @@ if(__autoTest||__autoParams.get('openingtest')==='1')window.__KABANCHIKI_QA__={
  v161Exit(){this.season(0);this.load(3);if(friend)scene.remove(friend.g);friend=makeBoar(familyHideout.position.x,familyHideout.position.z,true);friend.g.rotation.y=0;familyDoor.userData.closed=false;mountedFriend=false;const target={x:familyHideout.position.x,z:familyHideout.position.z+9};boy.position.set(target.x,0,target.z);foes.forEach(f=>f.flee=true);for(let i=0;i<400;i++){moveFriendAroundObstacles(target.x,target.z,4,.05);resolveBoarClearance(friend,false);if(Math.hypot(friend.g.position.x-target.x,friend.g.position.z-target.z)<3)break}return {distance:Math.hypot(friend.g.position.x-target.x,friend.g.position.z-target.z),walls:boarWallContacts(friend).length}},
  v161Recover(){this.load(3);if(friend)scene.remove(friend.g);friend=makeBoar(familyHideout.position.x-2.6,familyHideout.position.z,true);friend.g.scale.y=1.5;friend.g.rotation.y=0;mountedFriend=false;repairCompanion(friend,true);const foot=companionValid(friend);mountFriendNow();const ride=companionValid(playerBoarBody());return {foot,ride,mounted:mountedFriend}},
  v161Snow(minutes){this.season(40);this.load(2);levelTime=minutes*60;updateSnow(.01,performance.now());return this.v161Inspect()},
- v161Inspect(){return {food,shots:shots.length,birds:birdLife.inspect(),snowMinute:winterSnowMinute,snowStrength:Math.min(1,.35+Math.max(0,winterSnowMinute)*.2),driftHeight:Math.max(0,...winterDrifts.map(d=>d.m.scale.y)),drifts:winterDrifts.length,snowDraw:snowGeometry.drawRange.count,iceWater:lake.material===iceWaterMaterial,roadSnow:roadSurface.material===winterRoadMaterial,checks:{...companionChecks},version:GAME_VERSION,season:currentSeason,level,life,underwater:underwaterTime,ice:iceShell.visible,freeze:freezeTime,tree:seasonVisual.children.some(g=>g.userData.christmasTree),fishing:fishingRig.visible,catch:caughtFish.visible,spray:sprayPool.filter(q=>q.t>0).length,rings:rainRingPool.filter(q=>q.t>0).length,puddles:puddleRain,depth:puddleObjects[0]?puddleDepthAt(puddleObjects[0].position.x,puddleObjects[0].position.z):0,riverEnd:riverGeo.attributes.position.getX(riverGeo.attributes.position.count-1),foodInRiver:level===4?apples.filter(a=>!a.done&&Math.abs(a.z-riverCenterAt(a.x))<4.6).length:0,rocks:rockPositions.filter(q=>q[3]?.userData.biomeLevel===4).map(q=>({x:q[0],z:q[1],scale:q[3].scale.toArray()})),movie:movie?{kind:movie.kind,light:movie.lampLight?.visible&&movie.lampLight?.intensity,headlights:movie.car?.userData.headlights?.length,boss:movie.fleeingBoss?.g.visible,hug:movie.hero.children[5].rotation.x}:null}},
+ v161Inspect(){return {food,shots:shots.length,birds:birdLife.inspect(),snowMinute:winterSnowMinute,snowStrength:Math.min(1,.35+Math.max(0,winterSnowMinute)*.2),driftHeight:Math.max(0,...winterDrifts.map(d=>d.m.scale.y)),drifts:winterDrifts.length,snowDraw:snowGeometry.drawRange.count,iceWater:lake.material===iceWaterMaterial,roadSnow:roadSurface.material===winterRoadMaterial,checks:{...companionChecks},version:GAME_VERSION,season:currentSeason,level,life,underwater:underwaterTime,ice:iceShell.visible,freeze:freezeTime,tree:seasonVisual.children.some(g=>g.userData.christmasTree),fishing:fishingRig.visible,catch:caughtFish.visible,spray:sprayPool.filter(q=>q.t>0).length,rings:rainRingPool.filter(q=>q.t>0).length,puddles:puddleRain,depth:puddleObjects[0]?puddleDepthAt(puddleObjects[0].position.x,puddleObjects[0].position.z):0,riverEnd:riverGeo.attributes.position.getX(riverGeo.attributes.position.count-1),foodInRiver:level===4?apples.filter(a=>!a.done&&Math.abs(a.z-riverCenterAt(a.x))<4.6).length:0,rocks:rockPositions.filter(q=>q[3]?.userData.biomeLevel===4).map(q=>({x:q[0],z:q[1],scale:q[3].scale.toArray()})),movie:movie?{kind:movie.kind,light:movie.lampLight?.visible&&movie.lampLight?.intensity,headlights:movie.car?.userData.headlights?.length,boss:movie.fleeingBoss?.g.visible,hug:movie.hero.children[5]?.rotation.x}:null}},
  v161Bridge(){this.load(4);mountedFriend=false;py=.28;boy.position.set(0,.28,-14);for(let i=0;i<70;i++)movePlayerCollision(.06,0);const foot=boy.position.x;boy.position.set(0,.28,-14);mountedFriend=true;for(let i=0;i<70;i++)movePlayerCollision(.06,0);const ride=boy.position.x;mountedFriend=false;return {foot,ride}},
  v161Drown(){this.season(0);this.load(4);mountedFriend=false;boarFormTime=catFormTime=0;boy.position.set(15,-3,riverCenterAt(15));const before=life;updateUnderwater(9);const after=life;for(let tick=0;tick<32&&life>0;tick++)updateUnderwater(4);return {before,after,dead:life===0&&(endShown||deathSceneActive)}},
  v161Freeze(level=1){this.season(40);this.load(level);levelTime=301;updateWinterFreeze(3);return this.v161Inspect()},
@@ -2434,7 +2537,22 @@ function updateCameraOcclusion(now){if(!occlusionSchedule.due(now,worldEpoch,boy
  occlusionDirection.copy(boy.position);occlusionDirection.y+=1.1;occlusionDirection.sub(camera.position);const length=occlusionDirection.length();occlusionDirection.normalize();occlusionRay.set(camera.position,occlusionDirection);occlusionRay.far=length;const next=new Set();for(const hit of occlusionRay.intersectObjects(roots,true)){let root=hit.object;while(root.parent&&!rootSet.has(root))root=root.parent;if(rootSet.has(root))next.add(root)}
  for(const root of fadedRoots)if(!next.has(root))setObjectCameraFade(root,false);for(const root of next)if(!fadedRoots.has(root))setObjectCameraFade(root,true);fadedRoots=next;
 }
-const trackPerformance=__autoTest||__autoParams.get('openingtest')==='1',performanceFrames=[];let last=performance.now(),fpsFrames=0,fpsLast=last,fpsValue=0;hud();function loop(now){const frameStart=trackPerformance?performance.now():0;requestAnimationFrame(loop);boarCollisionEpoch++;adaptiveGraphics.sample(now,started&&!paused&&!endShown&&!cinematicRunning&&!document.hidden);fpsFrames++;if(now-fpsLast>=500){fpsValue=Math.round(fpsFrames*1000/(now-fpsLast));fpsFrames=0;fpsLast=now;const pe=$('perf');if(pe)pe.textContent=`${GAME_VERSION} · FPS ${fpsValue} · Авто: ${GRAPHICS_TIERS[adaptiveGraphics.tier].name} · ⏱ всего ${formatTime(totalTime)} · 📍 ${formatTime(levelTime)}`;}const dt=Math.max(0,Math.min(.05,(now-last)/1000));last=now;updateSpringBloom(dt);if(level===3){hearthFlame.scale.set(.9+Math.sin(now*.012)*.09,1+Math.sin(now*.009)*.15,1);hearthLight.intensity=2.5+Math.sin(now*.017)*.4}birdLife.update(dt,terrainHeightAt);if(started&&!paused&&!cinematicRunning)catLife.update(dt,birdLife,boarBodies(),{x:boy.position.x,y:boy.position.y,z:boy.position.z});updateAquaticLife(dt,now);updateWaterEffects(dt,now);updateVictoryFireworks(dt);if(started&&life>0&&!win&&!paused){updateCatForm(dt,now);levelTime+=dt;totalTime+=dt;updateFallingSigns(dt);updateBoarWater(dt);updateOpeningAdventure(dt);updateLakeExit(dt);updateLocationExit(dt);updateFamilyHouseReveal();updateHomeUI();updateWinterFreeze(dt);updateWeather(dt,now);updateRiverFlow(dt);updateFishing(dt,now);updateHurricaneCarry(dt,now);if(boarFormTime>0){boarFormTime=Math.max(0,boarFormTime-dt);if(boarFormVisual){boarFormVisual.visible=true;boarFormVisual.position.set(boy.position.x,boy.position.y,boy.position.z);boarFormVisual.rotation.y=boy.rotation.y}if(boarFormTime<=0)endBoarForm()}for(const __b of [...friends,...foes]){if(__b?.g?.userData?.tailPivot)__b.g.userData.tailPivot.rotation.y=Math.sin(now*.006+__b.phase)*.42}if(level===1){forestVisual.rotation.z=Math.sin(now*.00045)*.0018;}if(level===2){lakeWaves.forEach((m,i)=>{m.material.opacity=.12+Math.sin(now*.0013+i)*.06;m.position.y=.145+Math.sin(now*.001+i)*.003});waterRippleMatA.opacity=.17+Math.sin(now*.0012)*.045;waterRippleMatB.opacity=.13+Math.sin(now*.00105+1.4)*.035;lakeGlint.scale.x=2.35+Math.sin(now*.0008)*.32;lakeGlint.material.opacity=.18+Math.sin(now*.0011)*.055;}throwCooldown=Math.max(0,throwCooldown-dt);friendAttack=Math.max(0,friendAttack-dt);forageTimer-=dt;if(forageTimer<=0){const activeFood=apples.filter(a=>!a.done&&!['berry','catberry'].includes(a.type)).length,activeBerries=apples.filter(a=>!a.done&&['berry','catberry'].includes(a.type)).length;if(activeFood<4){spawnForage();notice('🌱 Появилась новая еда! 🍎 Яблоки ищи на деревьях — до них нужно допрыгнуть.')}else if(activeBerries<1&&life<diffCfg().playerHP){spawnForage('berry');notice('🫐 Где-то появились лечебные ягоды!')}forageTimer=rand(14,22)}if(flashlightObj&&!hasFlashlight&&now>=flashlightDropUntil&&Math.hypot(flashlightObj.position.x-boy.position.x,flashlightObj.position.z-boy.position.z)<1.8){hasFlashlight=true;scene.remove(flashlightObj);flashlightObj=null;torch.intensity=42;sound(900,.25);notice('🔦 Фонарик найден! Теперь можно идти в ночное логово.')} boy.children[5].rotation.x*=Math.max(0,1-dt*7);for(let i=shots.length-1;i>=0;i--){const sh=shots[i],previous=sh.g.position.clone();sh.t+=dt*2.8;const t=Math.min(1,sh.t);sh.g.position.lerpVectors(sh.start,sh.target,t);sh.g.position.y+=Math.sin(Math.PI*t)*1.7;if(!clearWallLine(previous,sh.g.position)){scene.remove(sh.g);shots.splice(i,1);continue}sh.g.rotation.y+=dt*9;if(t>=1){resolveMeat(sh);shots.splice(i,1)}}for(const f of familyMembers){if(!f.done){if(level===2&&lakeRadiusAt(f.g.position.x,f.g.position.z)<16.2){const q=nearestSafeSpawn(18,-4,.72)||[18,-4];f.g.position.x=f.x=q[0];f.g.position.z=f.z=q[1]}f.person.rotation.y=0;f.g.rotation.y=Math.atan2(boy.position.x-f.g.position.x,boy.position.z-f.g.position.z)}}// v165: classic shooter axes — W/S (or ↑/↓) move forward/back; A/D (or ←/→) strafe relative to camera yaw.
+
+const hintPoint=new THREE.Vector3();
+function updateAdventureHints(now){
+ const active=started&&!paused&&!cinematicRunning&&!endShown&&life>0;adventureHud.active(active);if(!active)return;
+ camera.updateMatrixWorld();
+ const screen=(x,y,z)=>{hintPoint.set(x,y,z).project(camera);if(hintPoint.z<-1||hintPoint.z>1||Math.abs(hintPoint.x)>.95||Math.abs(hintPoint.y)>.9)return null;return {x:(hintPoint.x*.5+.5)*innerWidth,y:(-.5*hintPoint.y+.5)*innerHeight}};
+ let goal=null;const boss=level===6?foes.find(f=>f.isBoss):null;
+ if(boss){const point=screen(boss.g.position.x,boss.g.position.y+4.6,boss.g.position.z);if(point)goal={...point,text:'Босс · '+boss.hp+'/'+boss.maxHp,ratio:boss.hp/boss.maxHp,kind:'boss'};}
+ else if(questsComplete()&&level<6){const z=level===1?-33:-37,point=screen(0,3.1,z);if(point&&Math.hypot(boy.position.x,boy.position.z-z)<35)goal={...point,text:(level===1?opening?.passageOpen:level===2?lakeExitReady():locationExitReady())?'Путь открыт →':'Друг открывает путь',kind:'goal'};}
+ else{const member=familyMembers.filter(f=>!f.done&&f.g.visible).sort((a,b)=>a.g.position.distanceToSquared(boy.position)-b.g.position.distanceToSquared(boy.position))[0];if(member&&member.g.position.distanceTo(boy.position)<22){const point=screen(member.g.position.x,member.g.position.y+2.5,member.g.position.z);if(point)goal={...point,text:['Мама','Папа','Братик','Бабушка'][member.role]+' · подойди',kind:'goal'};}}
+ adventureHud.hint('goal',goal);
+ let ally=null;if(friend?.g&&friend.g.position.distanceTo(boy.position)<16&&!mountedFriend){const point=screen(friend.g.position.x,friend.g.position.y+2.5*boarScale(friend),friend.g.position.z);if(point)ally={...point,text:'Друг · '+friendHP+'/'+diffCfg().friendHP,ratio:friendHP/diffCfg().friendHP};}adventureHud.hint('friend',ally);
+ const gain=adventureHud.gain,point=gain&&now<gain.until?screen(boy.position.x,boy.position.y+2.2,boy.position.z):null;adventureHud.hint('reward',point?{...point,text:gain.text,kind:'reward'}:null);
+}
+
+const trackPerformance=__autoTest||__autoParams.get('openingtest')==='1',performanceFrames=[];let last=performance.now(),fpsFrames=0,fpsLast=last,fpsValue=0;hud();function loop(now){const frameStart=trackPerformance?performance.now():0;requestAnimationFrame(loop);boarCollisionEpoch++;adaptiveGraphics.sample(now,started&&!paused&&!endShown&&!cinematicRunning&&!document.hidden);fpsFrames++;if(now-fpsLast>=500){fpsValue=Math.round(fpsFrames*1000/(now-fpsLast));fpsFrames=0;fpsLast=now;const pe=$('perf');if(pe)pe.textContent=`${GAME_VERSION} · FPS ${fpsValue} · Авто: ${GRAPHICS_TIERS[adaptiveGraphics.tier].name} · ⏱ всего ${formatTime(totalTime)} · 📍 ${formatTime(levelTime)}`;}const activeElapsed=document.hidden?0:Math.max(0,(now-last)/1000),dt=Math.min(.05,activeElapsed);last=now;updateSpringBloom(dt);if(level===3){hearthFlame.scale.set(.9+Math.sin(now*.012)*.09,1+Math.sin(now*.009)*.15,1);hearthLight.intensity=2.5+Math.sin(now*.017)*.4}birdLife.update(dt,terrainHeightAt);if(started&&!paused&&!cinematicRunning)catLife.update(dt,birdLife,boarBodies(),{x:boy.position.x,y:boy.position.y,z:boy.position.z});updateAquaticLife(dt,now);updateWaterEffects(dt,now);updateVictoryFireworks(dt);if(started&&life>0&&!win&&!paused){updateCatForm(activeElapsed,now);levelTime+=dt;totalTime+=dt;updateFallingSigns(dt);updateBoarWater(dt);updateOpeningAdventure(dt);updateLakeExit(dt);updateLocationExit(dt);updateFamilyHouseReveal();updateHomeUI();updateWinterFreeze(dt);updateWeather(dt,now);updateRiverFlow(dt);updateFishing(dt,now);updateHurricaneCarry(dt,now);updateBoarForm(activeElapsed);for(const __b of [...friends,...foes]){if(__b?.g?.userData?.tailPivot)__b.g.userData.tailPivot.rotation.y=Math.sin(now*.006+__b.phase)*.42}if(level===1){forestVisual.rotation.z=Math.sin(now*.00045)*.0018;}if(level===2){lakeWaves.forEach((m,i)=>{m.material.opacity=.12+Math.sin(now*.0013+i)*.06;m.position.y=.145+Math.sin(now*.001+i)*.003});waterRippleMatA.opacity=.17+Math.sin(now*.0012)*.045;waterRippleMatB.opacity=.13+Math.sin(now*.00105+1.4)*.035;lakeGlint.scale.x=2.35+Math.sin(now*.0008)*.32;lakeGlint.material.opacity=.18+Math.sin(now*.0011)*.055;}throwCooldown=Math.max(0,throwCooldown-dt);friendAttack=Math.max(0,friendAttack-dt);forageTimer-=dt;if(forageTimer<=0){const activeFood=apples.filter(a=>!a.done&&!['berry','catberry'].includes(a.type)).length,activeBerries=apples.filter(a=>!a.done&&['berry','catberry'].includes(a.type)).length;if(activeFood<4){spawnForage();notice('🌱 Появилась новая еда! 🍎 Яблоки ищи на деревьях — до них нужно допрыгнуть.')}else if(activeBerries<1&&life<diffCfg().playerHP){spawnForage('berry');notice('🫐 Где-то появились лечебные ягоды!')}forageTimer=rand(14,22)}if(flashlightObj&&!hasFlashlight&&now>=flashlightDropUntil&&Math.hypot(flashlightObj.position.x-boy.position.x,flashlightObj.position.z-boy.position.z)<1.8){hasFlashlight=true;scene.remove(flashlightObj);flashlightObj=null;torch.intensity=42;sound(900,.25);notice('🔦 Фонарик найден! Теперь можно идти в ночное логово.')} boy.children[5].rotation.x*=Math.max(0,1-dt*7);for(let i=shots.length-1;i>=0;i--){const sh=shots[i],previous=sh.g.position.clone();sh.t+=dt*2.8;const t=Math.min(1,sh.t);sh.g.position.lerpVectors(sh.start,sh.target,t);sh.g.position.y+=Math.sin(Math.PI*t)*1.7;if(!clearWallLine(previous,sh.g.position)){scene.remove(sh.g);shots.splice(i,1);continue}sh.g.rotation.y+=dt*9;if(t>=1){resolveMeat(sh);shots.splice(i,1)}}for(const f of familyMembers){if(!f.done){if(level===2&&lakeRadiusAt(f.g.position.x,f.g.position.z)<16.2){const q=nearestSafeSpawn(18,-4,.72)||[18,-4];f.g.position.x=f.x=q[0];f.g.position.z=f.z=q[1]}f.person.rotation.y=0;f.g.rotation.y=Math.atan2(boy.position.x-f.g.position.x,boy.position.z-f.g.position.z)}}// v165: classic shooter axes — W/S (or ↑/↓) move forward/back; A/D (or ←/→) strafe relative to camera yaw.
 const forward=(keys.KeyW||keys.ArrowUp?1:0)-(keys.KeyS||keys.ArrowDown?1:0)-stick.y,side=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0)+stick.x;const len=Math.max(1,Math.hypot(forward,side));let dx=(Math.sin(yaw)*forward-Math.cos(yaw)*side)/len,dz=(Math.cos(yaw)*forward+Math.sin(yaw)*side)/len;if(hurricaneCarry>0){dx=0;dz=0}// v87: pressing jump close to a friendly boar mounts it directly; no tree/wall pinning is needed.
 if(boarFormTime<=0&&catFormTime<=0&&!mountedFriend&&jump&&friend?.g&&!friend.flee&&py<.35&&Math.hypot(boy.position.x-friend.g.position.x,boy.position.z-friend.g.position.z)<2.65){jump=false;mountFriendNow()}
 friendKnockbackActive=updateFriendKnockback(dt);if(friendKnockbackActive&&mountedFriend){dx=0;dz=0}
@@ -2465,10 +2583,7 @@ if(mountedFriend){
  if(grounded){boy.userData.lastGroundedAt=now;if(Math.abs(py-supportNow)<.13&&vy<=.05){py=supportNow;boy.position.y=py}}
  const jumpSupported=grounded||(now-(boy.userData.lastGroundedAt||0)<140);
  if(jump&&now-(boy.userData.jumpQueuedAt||now)<220&&jumpSupported&&boarFormTime<=0){softEffectTone(240,.15,'sine',.018,0,370);if(waterAt(boy.position.x,boy.position.z))spawnWaterSplash(boy.position.x,boy.position.z,1.8);vy=catFormTime>0?CAT_JUMP_SPEED:7;jump=false}else if(jump&&boarFormTime>0)jump=false
- const prevPy=py;vy-=18*dt;let nextPy=py+vy*dt;const support=playerSupportHeightAt(boy.position.x,boy.position.z);
- // Land on the top surface only while descending from above; never teleport through a rock/roof from below.
- if(vy<=0&&prevPy>=support-.10&&nextPy<=support){if(vy<-2){if(waterAt(boy.position.x,boy.position.z))spawnWaterSplash(boy.position.x,boy.position.z,2.8);else effect('land');}py=support;vy=0}else{py=Math.max(0,nextPy);if(py===0)vy=0}
- boy.position.y=py;
+ movePlayerVertical(dt);
  if(catFormTime<=0&&friend?.g&&!friend.flee&&py>.62&&py<2.35&&vy<=2.2&&Math.hypot(boy.position.x-friend.g.position.x,boy.position.z-friend.g.position.z)<1.95){mountFriendNow()}
 }
 // v134: lake depth affects Timur and boars. Staying fully submerged too long costs health.
@@ -2512,7 +2627,7 @@ for(const f of boarBodies()){const calm=f.graze>0&&!f.flee&&!f.attackLeap&&!(f.s
 if(fishingTarget)boy.rotation.y=Math.atan2(fishingTarget.x-boy.position.x,fishingTarget.z-boy.position.z);boy.position.y+=terrainHeightAt(boy.position.x,boy.position.z);for(const q of new Set([...boarBodies(),...defeatedBoars])){if(mountedFriend&&q===friend)q.g.position.y+=terrainHeightAt(q.g.position.x,q.g.position.z);else settleBoarOnGround(q);}for(const a of apples){if(level===4&&!a.done&&Math.abs(a.z-riverCenterAt(a.x))<4.6){a.done=true;scene.remove(a.g);continue}if(canCollectForage(a))collectForageItem(a)}act=false;hud(false)}const pos=boy.position;const camPresets=[{pitch:.30,dist:8.8,lift:3.8},{pitch:.22,dist:7.5,lift:3.0},{pitch:.14,dist:6.4,lift:2.35},{pitch:.38,dist:10.5,lift:5.6},{pitch:.12,dist:4.7,lift:2.05},{pitch:.10,dist:9.8,lift:2.2},{pitch:.46,dist:7.2,lift:6.6},{pitch:.20,dist:5.5,lift:2.75},{pitch:Math.PI/2,dist:0,lift:22},{pitch:0,dist:0,lift:0}],cp=camPresets[camMode];const fixedPitch=camMode===9?pitch:cp.pitch,distCam=cp.dist;/* v133: rider animation may bounce, camera anchor must not. */const cameraAnchorY=mountedFriend?riderSeatHeight()+rideHop.height-lakeDepthAt(pos.x,pos.z)+terrainHeightAt(pos.x,pos.z)+familyFloorAt(pos.x,pos.z)+(level===4&&onRiverBridge(pos.x,pos.z)?.28:0):pos.y,cy=cameraAnchorY+1.55;const look=new THREE.Vector3(pos.x+Math.sin(yaw)*Math.cos(fixedPitch)*7,cy-.15+Math.sin(fixedPitch)*1.2,pos.z+Math.cos(yaw)*Math.cos(fixedPitch)*7);camera.position.set(pos.x-Math.sin(yaw)*distCam,cy+cp.lift,pos.z-Math.cos(yaw)*distCam);boy.visible=camMode!==9&&boarFormTime<=0&&catFormTime<=0&&!cinematicRunning;if(catFormModel){catFormModel.g.visible=camMode!==9&&catFormTime>0&&!cinematicRunning;catFormModel.g.position.copy(boy.position);catFormModel.g.rotation.y=boy.rotation.y;}if(boarFormVisual&&boarFormTime>0&&!cinematicRunning){boarFormVisual.visible=camMode!==9;boarFormVisual.position.set(pos.x,pos.y,pos.z);boarFormVisual.rotation.y=boy.rotation.y}if(camMode===9){camera.position.set(pos.x,cy,pos.z);look.set(pos.x+Math.sin(yaw)*Math.cos(pitch)*7,cy+Math.sin(pitch)*7,pos.z+Math.cos(yaw)*Math.cos(pitch)*7);}if(camMode===8){camera.position.set(pos.x,cy+22,pos.z);look.set(pos.x,cy,pos.z);camera.up.set(Math.sin(yaw),0,Math.cos(yaw))}else camera.up.set(0,1,0);camera.lookAt(look);if(cinematicRunning)updateCinematic(now,look);updateHandFlashlight();foodView.update(dt,now,camMode===9&&started&&!cinematicRunning&&!endShown,nextFoodKind(),yellowMushroomStock>0||yellowAppleStock>0,Object.values(keys).some(Boolean)||Math.hypot(stick.x,stick.y)>.1);$('cross').style.display=camMode===9&&started&&!paused&&!cinematicRunning?'block':'none';
 // v124: anything large between camera and Timur fades: houses, trees, rocks and cliffs.
 // Track only last frame's roots, avoiding a full-world material reset every frame.
-updateCameraOcclusion(now);if(soundscape)soundscape.update({active:started&&!paused&&!win&&!endShown&&!document.hidden,sfx:sfxEnabled,music:musicEnabled,season:currentSeason,stage:weatherStage,water:walkingInWater(pos.x,pos.z),mounted:mountedFriend,x:pos.x,z:pos.z,grounded:mountedFriend||py<.1,dt});updateFamilyHouseReveal();if(level===6&&moon.visible){moonHalo.lookAt(camera.position);moonDisc.rotation.y=now*.00003;}syncOpeningGuide();skyDome.position.copy(camera.position);skyUniforms.horizon.value.copy(scene.background);skyUniforms.zenith.value.set(movie?.kind==='outro'?0x617e9e:level<=4?0x709bc9:level===5?0x171d39:0x03020b);if(weatherStage>=2)skyUniforms.zenith.value.lerp(scene.background,.65);const renderStart=trackPerformance?performance.now():0;renderWithLightBudget(now);if(trackPerformance&&level===6&&started&&!paused){performanceFrames.push({cpu:renderStart-frameStart,render:performance.now()-renderStart,calls:renderer.info.render.calls,triangles:renderer.info.render.triangles});if(performanceFrames.length>120)performanceFrames.shift()}if(!__loadFinished){__loadFinished=true;window.__gameLoaded?.()}}prepareHome();
+updateCameraOcclusion(now);if(soundscape)soundscape.update({active:started&&!paused&&!win&&!endShown&&!document.hidden,sfx:sfxEnabled,music:musicEnabled,season:currentSeason,stage:weatherStage,water:walkingInWater(pos.x,pos.z),mounted:mountedFriend,x:pos.x,z:pos.z,grounded:mountedFriend||py<.1,dt});updateFamilyHouseReveal();if(level===6&&moon.visible){moonHalo.lookAt(camera.position);moonDisc.rotation.y=now*.00003;}syncOpeningGuide();skyDome.position.copy(camera.position);skyUniforms.horizon.value.copy(scene.background);skyUniforms.zenith.value.set(movie?.kind==='outro'?0x617e9e:level<=4?0x709bc9:level===5?0x171d39:0x03020b);if(weatherStage>=2)skyUniforms.zenith.value.lerp(scene.background,.65);updateAdventureHints(now);const renderStart=trackPerformance?performance.now():0;renderWithLightBudget(now);if(trackPerformance&&level===6&&started&&!paused){performanceFrames.push({cpu:renderStart-frameStart,render:performance.now()-renderStart,calls:renderer.info.render.calls,triangles:renderer.info.render.triangles});if(performanceFrames.length>120)performanceFrames.shift()}if(!__loadFinished){__loadFinished=true;window.__gameLoaded?.()}}prepareHome();
 prepareCinematicAssets();
 cinematicAssets.visible=true;
 const warmLightVisibility=effectLights.map(light=>light.visible);effectLights.forEach(light=>light.visible=false);
