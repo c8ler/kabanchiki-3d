@@ -23,13 +23,13 @@ export function animateExitBarrier(barrier,progress){
  barrier.root.userData.open=t>=1;
 }
 export function makeExitFence(parent,z,mats){const items=[];parent.userData.fenceExtent={left:-48,right:48,opening:11};for(const side of [-1,1]){for(const y of [.65,1.55])items.push([side*26.75,y,z,42.5,.22,.22]);for(let x=5.5;x<=48;x+=2.5)items.push([side*x,1.05,z,.2,2.1,.2]);}return boxes(parent,mats.wood,items)}
-export function refreshExitLandscape(root,heightAt){for(const {mesh,lift} of root.userData.surfaces||[]){const pos=mesh.geometry.attributes.position;for(let i=0;i<pos.count;i++)pos.setY(i,heightAt(Math.max(-42,Math.min(42,pos.getX(i))),Math.max(-43,Math.min(42,pos.getZ(i))))+lift);pos.needsUpdate=true;mesh.geometry.computeVertexNormals();}}
+export function refreshExitLandscape(root,heightAt){for(const {mesh,lift} of root.userData.surfaces||[]){const pos=mesh.geometry.attributes.position;for(let i=0;i<pos.count;i++)pos.setY(i,heightAt(Math.max(-42,Math.min(42,pos.getX(i))),Math.max(-43,Math.min(42,pos.getZ(i))))+lift);pos.needsUpdate=true;mesh.geometry.computeVertexNormals();mesh.geometry.computeBoundingSphere();}}
 export function buildExitLandscape(parent,level,mats,heightAt=()=>0){
- const root=new THREE.Group();root.userData.surfaces=[];root.userData.destination=['','lake','village','river','mountains','lair'][level];root.userData.trailRange={near:-34,far:-72};parent.add(root);
+ const root=new THREE.Group();root.userData.surfaces=[];root.userData.destination=['','lake','village','river','mountains','lair'][level];root.userData.trailRange={near:-46,far:-72};parent.add(root);
  // The path and surrounding land share sampled edge heights: no detached rectangle.
  const groundMat=new THREE.MeshLambertMaterial({color:level>=4?0x737c6c:0x779752}),roadMat=mats.path;
  root.userData.groundMaterial=groundMat;
- const points=[{x:0,z:-34,w:5.7},{x:0,z:-42,w:5.7},{x:1,z:-50,w:5.1},{x:3,z:-60,w:4.5},{x:6,z:-72,w:3.6}];
+ const points=[{x:0,z:-46,w:5.7},{x:1,z:-50,w:5.1},{x:3,z:-60,w:4.5},{x:6,z:-72,w:3.6}];
  const vertices=[],land=[];const height=(x,z)=>heightAt(Math.max(-42,Math.min(42,x)),Math.max(-43,Math.min(42,z)));
  for(let i=0;i<points.length-1;i++){const a=points[i],b=points[i+1];for(const target of [vertices,land]){const wide=target===land?42:null;const al=a.x-(wide||a.w),ar=a.x+(wide||a.w),bl=b.x-(wide||b.w),br=b.x+(wide||b.w),lift=target===land?-.025:.025;target.push(al,height(al,a.z)+lift,a.z,ar,height(ar,a.z)+lift,a.z,br,height(br,b.z)+lift,b.z,al,height(al,a.z)+lift,a.z,br,height(br,b.z)+lift,b.z,bl,height(bl,b.z)+lift,b.z)}}
  for(const [data,material] of [[land,groundMat],[vertices,roadMat]]){const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(data,3));geo.computeVertexNormals();const mesh=new THREE.Mesh(geo,material);mesh.material.side=THREE.DoubleSide;mesh.receiveShadow=true;root.add(mesh);root.userData.surfaces.push({mesh,lift:data===land?-.025:.025});if(data===vertices)root.userData.trail=mesh}

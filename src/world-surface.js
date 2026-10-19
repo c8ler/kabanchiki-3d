@@ -12,7 +12,7 @@ const smooth = n => { n = Math.max(0, Math.min(1, n)); return n * n * (3 - 2 * n
 export class WorldSurface {
   constructor(level, zones = [], basins = []) { this.level = level; this.zones = zones; this.basins = basins; }
   height(x, z) {
-    if (Math.abs(x) < 3.5 || Math.abs(x) > 46 || Math.abs(z) > 46) return 0;
+    if ((z < -30 && Math.abs(x) < 7) || Math.abs(x) < 3.5 || Math.abs(x) > 46 || Math.abs(z) > 46) return 0;
     
     
     let weight = smooth((Math.abs(x) - 3.5) / 2);

@@ -13,10 +13,11 @@ export class AdventureHud{
    el.style.setProperty('--fill',Math.round(s.ratio*100)+'%');el.classList.toggle('low',s.low);el.classList.toggle('attention',now<(this.attention[key]||0));
    el.setAttribute('aria-valuenow',String(value));el.setAttribute('aria-valuemax',String(Math.max(value,max)));
   }
+  const meter=this.doc.getElementById('stormMeter'),clock=state.storm;this.clock=!!clock?.visible;if(meter&&clock){meter.hidden=!clock.visible||this.root.hidden;meter.querySelector('span').textContent=clock.active?'Торнадо рядом · обходи':clock.warning?'Торнадо скоро!':'До торнадо';const s=Math.ceil(clock.remaining);meter.querySelector('strong').textContent=clock.active?'🌪':Math.floor(s/60)+':'+String(s%60).padStart(2,'0');meter.style.setProperty('--fill',Math.round(clock.remaining/300*100)+'%');meter.classList.toggle('warning',clock.warning);meter.setAttribute('aria-valuenow',String(s));}
   const form=this.doc.getElementById('formMeter');form.hidden=!state.form;
   if(state.form){form.setAttribute('aria-valuenow',String(Math.ceil(state.seconds)));form.querySelector('.meter-label').textContent=state.form==='cat'?'Котик':'Кабанчик';form.querySelector('.meter-value').textContent=Math.ceil(state.seconds)+' с';form.style.setProperty('--fill',Math.round(state.seconds/30*100)+'%');form.classList.toggle('low',state.seconds<=5);}
  }
- active(on){this.root.hidden=!on;this.hints.hidden=!on}
+ active(on){this.root.hidden=!on;this.hints.hidden=!on;const clock=this.doc.getElementById('stormMeter');if(clock)clock.hidden=!on||!this.clock}
  log(text){if(this.journal[0]!==text)this.journal.unshift(text);this.journal.length=Math.min(this.journal.length,5);const list=this.doc.getElementById('pauseJournal');if(list)list.textContent=this.journal.join('\n')}
  hint(key,data){const el=this.slots[key];el.hidden=!data;if(!data)return;el.style.left=data.x+'px';el.style.top=data.y+'px';el.querySelector('span').textContent=data.text;el.dataset.kind=data.kind||key;const bar=el.querySelector('i');bar.hidden=data.ratio===undefined;if(data.ratio!==undefined)el.style.setProperty('--fill',Math.round(Math.max(0,Math.min(1,data.ratio))*100)+'%')}
 }
