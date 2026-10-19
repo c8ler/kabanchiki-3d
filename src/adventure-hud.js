@@ -14,7 +14,7 @@ export class AdventureHud{
    el.setAttribute('aria-valuenow',String(value));el.setAttribute('aria-valuemax',String(Math.max(value,max)));
   }
   const form=this.doc.getElementById('formMeter');form.hidden=!state.form;
-  if(state.form){form.querySelector('.meter-label').textContent=state.form==='cat'?'Котик':'Кабанчик';form.querySelector('.meter-value').textContent=Math.ceil(state.seconds)+' с';form.style.setProperty('--fill',Math.round(state.seconds/30*100)+'%');form.classList.toggle('low',state.seconds<=5);}
+  if(state.form){form.setAttribute('aria-valuenow',String(Math.ceil(state.seconds)));form.querySelector('.meter-label').textContent=state.form==='cat'?'Котик':'Кабанчик';form.querySelector('.meter-value').textContent=Math.ceil(state.seconds)+' с';form.style.setProperty('--fill',Math.round(state.seconds/30*100)+'%');form.classList.toggle('low',state.seconds<=5);}
  }
  active(on){this.root.hidden=!on;this.hints.hidden=!on}
  log(text){if(this.journal[0]!==text)this.journal.unshift(text);this.journal.length=Math.min(this.journal.length,5);const list=this.doc.getElementById('pauseJournal');if(list)list.textContent=this.journal.join('\n')}

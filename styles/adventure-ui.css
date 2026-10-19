@@ -25,3 +25,5 @@ button,input,select{font-size:15px}button{border-radius:15px;border-color:#f8e7b
 #openingGuide{top:auto;bottom:176px;width:min(340px,calc(100vw - 28px));padding:8px 12px}#openingGuide strong{font-size:16px}#openingGuide p{font-size:11px}.worldHint{font-size:12px;max-width:200px;padding:6px 9px}#pauseMenu>div{padding:18px}.menuBtns button{padding:10px 12px}}
 @media(max-height:500px){#openingGuide{top:90px;bottom:auto;width:280px;left:auto;right:14px;transform:none}#openingGuide p,#openingGuide small{display:none}.resource{padding-top:5px;padding-bottom:7px}#formMeter{position:static}#message{top:80px}}
 @media(prefers-reduced-motion:reduce){.resource,.meter-track::after,.worldHint i::after{transition:none}}
+
+#buttons #homeAction{position:absolute;right:0;top:56px;white-space:nowrap}#pauseMenu details>summary{cursor:pointer;font-weight:700;padding:3px 0}#pauseMenu .menuBtns{margin:12px 0}#pauseMenu .menuBtns #resume{background:#67a743}
