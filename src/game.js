@@ -2396,6 +2396,14 @@ if(__autoTest||__autoParams.get('openingtest')==='1')window.__KABANCHIKI_QA__={
   else {$(id).style.display='grid';if(id==='statsScreen'){const before=localStorage.getItem('kabanchiki3d_results');localStorage.setItem('kabanchiki3d_results',JSON.stringify(Array.from({length:20},(_,i)=>({name:'ДлинноеИмяИгрока12345',score:999999,time:99999,win:i%2===0}))));$('statsTable').innerHTML=localStatsHtml();if(before===null)localStorage.removeItem('kabanchiki3d_results');else localStorage.setItem('kabanchiki3d_results',before);}if(id==='familyPopup'){$('familyTitle').textContent='Семья найдена!';$('familyText').textContent='Тимур, наконец-то ты пришёл! Мы так долго тебя ждали.'}}
   return true;
  },
+
+ v213MinionSwarm(fps=30){
+  this.v212Setup(6);if(friend){scene.remove(friend.g);friend=null}boy.position.set(0,0,0);
+  const minions=[];for(let k=0;k<4;k++){const m=makeBoar(0,0,false);m.isMinion=true;const q=minionSpawnPoint(m,Math.PI+(k-1.5)*.14);if(!q){scene.remove(m.g);continue}m.g.position.set(q.x,0,q.z);m.g.rotation.y=Math.atan2(-q.x,-q.z);foes.push(m);minions.push({m,previous:null,stalled:0,longest:0,reversals:0,penetrations:0})}
+  for(let i=0;i<fps*30;i++){boarCollisionEpoch++;for(const a of minions){const m=a.m,before={x:m.g.position.x,z:m.g.position.z};if(Math.hypot(before.x,before.z)<7)continue;moveBoarToward(m,0,0,2.1,1/fps);resolveBoarClearance(m);settleBoarOnGround(m);const dx=m.g.position.x-before.x,dz=m.g.position.z-before.z,d=Math.hypot(dx,dz);a.stalled=d<.002?a.stalled+1/fps:0;a.longest=Math.max(a.longest,a.stalled);if(boarSceneryBlockedAt(m,m.g.position.x,m.g.position.z))a.penetrations++;if(d>.008){if(a.previous&&a.previous.x*dx+a.previous.z*dz<-.5*a.previous.d*d)a.reversals++;a.previous={x:dx,z:dz,d}}}}
+  return minions.map(a=>({remaining:Math.hypot(a.m.g.position.x,a.m.g.position.z),longest:a.longest,reversals:a.reversals,penetrations:a.penetrations}));
+ },
+
  v213BossLive(){this.v212Setup(6);if(friend){scene.remove(friend.g);friend=null}boy.position.set(0,0,0);bossSummon=.01;paused=false;return true;},
  v213BossInspect(){return foes.filter(f=>f.isMinion).map(f=>({x:f.g.position.x,z:f.g.position.z,entering:!!f.entering,blocked:boarSceneryBlockedAt(f,f.g.position.x,f.g.position.z)}));},
  v213MinionRobot(angle=0,fps=60,crowd=false){

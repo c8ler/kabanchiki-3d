@@ -1,9 +1,10 @@
 name: Controls menus and minions
 on:
-  push:
-    branches: [fix/v213-controls-menus-minions]
   pull_request:
     branches: [main]
+concurrency:
+  group: v213-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   browser:
     runs-on: ubuntu-latest
