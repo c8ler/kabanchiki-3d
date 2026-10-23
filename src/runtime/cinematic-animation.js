@@ -1,3 +1,4 @@
+import {fitFamilyFrame} from '../family-framing.js?v=215';
 import * as THREE from "../../vendor/three/three.module.min.js";
 import { introStagingAt, outroStagingAt } from "../cinematic-staging.js?v=215";
 
@@ -33,7 +34,7 @@ function updateCinematic(now,look){if(!runtime.movie)return;const m=runtime.movi
 
  }
  updateCinematicLamp(m);
- runtime.camera.up.set(0,1,0);runtime.camera.position.lerpVectors(from,to,k);if(runtime.camera.aspect<1)runtime.camera.position.sub(target).multiplyScalar(Math.min(1.7,1/runtime.camera.aspect)).add(target);look.copy(target);runtime.camera.lookAt(look);runtime.protectCinematicAction(m);runtime.$('cinematic').dataset.kind=m.kind;
+ runtime.camera.up.set(0,1,0);runtime.camera.position.lerpVectors(from,to,k);if(runtime.camera.aspect<1)runtime.camera.position.sub(target).multiplyScalar(Math.min(1.7,1/runtime.camera.aspect)).add(target);look.copy(target);runtime.camera.lookAt(look);if(m.kind==='family'){runtime.movieRoot.updateWorldMatrix(true,true);fitFamilyFrame(THREE,runtime.camera,target,[m.hero,...m.people]);}runtime.protectCinematicAction(m);runtime.$('cinematic').dataset.kind=m.kind;
 }
 
 function updateCinematicLamp(m){if(m.lampLight){const origin=m.hero.localToWorld(new THREE.Vector3(.6,1.0,.8)),direction=new THREE.Vector3(Math.sin(m.hero.rotation.y),-.035,Math.cos(m.hero.rotation.y));m.lampLight.position.copy(runtime.movieRoot.worldToLocal(origin.clone()));m.lampLight.target.position.copy(runtime.movieRoot.worldToLocal(origin.addScaledVector(direction,14)));m.lampLight.visible=m.hero.visible}}
