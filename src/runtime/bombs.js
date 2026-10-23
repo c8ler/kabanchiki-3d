@@ -1,5 +1,5 @@
-import { bombFlight } from "../blast-terrain.js?v=215";
-import { RECIPES, blastDamage, advanceFuse, BOMB_FUSE, BOMB_RADIUS } from "../crafting-rules.js?v=215";
+import { bombFlight } from "../blast-terrain.js?v=216";
+import { RECIPES, blastDamage, advanceFuse, BOMB_FUSE, BOMB_RADIUS } from "../crafting-rules.js?v=216";
 import * as THREE from "../../vendor/three/three.module.min.js";
 
 // Owns 5 bindings. See docs/architecture.md for startup order.

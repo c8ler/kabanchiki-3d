@@ -209,6 +209,7 @@ export const GAME_MODULES=[
       "buildBoundarySide"
     ],
     "dependencies": [
+      "$",
       "__autoTest",
       "adaptiveGraphics",
       "block",
@@ -828,6 +829,7 @@ export const GAME_MODULES=[
       "MUSIC_THEMES"
     ],
     "dependencies": [
+      "$",
       "fishingTarget",
       "stopFishing"
     ]
@@ -1216,6 +1218,7 @@ export const GAME_MODULES=[
       "interactHome"
     ],
     "dependencies": [
+      "$",
       "block",
       "boarFormTime",
       "boy",
@@ -1337,10 +1340,14 @@ export const GAME_MODULES=[
       "populateCraftCatalog",
       "syncCraftPlacement",
       "placeCraftItem",
+      "craftPlacementTarget",
+      "updateCraftPreview",
+      "updateCraftCreatures",
       "syncCraftUI",
       "craftAdventure"
     ],
     "dependencies": [
+      "$",
       "adventureCollected",
       "adventureDestroyed",
       "adventureHud",
@@ -1361,25 +1368,43 @@ export const GAME_MODULES=[
       "diffCfg",
       "endShown",
       "familyFloorAt",
+      "familyHideout",
       "food",
       "forageGroundAt",
+      "forestVisual",
       "hasFlashlight",
+      "home",
+      "homeParts",
+      "houseFurnishings",
+      "houseObjects",
       "hud",
+      "lairObstacles",
       "lakeDepthAt",
+      "lakeExitProps",
       "level",
       "life",
+      "locationExitProps",
+      "logObstacles",
       "mats",
+      "mountainObstacles",
       "mountedFriend",
       "nearestSafeSpawn",
       "notice",
+      "openingProps",
       "paused",
-      "playerWorldBlocked",
+      "personalHouse",
+      "py",
+      "rockPositions",
       "scene",
       "started",
       "tagStormTargetsForCurrentLocation",
       "terrainHeightAt",
       "treeObjects",
+      "treeSolidMeshes",
+      "treeTrunkShape",
       "wallCacheEpoch",
+      "wallGeometry",
+      "win",
       "worldEpoch",
       "yaw"
     ]
@@ -1395,6 +1420,7 @@ export const GAME_MODULES=[
       "resetAdventureItems"
     ],
     "dependencies": [
+      "$",
       "adventureCollected",
       "adventureDestroyed",
       "adventureInventory",
@@ -1462,6 +1488,7 @@ export const GAME_MODULES=[
       "loadLevel"
     ],
     "dependencies": [
+      "$",
       "__autoTest",
       "apples",
       "applySeason",
@@ -1742,6 +1769,7 @@ export const GAME_MODULES=[
       "syncOpeningGuide"
     ],
     "dependencies": [
+      "$",
       "block",
       "boy",
       "campaignProgress",
@@ -1793,6 +1821,7 @@ export const GAME_MODULES=[
       "questState"
     ],
     "dependencies": [
+      "$",
       "familyFound",
       "familyPopupOpen",
       "foes",
@@ -1854,6 +1883,7 @@ export const GAME_MODULES=[
       "protectCinematicAction"
     ],
     "dependencies": [
+      "$",
       "apples",
       "block",
       "boarFormTime",
@@ -1898,6 +1928,7 @@ export const GAME_MODULES=[
       "updateCinematicLamp"
     ],
     "dependencies": [
+      "$",
       "camera",
       "cinemaHug",
       "hemi",
@@ -1919,6 +1950,7 @@ export const GAME_MODULES=[
       "submitGlobalResult"
     ],
     "dependencies": [
+      "$",
       "GAME_VERSION",
       "SUPABASE_KEY",
       "SUPABASE_URL",
@@ -1970,6 +2002,7 @@ export const GAME_MODULES=[
       "restartGame"
     ],
     "dependencies": [
+      "$",
       "GAME_VERSION",
       "__autoParams",
       "__autoTest",
@@ -2071,6 +2104,7 @@ export const GAME_MODULES=[
       "adventureHud"
     ],
     "dependencies": [
+      "$",
       "SUPABASE_KEY",
       "SUPABASE_URL",
       "formatTime"
@@ -2087,6 +2121,7 @@ export const GAME_MODULES=[
       "togglePause"
     ],
     "dependencies": [
+      "$",
       "DIFF_NAMES",
       "adventureHud",
       "adventureInventory",
@@ -2170,6 +2205,7 @@ export const GAME_MODULES=[
       "startDifficultyRun"
     ],
     "dependencies": [
+      "$",
       "audio",
       "audioBus",
       "chooseSeason",
@@ -2201,6 +2237,7 @@ export const GAME_MODULES=[
       "clearInput"
     ],
     "dependencies": [
+      "$",
       "DIFF_NAMES",
       "__autoTest",
       "act",
@@ -3158,6 +3195,7 @@ export const GAME_MODULES=[
     "path": "src/runtime/qa-startup.js",
     "owns": [],
     "dependencies": [
+      "$",
       "__autoParams",
       "__autoTest",
       "diffCfg",
@@ -3242,6 +3280,7 @@ export const GAME_MODULES=[
       "boundaryDecor",
       "boy",
       "camera",
+      "craftWorld",
       "familyHideout",
       "houseObjects",
       "ridgeObjects",
@@ -3259,6 +3298,7 @@ export const GAME_MODULES=[
       "updateAdventureHints"
     ],
     "dependencies": [
+      "$",
       "adventureHud",
       "adventureInventory",
       "boarScale",
@@ -3315,6 +3355,7 @@ export const GAME_MODULES=[
       "cinematicWarmup"
     ],
     "dependencies": [
+      "$",
       "GAME_VERSION",
       "__autoParams",
       "__autoTest",
@@ -3382,6 +3423,7 @@ export const GAME_MODULES=[
       "updateAquaticLife",
       "updateCameraOcclusion",
       "updateCinematic",
+      "updateCraftPreview",
       "updateFamilyHouseReveal",
       "updateHandFlashlight",
       "updateSimulation",
@@ -3543,6 +3585,7 @@ export const GAME_MODULES=[
       "updateBoarForm",
       "updateBoarWater",
       "updateCatForm",
+      "updateCraftCreatures",
       "updateFallingSigns",
       "updateFamilyHouseReveal",
       "updateFishing",

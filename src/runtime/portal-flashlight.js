@@ -1,6 +1,6 @@
 import * as THREE from "../../vendor/three/three.module.min.js";
-import { CatLife } from "../cat-life.js?v=215";
-import { BirdLife } from "../bird-life.js?v=215";
+import { CatLife } from "../cat-life.js?v=216";
+import { BirdLife } from "../bird-life.js?v=216";
 
 // Owns 11 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){

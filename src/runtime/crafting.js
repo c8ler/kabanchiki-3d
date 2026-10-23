@@ -1,10 +1,13 @@
-import { PROP_FOOTPRINTS } from "../craft-world.js?v=215";
-import { RECIPES, craftResult } from "../crafting-rules.js?v=215";
+import { candidateBoxes, placementHeight, placementProblem } from "../craft-placement.js?v=216";
+import { PROP_FOOTPRINTS } from "../craft-world.js?v=216";
+import { RECIPES, craftResult } from "../crafting-rules.js?v=216";
 import * as THREE from "../../vendor/three/three.module.min.js";
 
-// Owns 15 bindings. See docs/architecture.md for startup order.
+// Owns 18 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){
  let nextGatherTime,craftRotation,backpackModel;
+ let craftPreview=null,placementScene=null,placementSceneKey="",placementSceneAt=-Infinity;
+
 
 function bombModel(parent){const g=new THREE.Group();parent.add(g);const ball=new THREE.Mesh(new THREE.SphereGeometry(.24,8,6),runtime.bombShellMat);ball.position.y=.26;g.add(ball);const fuse=runtime.block(g,runtime.bombFuseMat,.08,.54,0,.06,.18,.06);fuse.rotation.z=-.4;return g}
 
@@ -39,7 +42,101 @@ function populateCraftCatalog(){const box=runtime.$('craftCatalog');for(const [k
 
 function syncCraftPlacement(){const select=runtime.$('craftedChoice'),chosen=runtime.craftWorld.selected;const signature=JSON.stringify(runtime.craftWorld.stock);if(select.dataset.stock!==signature){select.replaceChildren();for(const [kind,count] of Object.entries(runtime.craftWorld.stock)){if(!count)continue;const option=document.createElement('option');option.value=kind;option.textContent=RECIPES[kind].name+' × '+count;select.append(option)}select.dataset.stock=signature}if(runtime.craftWorld.stock[chosen]>0)select.value=chosen;else runtime.craftWorld.selected=select.value||'';select.hidden=!select.options.length;const active=runtime.started&&!runtime.paused&&!runtime.cinematicRunning&&!runtime.endShown;runtime.$('placeCraftAction').hidden=!active||!runtime.craftWorld.selected;runtime.$('placeCraftAction').textContent='Поставить: '+(RECIPES[runtime.craftWorld.selected]?.name||'')+' · T';runtime.$('gatherCraftAction').hidden=!active||!(woolAnimalNearby()||runtime.treeObjects.some(t=>t.visible&&Math.hypot(t.position.x-runtime.boy.position.x,t.position.z-runtime.boy.position.z)<3.8));}
 
-function placeCraftItem(){if(!runtime.started||runtime.paused||runtime.cinematicRunning||runtime.endShown)return false;const kind=runtime.craftWorld.selected;if(!kind||!runtime.craftWorld.stock[kind])return false;if(runtime.craftWorld.items.length>=48){runtime.notice('На карте уже 48 созданных предметов. Сначала освободи место.');return false}const footprint=PROP_FOOTPRINTS[kind]||[1,1],[w,d]=Math.round(craftRotation/(Math.PI/2))%2?[footprint[1],footprint[0]]:footprint,distance=kind==='house'?6:RECIPES[kind].category==='furniture'?1.5:3,x=runtime.boy.position.x+Math.sin(runtime.yaw)*distance,z=runtime.boy.position.z+Math.cos(runtime.yaw)*distance;if(Math.abs(x)+w/2>42||Math.abs(z)+d/2>40||runtime.lakeDepthAt(x,z)>.08){runtime.notice('Найди свободный сухой участок перед собой.');return false}for(const [dx,dz] of [[0,0],[-w/2,-d/2],[w/2,-d/2],[-w/2,d/2],[w/2,d/2]])if(runtime.playerWorldBlocked(x+dx,z+dz,.08)){runtime.notice('Здесь мешают деревья, стены или камни. Отойди немного.');return false}const y=Math.max(runtime.terrainHeightAt(x,z)+runtime.familyFloorAt(x,z),runtime.craftWorld.support(x,z,Infinity));const item=runtime.craftWorld.create(kind,x,y,z,runtime.level,craftRotation);if(item.living)item.g.userData.craftedCreature=true;runtime.craftWorld.stock[kind]--;runtime.worldEpoch++;runtime.wallCacheEpoch=-1;runtime.tagStormTargetsForCurrentLocation();runtime.notice('Готово: '+RECIPES[kind].name);syncCraftPlacement();return true;}
+function placementGeometry(fresh=false){
+ const key=runtime.worldEpoch+':'+runtime.craftWorld.epoch+':'+runtime.level,now=performance.now();
+ if(!fresh&&placementScene&&placementSceneKey===key&&now-placementSceneAt<200)return placementScene;
+ const solids=[],surfaces=[],circles=[],seen=new Set();
+ const addBox=b=>{if(!b.isEmpty()){solids.push(b);surfaces.push(b)}};
+ const addMesh=o=>{if(!o?.isMesh||seen.has(o))return;seen.add(o);addBox(new THREE.Box3().setFromObject(o))};
+ const addRoot=(root,includeHidden=false)=>{
+  if(!root||!root.visible)return;
+  root.updateWorldMatrix(true,true);
+  const visit=o=>{if(!includeHidden&&!o.visible)return;if(o.isMesh)addMesh(o);for(const child of o.children)visit(child)};
+  visit(root);
+ };
+ for(const q of runtime.wallGeometry()){
+  if(q.furniture){q.root.updateWorldMatrix(true,true);const groups=q.root===runtime.familyHideout?runtime.houseFurnishings:runtime.homeParts?.furnishings;
+   if(groups)for(const o of groups.children)o.traverse(addMesh);
+  }else addBox(q.box);
+ }
+ for(const h of runtime.houseObjects)if(h.visible){
+  const roof=h.userData.cutawayWalls?.roof;
+  if(roof&&(h!==runtime.personalHouse||runtime.home.stage>=3)){roof.updateWorldMatrix(true,true);addMesh(roof)}
+ }
+ for(const item of runtime.craftWorld.items)if(item.g.visible&&!item.living){solids.push(...item.solids);surfaces.push(...item.supports)}
+ for(const m of runtime.treeSolidMeshes)if(m?.parent&&m.parent.visible){
+  const t=runtime.treeTrunkShape(m),b=new THREE.Box3().setFromObject(m);circles.push({...t,bottom:b.min.y,top:b.max.y});
+ }
+ for(const [,,,mesh] of runtime.rockPositions)if(mesh?.visible&&mesh.parent?.visible!==false)addRoot(mesh);
+ if(runtime.level===1&&runtime.forestVisual.visible)for(const o of runtime.logObstacles)if(o.g?.visible)addRoot(o.g);
+ for(const [,,,mesh] of runtime.mountainObstacles)if(runtime.level===5&&mesh?.parent?.visible!==false)addRoot(mesh);
+ for(const [,,,mesh] of runtime.lairObstacles)if(runtime.level===6)addRoot(mesh);
+ if(runtime.level===1)addRoot(runtime.openingProps);
+ if(runtime.level===2)addRoot(runtime.lakeExitProps);
+ addRoot(runtime.locationExitProps.get(runtime.level));
+ placementSceneKey=key;placementSceneAt=now;return placementScene={solids,surfaces,circles};
+}
+
+function ensureCraftPreview(kind){
+ if(craftPreview?.kind===kind)return craftPreview;
+ if(craftPreview){
+  craftPreview.g.removeFromParent();const materials=new Set();
+  craftPreview.g.traverse(o=>{if(o.isMesh){o.geometry.dispose();for(const m of Array.isArray(o.material)?o.material:[o.material])materials.add(m)}});
+  for(const material of materials)material.dispose();
+ }
+ craftPreview=runtime.craftWorld.create(kind,0,0,0,runtime.level,craftRotation,true);
+ craftPreview.g.userData.craftPreview=true;
+ craftPreview.g.traverse(o=>{
+  if(o.isLight)o.visible=false;
+  if(o.isMesh){o.material=new THREE.MeshBasicMaterial({color:0x81e8ad,transparent:true,opacity:.38,depthWrite:false,depthTest:false});o.castShadow=false;o.receiveShadow=false;o.renderOrder=4}
+ });
+ return craftPreview;
+}
+
+function craftPlacementTarget(fresh=false){
+ const kind=runtime.craftWorld.selected;
+ if(!kind||!runtime.craftWorld.stock[kind])return null;
+ const item=ensureCraftPreview(kind),distance=kind==='house'?6:RECIPES[kind].category==='furniture'?1.5:3,
+ x=runtime.boy.position.x+Math.sin(runtime.yaw)*distance,z=runtime.boy.position.z+Math.cos(runtime.yaw)*distance,
+ geometry=placementGeometry(fresh),ground=runtime.terrainHeightAt(x,z)+runtime.familyFloorAt(x,z),
+ feet=runtime.terrainHeightAt(runtime.boy.position.x,runtime.boy.position.z)+runtime.py,
+ y=placementHeight(x,z,feet,ground,geometry.surfaces);
+ item.g.position.set(x,y,z);item.g.rotation.y=craftRotation;
+ const boxes=candidateBoxes(item);
+ let reason=runtime.craftWorld.items.length>=48?'На карте уже 48 созданных предметов':placementProblem(boxes,{...geometry,wet:(px,pz)=>runtime.lakeDepthAt(px,pz)>.08,ground:runtime.terrainHeightAt});
+ // Do not reach through the house shell to furnish the room from outside.
+ if(!reason&&!runtime.clearWallLine(new THREE.Vector3(runtime.boy.position.x,feet+1.4,runtime.boy.position.z),new THREE.Vector3(x,Math.max(feet+1.4,y+.2),z)))reason='Мешает стена: подойди к месту размещения';
+ return {kind,x,y,z,rotation:craftRotation,valid:!reason,reason};
+}
+
+function updateCraftPreview(){
+ const active=runtime.started&&!runtime.paused&&!runtime.cinematicRunning&&!runtime.endShown&&!runtime.win&&runtime.life>0&&!!runtime.craftWorld.stock[runtime.craftWorld.selected];
+ if(!active){if(craftPreview)craftPreview.g.visible=false;return null}
+ const target=craftPlacementTarget();
+ if(craftPreview){craftPreview.g.visible=true;craftPreview.g.traverse(o=>{if(o.isMesh)o.material.color.setHex(target.valid?0x81e8ad:0xff7575)})}
+ const button=runtime.$('placeCraftAction');button.title=target.reason||'T — поставить, Z — повернуть';button.dataset.valid=String(target.valid);
+ return target;
+}
+
+function updateCraftCreatures(dt,now){
+ if(runtime.cinematicRunning||runtime.paused)return;
+ if(!runtime.craftWorld.items.some(item=>item.g.visible&&item.living))return;
+ const geometry=placementGeometry();
+ runtime.craftWorld.update(dt,now/1000,runtime.level,
+  (x,z,feet)=>placementHeight(x,z,feet,runtime.terrainHeightAt(x,z)+runtime.familyFloorAt(x,z),geometry.surfaces,.2),
+  (x,z,y,r,height)=>!!placementProblem([new THREE.Box3(new THREE.Vector3(x-r,y+.04,z-r),new THREE.Vector3(x+r,y+height,z+r))],{...geometry,wet:(px,pz)=>runtime.lakeDepthAt(px,pz)>.08}),
+  runtime.boy.position);
+}
+
+function placeCraftItem(){
+ if(!runtime.started||runtime.paused||runtime.cinematicRunning||runtime.endShown)return false;
+ const target=craftPlacementTarget(true);if(!target)return false;
+ if(!target.valid){runtime.notice(target.reason);return false}
+ const {kind,x,y,z,rotation}=target,item=runtime.craftWorld.create(kind,x,y,z,runtime.level,rotation);
+ if(item.living)item.g.userData.craftedCreature=true;
+ runtime.craftWorld.stock[kind]--;runtime.worldEpoch++;runtime.wallCacheEpoch=-1;
+ runtime.tagStormTargetsForCurrentLocation();runtime.notice('Готово: '+RECIPES[kind].name);syncCraftPlacement();updateCraftPreview();return true;
+}
 
 function syncCraftUI(){
  updateBackpackVisual();const stock=runtime.$('craftStock');if(!stock)return;stock.textContent='Обломки: '+runtime.adventureInventory.wood+' · Бомбочки: '+runtime.adventureInventory.bombs+' · Шерсть: '+runtime.adventureInventory.wool+' · Еда: '+runtime.food;
@@ -54,7 +151,7 @@ function craftAdventure(kind){
  const next=craftResult(kind,{...runtime.adventureInventory,food: runtime.food});if(!next){runtime.$('craftResult').textContent='Не хватает припасов.';return false}
  runtime.adventureInventory.wood=next.wood;runtime.adventureInventory.bombs=next.bombs;runtime.adventureInventory.wool=next.wool||0;runtime.food=next.food;if(kind==='backpack')runtime.adventureInventory.backpack=true;else if(!['bomb','lamp','aid','wool'].includes(kind))runtime.craftWorld.addStock(kind);
  if(kind==='lamp')runtime.hasFlashlight=true;if(kind==='aid')runtime.life=Math.min(runtime.diffCfg().playerHP,runtime.life+2);
- runtime.$('craftResult').textContent=!['bomb','lamp','aid','wool','backpack'].includes(kind)?'Готово! Вернись в игру: T или кнопка размещения — поставить перед собой.':kind==='wool'?'Получено 2 пучка шерсти.':kind==='backpack'?'Рюкзак готов: теперь помещается больше еды.':kind==='bomb'?'Бомбочка готова. Вернись в игру и поставь её кнопкой 💣 или G.':kind==='lamp'?'Фонарик готов.':'Здоровье восстановлено.';
+ runtime.$('craftResult').textContent=!['bomb','lamp','aid','wool','backpack'].includes(kind)?'Готово! В игре появится полупрозрачный предмет: зелёный — можно поставить, красный — мешает преграда. T — поставить, Z — повернуть.':kind==='wool'?'Получено 2 пучка шерсти.':kind==='backpack'?'Рюкзак готов: теперь помещается больше еды.':kind==='bomb'?'Бомбочка готова. Вернись в игру и поставь её кнопкой 💣 или G.':kind==='lamp'?'Фонарик готов.':'Здоровье восстановлено.';
  runtime.adventureHud.log('Изготовлено: '+RECIPES[kind].name);runtime.hud();syncCraftUI();return true;
 }
  return {
@@ -72,6 +169,9 @@ function craftAdventure(kind){
 "populateCraftCatalog":{get:()=>populateCraftCatalog},
 "syncCraftPlacement":{get:()=>syncCraftPlacement},
 "placeCraftItem":{get:()=>placeCraftItem},
+"craftPlacementTarget":{get:()=>craftPlacementTarget},
+"updateCraftPreview":{get:()=>updateCraftPreview},
+"updateCraftCreatures":{get:()=>updateCraftCreatures},
 "syncCraftUI":{get:()=>syncCraftUI},
 "craftAdventure":{get:()=>craftAdventure}
   },
@@ -81,7 +181,7 @@ function craftAdventure(kind){
 /* init:let */ craftRotation = 0;
 /* init:let */ backpackModel = null;
 
-runtime.$('rotateCraft').onclick=()=>{craftRotation=(craftRotation+Math.PI/2)%(Math.PI*2);runtime.notice('Направление постройки: '+Math.round(craftRotation*180/Math.PI)+'°')};
+runtime.$('rotateCraft').onclick=()=>{craftRotation=(craftRotation+Math.PI/2)%(Math.PI*2);runtime.notice('Повернуть: '+Math.round(craftRotation*180/Math.PI)+'°')};
 
 runtime.$('craftedChoice').onchange=()=>{runtime.craftWorld.selected=runtime.$('craftedChoice').value;syncCraftPlacement()};
 

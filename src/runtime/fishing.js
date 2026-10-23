@@ -1,6 +1,6 @@
-import { HomeConstruction } from "../home-construction.js?v=215";
+import { HomeConstruction } from "../home-construction.js?v=216";
 import * as THREE from "../../vendor/three/three.module.min.js";
-import { onRiverBridge } from "../world-surface.js?v=215";
+import { onRiverBridge } from "../world-surface.js?v=216";
 
 // Owns 24 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){

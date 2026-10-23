@@ -19,8 +19,9 @@ jobs:
         run: |
           node scripts/serve.mjs 8080 > /tmp/game-server.log 2>&1 &
           node scripts/v212-browser.mjs
+          node scripts/v216-browser.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: tornado-crafting-previews
-          path: screenshots/v212-*
+          path: screenshots/v2*

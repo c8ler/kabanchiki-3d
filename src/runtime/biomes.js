@@ -1,5 +1,5 @@
 import * as THREE from "../../vendor/three/three.module.min.js";
-import { riverCenterAt, lakeInletDepthAt, lakeRadiusAt } from "../world-surface.js?v=215";
+import { riverCenterAt, lakeInletDepthAt, lakeRadiusAt } from "../world-surface.js?v=216";
 
 // Owns 19 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){
