@@ -44,6 +44,7 @@ jobs:
           sed '/^import .*three.*;/d' src/game.js > /tmp/game.mjs
           node --check /tmp/game.mjs
           node scripts/validate.mjs
+          npm test
 
       - name: Remove update ZIP and commit
         run: |
@@ -54,7 +55,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes detected"
           else
-            VERSION=$(grep -o "GAME_VERSION='v[0-9]*'" src/game.js | head -1 | cut -d"'" -f2)
+            VERSION=$(grep -o "__KABANCHIKI_BUILD__='v[0-9]*'" index.html | head -1 | cut -d"'" -f2)
             git commit -m "Publish Kabanchiki 3D ${VERSION}"
             git push
           fi
