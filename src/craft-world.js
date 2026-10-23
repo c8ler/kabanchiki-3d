@@ -10,7 +10,7 @@ export class CraftWorld{
  const legs=(w,d,h)=>{for(const a of [-1,1])for(const b of [-1,1])box(m.wood,a*w*.4,h/2,b*d*.4,.1,h,.1)};
  if(kind==='cat'||kind==='human'){const actor=this.builders[kind]();g.add(actor);living=true}
  else if(kind==='dog'){box(m.boar,0,.6,0,.5,.5,1,false,false);box(m.boar,0,.9,.6,.5,.5,.45,false,false);for(const a of [-1,1]){box(m.wood,a*.22,.98,.62,.15,.5,.25,false,false);box(m.black,a*.15,1.0,.84,.08,.08,.03,false,false);for(const b of [-1,1])box(m.boar,a*.18,.25,b*.35,.14,.5,.15,false,false)}box(m.black,0,.8,.9,.2,.15,.15,false,false);const tail=box(m.boar,0,.85,-.65,.12,.12,.5,false,false);tail.rotation.x=-.6;living=true}
- else if(kind==='worm'){for(let i=0;i<7;i++)box(m.pink,Math.sin(i)*.04,.09,i*.12,.14,.14,.14,false,false);living=true}
+ else if(kind==='worm'){for(let i=0;i<7;i++)box(m.pink,Math.sin(i)*.04,.09,(i-3)*.12,.14,.14,.14,false,false);living=true}
  else if(kind==='snail'){box(m.gold,0,.1,0,.25,.15,.6,false,false);const shell=new T.Mesh(new T.SphereGeometry(.24,8,6),m.wood);shell.position.y=.3;g.add(shell);for(const a of [-1,1]){box(m.gold,a*.1,.27,.26,.04,.25,.04,false,false);box(m.black,a*.1,.4,.26,.06,.05,.05,false,false)}living=true}
  else if(kind==='house'){box(m.wood,0,.08,0,4.8,.16,4.8,false);box(m.wood,-1.7,1.4,2.3,1.4,2.6,.2);box(m.wood,1.7,1.4,2.3,1.4,2.6,.2);box(m.wood,0,1.4,-2.3,4.8,2.6,.2);for(const side of [-1,1])box(m.wood,side*2.3,1.4,0,.2,2.6,4.6);box(m.roof,0,2.9,0,5.2,.35,5.2);}
  else if(kind==='block')box(m.wood,0,.5,0,1,1,1);
@@ -44,7 +44,8 @@ export class CraftWorld{
     // Keep a chosen detour for a while; retrying opposite sides every frame causes shaking.
     for(const turn of [0,.65,-.65,1.3,-1.3,Math.PI]){
      const angle=base+turn,x=p.x+Math.sin(angle)*step,z=p.z+Math.cos(angle)*step,y=terrain(x,z,p.y);
-     if(Math.abs(y-p.y)>.3||blocked(x,z,y,small?.09:.25,small?.5:1.6,item))continue;
+     const radius=item.kind==='snail'?.24:small?.14:.25,height=item.kind==='snail'?.56:small?.2:1.6,reach=item.kind==='worm'?.33:item.kind==='snail'?.12:0;
+     if(Math.abs(y-p.y)>.3||[0,-reach,reach].some(offset=>blocked(x+Math.sin(angle)*offset,z+Math.cos(angle)*offset,y,radius,height,item)))continue;
      p.set(x,y,z);item.heading=angle;
      if(turn!==0)item.detourUntil=t+2;
      item.g.rotation.y=angle;item.g.rotation.z=small?0:Math.sin(t*7+item.phase)*.02;

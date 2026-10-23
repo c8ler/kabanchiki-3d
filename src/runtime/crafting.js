@@ -88,7 +88,7 @@ function ensureCraftPreview(kind){
  craftPreview.g.userData.craftPreview=true;
  craftPreview.g.traverse(o=>{
   if(o.isLight)o.visible=false;
-  if(o.isMesh){o.material=new THREE.MeshBasicMaterial({color:0x81e8ad,transparent:true,opacity:.38,depthWrite:false});o.castShadow=false;o.receiveShadow=false;o.renderOrder=4}
+  if(o.isMesh){o.material=new THREE.MeshBasicMaterial({color:0x81e8ad,transparent:true,opacity:.38,depthWrite:false,depthTest:false});o.castShadow=false;o.receiveShadow=false;o.renderOrder=4}
  });
  return craftPreview;
 }

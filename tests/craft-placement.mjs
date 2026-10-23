@@ -56,3 +56,12 @@ test('worms and snails crawl, animate, steer around barriers, and stay on suppor
   const hidden=items[0].g.position.clone();world.visible(4);world.update(1,50,3,()=>0,()=>false,{x:0,z:0});assert.ok(hidden.equals(items[0].g.position));
  }
 });
+
+test('crawlers keep their whole visible body out of a thin wall',()=>{
+ const world=make(),wall=world.create('wall',0,0,1,3),items=['worm','snail'].map((kind,i)=>world.create(kind,i*.6,0,0,3));
+ const blocked=(x,z,y,r,h)=>world.blocked(x,z,y,r,h);
+ for(let i=0;i<1800;i++){
+  world.update(1/60,i/60,3,()=>0,blocked,{x:10,z:10});
+  for(const item of items)assert.equal(placementProblem(candidateBoxes(item),{solids:wall.solids}),'',item.kind+' body crossed wall at frame '+i+' '+JSON.stringify(item.g.position.toArray()));
+ }
+});

@@ -7,6 +7,7 @@ export function createQaPart(runtime){
 
 v216PlacementScenario(scenario='crafted',kind='chair',rotation=0,previewOnly=false){
  this.v212Setup(3);runtime.craftWorld.clear();
+ for(const member of runtime.familyMembers){member.done=true;member.g.visible=false}
  for(const t of runtime.treeObjects)t.visible=false;for(const [,,,m] of runtime.rockPositions)if(m)m.visible=false;
  let x=0,z=20;
  if(scenario==='personal'){runtime.home.stage=4;runtime.syncHomeVisual();runtime.syncHomeLocation(3);x=runtime.personalHouse.position.x;z=runtime.personalHouse.position.z+.7;runtime.homeParts.door.userData.closed=false}
@@ -21,7 +22,7 @@ v216PlacementScenario(scenario='crafted',kind='chair',rotation=0,previewOnly=fal
  runtime.craftWorld.addStock(kind);runtime.worldEpoch++;runtime.wallCacheEpoch=-1;runtime.paused=false;runtime.syncCraftPlacement();
  const before=runtime.craftWorld.items.length,epoch=runtime.craftWorld.epoch,target=runtime.updateCraftPreview();
  const preview=runtime.scene.children.find(g=>g.userData.craftPreview&&g.visible),materials=[];
- preview?.traverse(m=>{if(m.isMesh)materials.push({transparent:m.material.transparent,opacity:m.material.opacity,depthWrite:m.material.depthWrite})});
+ preview?.traverse(m=>{if(m.isMesh)materials.push({transparent:m.material.transparent,opacity:m.material.opacity,depthWrite:m.material.depthWrite,depthTest:m.material.depthTest})});
  const unchanged=runtime.craftWorld.items.length===before&&runtime.craftWorld.epoch===epoch&&runtime.craftWorld.stock[kind]===1;
  if(previewOnly)return {target,unchanged};
  const placed=runtime.placeCraftItem(),item=runtime.craftWorld.items.at(-1);
