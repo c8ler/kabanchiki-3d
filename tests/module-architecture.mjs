@@ -53,3 +53,19 @@ test('normal startup loads QA only through the explicit test gate',()=>{
 test('legacy source contracts read actual modules, not an archived monolith',()=>{
  const source=readGameSource();assert.match(source,/function loadLevel\(/);assert.match(source,/function updateSimulation\(/);assert.match(source,/function movePlayerCollision\(/);assert.doesNotMatch(source,/runtime\.boy/);
 });
+
+import vm from 'node:vm';
+test('offline cache covers the complete production module graph without duplicate requests',async()=>{
+ const handlers={},requests=[],origin='https://example.test/kabanchiki-3d/';
+ const worker=fs.readFileSync(new URL('../service-worker.js',import.meta.url),'utf8');
+ vm.runInNewContext(worker,{URL,self:{registration:{scope:origin},addEventListener:(name,fn)=>handlers[name]=fn,skipWaiting:()=>{}},caches:{open:async()=>({addAll:async urls=>requests.push(...urls)})}});
+ let installed;handlers.install({waitUntil:p=>{installed=p}});await installed;
+ assert.equal(new Set(requests).size,requests.length);
+ const visited=new Set(),walk=path=>{
+  if(visited.has(path))return;visited.add(path);
+  assert.ok(requests.includes(new URL(path,origin).href),'not cached: '+path);
+  const file=new URL('../'+path.split('?')[0],import.meta.url),code=fs.readFileSync(file,'utf8');
+  for(const m of code.matchAll(/from\s*(['"])(\.[^'"]+)\1/g)){const next=new URL(m[2],new URL(path,origin)).href.slice(origin.length);walk(next)}
+ };
+ walk('src/game.js?v=215');assert.ok(visited.size>90);assert.equal(requests.some(p=>p.includes('/src/qa/')),false);
+});
