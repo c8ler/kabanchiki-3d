@@ -14,7 +14,11 @@ v212Tornado(seconds=300,near=false,season=0,n=3){
  },
 v212WeatherWarning(season=0){this.v212Setup(3);this.season(season*20);runtime.levelTime=240;runtime.updateWeather(0,performance.now());return {text:runtime.$('message').textContent,warned:runtime.tornadoState.warned};},
 v212Swirl(){
-  this.v212Setup(3);runtime.levelTime=300;runtime.updateTornado(0,performance.now());const tree=runtime.treeObjects.find(t=>t.visible&&Math.hypot(t.position.x,t.position.z-20)>18);runtime.tornadoState.x=tree.position.x;runtime.tornadoState.z=tree.position.z;const g=runtime.makeFoodModel('mushroom',runtime.scene,runtime.tornadoState.x,0,runtime.tornadoState.z+1),a={g,x:g.position.x,y:0,z:g.position.z,type:'mushroom',done:false};runtime.apples.push(a);runtime.tornadoSweep=0;runtime.updateTornado(0,performance.now());return {treeLifted:!tree.visible,foodLifted:a.done,kinds:runtime.tornadoVisual.items.map(q=>q.kind)};
+  this.v212Setup(3);
+  // Keep the per-sweep capture budget focused on this fixture, not random forage.
+  for(const food of runtime.apples)runtime.scene.remove(food.g);runtime.apples.length=0;
+  for(const pickup of runtime.adventurePickups)runtime.disposePickupVisual(pickup.g);runtime.adventurePickups.length=0;
+  runtime.levelTime=300;runtime.updateTornado(0,performance.now());const tree=runtime.treeObjects.find(t=>t.visible&&Math.hypot(t.position.x,t.position.z-20)>18);runtime.tornadoState.x=tree.position.x;runtime.tornadoState.z=tree.position.z;const g=runtime.makeFoodModel('mushroom',runtime.scene,runtime.tornadoState.x,0,runtime.tornadoState.z+1),a={g,x:g.position.x,y:0,z:g.position.z,type:'mushroom',done:false};runtime.apples.push(a);runtime.tornadoSweep=0;runtime.updateTornado(0,performance.now());return {treeLifted:!tree.visible,foodLifted:a.done,kinds:runtime.tornadoVisual.items.map(q=>q.kind)};
  },
 v212BoarJump(fps=60,mounted=false){
   this.v212Setup(3);if(runtime.friend){runtime.scene.remove(runtime.friend.g);runtime.friend=null}runtime.startBoarForm();const origin=runtime.boy.position.clone();
