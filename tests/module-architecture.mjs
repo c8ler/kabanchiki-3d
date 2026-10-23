@@ -77,3 +77,12 @@ test('furniture robot can temporarily replace and restore the house-reveal hook'
  state.updateFamilyHouseReveal=replacement;assert.equal(state.updateFamilyHouseReveal(),42);
  state.updateFamilyHouseReveal=original;assert.equal(state.updateFamilyHouseReveal,original);
 });
+
+test('all browser scenario calls resolve against the current QA facade',async()=>{
+ const {createGameQa}=await import('../src/qa/index.js'),qa=createGameQa(createRuntime());
+ for(const file of fs.readdirSync(new URL('../scripts/',import.meta.url)).filter(name=>name.endsWith('.mjs'))){
+  const code=fs.readFileSync(new URL('../scripts/'+file,import.meta.url),'utf8');
+  for(const m of code.matchAll(/\bqa\(['"](\w+)['"]/g))assert.equal(typeof qa[m[1]],'function',file+' calls missing QA method '+m[1]);
+  for(const m of code.matchAll(/__KABANCHIKI_QA__\.(\w+)\(/g))assert.equal(typeof qa[m[1]],'function',file+' directly calls missing QA method '+m[1]);
+ }
+});
