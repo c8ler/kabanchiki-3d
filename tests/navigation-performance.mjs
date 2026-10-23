@@ -1,3 +1,4 @@
+import {readGameSource} from '../scripts/game-source.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {findGridPath,StableRoute} from '../src/navigation.js';
@@ -15,7 +16,7 @@ test('sealed navigation target bounds expensive geometry queries',()=>{
 });
 
 import fs from 'node:fs';
-const game=fs.readFileSync(new URL('../src/game.js',import.meta.url),'utf8');
+const game=readGameSource();
 function extract(name){const start=game.indexOf('function '+name+'(');assert.ok(start>=0);let p=game.indexOf('{',start),depth=1,end=p+1;for(;depth&&end<game.length;end++){if(game[end]==='{')depth++;if(game[end]==='}')depth--;}return game.slice(start,end)}
 test('door bounds are shared within a frame and refresh after movement or world changes',()=>{
  let boxes=0;
