@@ -19,6 +19,9 @@ concurrency:
 jobs:
   robot:
     runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+      options: --ipc=host
     timeout-minutes: 35
     strategy:
       fail-fast: false
@@ -36,9 +39,8 @@ jobs:
       - name: Install browser
         run: |
           npm install --no-save --package-lock=false playwright@1.56.1
-          npx playwright install --with-deps ${{ matrix.browser }}
       - name: Serve game
-        run: python3 -m http.server 8080 > /tmp/kabanchiki-robot-server.log 2>&1 &
+        run: node scripts/serve.mjs 8080 > /tmp/kabanchiki-robot-server.log 2>&1 &
       - name: Play routes and break exits
         env:
           BROWSER: ${{ matrix.browser }}
