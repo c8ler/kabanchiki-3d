@@ -9,6 +9,9 @@ on:
 jobs:
   test-game:
     runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+      options: --ipc=host
 
     steps:
       - name: Get game
@@ -27,14 +30,13 @@ jobs:
 
       - name: Start local game server
         run: |
-          python3 -m http.server 8080 > /tmp/kabanchiki-server.log 2>&1 &
+          node scripts/serve.mjs 8080 > /tmp/kabanchiki-server.log 2>&1 &
           sleep 2
 
       - name: Install Playwright
         run: |
           npm init -y
-          npm install playwright
-          npx playwright install --with-deps chromium webkit
+          npm install playwright@1.56.1
 
       - name: Runtime + collision robot on all 6 locations
         run: |
@@ -235,6 +237,9 @@ jobs:
   browser-features:
     name: Browser features (${{ matrix.script }})
     runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+      options: --ipc=host
     timeout-minutes: 25
     strategy:
       fail-fast: false
@@ -248,11 +253,10 @@ jobs:
       - name: Install browsers
         run: |
           npm install --no-save --package-lock=false playwright@1.56.1
-          npx playwright install --with-deps chromium webkit
       - name: Serve game
         run: |
           mkdir -p screenshots logs
-          python3 -m http.server 8080 > /tmp/kabanchiki-features-server.log 2>&1 &
+          node scripts/serve.mjs 8080 > /tmp/kabanchiki-features-server.log 2>&1 &
       - name: Run independent browser scenario
         run: node scripts/${{ matrix.script }}.mjs
       - name: Save screenshots and server log

@@ -1,8 +1,9 @@
+import {readGameSource} from '../scripts/game-source.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {findGridPath,findClearEscape} from '../src/navigation.js';
-const game=fs.readFileSync(new URL('../src/game.js',import.meta.url),'utf8');
+const game=readGameSource();
 function extract(name){
  const start=game.indexOf('function '+name+'(');assert.ok(start>=0,name);
  let p=game.indexOf('{',start),depth=1,end=p+1;

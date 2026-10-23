@@ -421,3 +421,8 @@ Robot rock probes now use the same rotated rounded ellipse as gameplay instead o
 v214: reliable Q/touch dismount without automatic remount, viewport-fitting scrollable menus, brief minute/tornado countdown windows, clear boss-minion spawns and crowd-aware navigation. Regression checks: `node scripts/v214-browser.mjs` (Chromium and WebKit).
 
 Cheat: pause → «Чит-коды» → BOMB (also «бомба» / «бомбочка») grants one bomb; place with G or the bomb button after resuming.
+
+
+## Модульная структура v215
+
+Игра разделена на небольшие ES-модули. Точка входа — `src/game.js`; игровые системы — `src/runtime/`, тестовые сценарии — `src/qa/`. Описание структуры, порядка запуска и правил добавления модулей: [docs/architecture.md](docs/architecture.md).
