@@ -28,7 +28,7 @@ jobs:
               const runs = await github.paginate(github.rest.actions.listWorkflowRunsForRepo,
                 {...context.repo, status, per_page: 100});
               for (const run of runs) {
-                if (run.id === context.runId || run.event !== 'pull_request' ||
+                if (run.id >= context.runId || run.event !== 'pull_request' ||
                     run.head_branch !== branch || run.head_sha === latest) continue;
                 try {
                   await github.rest.actions.cancelWorkflowRun({...context.repo, run_id: run.id});
