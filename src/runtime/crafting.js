@@ -123,7 +123,7 @@ function updateCraftCreatures(dt,now){
  if(!runtime.craftWorld.items.some(item=>item.g.visible&&item.living))return;
  const geometry=placementGeometry();
  runtime.craftWorld.update(dt,now/1000,runtime.level,
-  (x,z,feet)=>placementHeight(x,z,feet-1.05,runtime.terrainHeightAt(x,z)+runtime.familyFloorAt(x,z),geometry.surfaces),
+  (x,z,feet)=>placementHeight(x,z,feet,runtime.terrainHeightAt(x,z)+runtime.familyFloorAt(x,z),geometry.surfaces,.2),
   (x,z,y,r,height)=>!!placementProblem([new THREE.Box3(new THREE.Vector3(x-r,y+.04,z-r),new THREE.Vector3(x+r,y+height,z+r))],{...geometry,wet:(px,pz)=>runtime.lakeDepthAt(px,pz)>.08}),
   runtime.boy.position);
 }

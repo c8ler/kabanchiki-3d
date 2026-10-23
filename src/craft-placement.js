@@ -1,9 +1,9 @@
 import * as T from '../vendor/three/three.module.min.js';
 
 // Placement uses object geometry, never the player's capsule or its movement margins.
-export function placementHeight(x,z,feet,ground,surfaces){
+export function placementHeight(x,z,feet,ground,surfaces,maxRise=1.25){
  let y=ground;
- for(const b of surfaces)if(x>b.min.x+.015&&x<b.max.x-.015&&z>b.min.z+.015&&z<b.max.z-.015&&b.max.y<=feet+1.25&&b.max.y>=y)y=b.max.y;
+ for(const b of surfaces)if(x>b.min.x+.015&&x<b.max.x-.015&&z>b.min.z+.015&&z<b.max.z-.015&&b.max.y<=feet+maxRise&&b.max.y>=y)y=b.max.y;
  return y;
 }
 export function overlapVolume(a,b,tolerance=.04){

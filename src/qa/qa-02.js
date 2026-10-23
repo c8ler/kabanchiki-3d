@@ -5,7 +5,7 @@ import { riverCenterAt } from "../world-surface.js?v=216";
 export function createQaPart(runtime){
  return {
 
-v216PlacementScenario(scenario='crafted',kind='chair',rotation=0){
+v216PlacementScenario(scenario='crafted',kind='chair',rotation=0,previewOnly=false){
  this.v212Setup(3);runtime.craftWorld.clear();
  for(const t of runtime.treeObjects)t.visible=false;for(const [,,,m] of runtime.rockPositions)if(m)m.visible=false;
  let x=0,z=20;
@@ -15,14 +15,15 @@ v216PlacementScenario(scenario='crafted',kind='chair',rotation=0){
  if(['crafted','roof','wall'].includes(scenario))runtime.craftWorld.create('house',0,0,20,3);
  if(scenario==='surface')runtime.craftWorld.create('table',0,0,20,3);
  if(scenario==='near-wall')runtime.craftWorld.create('wall',0,0,20.52,3);
- if(scenario==='wall')z=22.3;
+ if(scenario==='wall'){x=2.3;z=20}
  runtime.py=scenario==='roof'?3.075:0;runtime.vy=0;
- runtime.boy.position.set(x,runtime.py,z-1.5);runtime.yaw=0;runtime.craftRotation=rotation;
+ runtime.boy.position.set(x,runtime.py,z-1.5);runtime.yaw=0;if(scenario==='wall'){runtime.boy.position.set(x-1.5,0,z);runtime.yaw=Math.PI/2}runtime.craftRotation=rotation;
  runtime.craftWorld.addStock(kind);runtime.worldEpoch++;runtime.wallCacheEpoch=-1;runtime.paused=false;runtime.syncCraftPlacement();
  const before=runtime.craftWorld.items.length,epoch=runtime.craftWorld.epoch,target=runtime.updateCraftPreview();
  const preview=runtime.scene.children.find(g=>g.userData.craftPreview&&g.visible),materials=[];
  preview?.traverse(m=>{if(m.isMesh)materials.push({transparent:m.material.transparent,opacity:m.material.opacity,depthWrite:m.material.depthWrite})});
  const unchanged=runtime.craftWorld.items.length===before&&runtime.craftWorld.epoch===epoch&&runtime.craftWorld.stock[kind]===1;
+ if(previewOnly)return {target,unchanged};
  const placed=runtime.placeCraftItem(),item=runtime.craftWorld.items.at(-1);
  runtime.paused=true;runtime.updateCraftPreview();
  return {scenario,kind,target,unchanged,materials,placed,remaining:runtime.craftWorld.stock[kind],position:placed?item.g.position.toArray():null,hiddenAfterPause:!preview?.visible};

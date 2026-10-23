@@ -16,6 +16,11 @@ for(const engine of [chromium,webkit]){
   for(const kind of ['bed','chair','table','standingLamp','wardrobe','stove'])for(const angle of [0,Math.PI/2]){
    const r=await qa('v216PlacementScenario','crafted',kind,angle);assert.ok(r.placed,kind+' '+angle+' '+r.target?.reason);assert.ok(r.position[1]<.2);
   }
+  for(const room of ['crafted','family','personal']){
+   await qa('v216PlacementScenario',room,'chair',0,true);await page.waitForTimeout(120);
+   const buffer=await page.screenshot({path:'screenshots/v216-'+engine.name()+'-'+room+'.jpg',type:'jpeg',quality:50});
+   if(!mobile){const data=buffer.toString('base64');for(let i=0;i<data.length;i+=6000)console.log('REVIEW_IMAGE:v216-'+room+':'+(i/6000)+':'+data.slice(i,i+6000))}
+  }
   await qa('v216PreviewSetup');await page.waitForTimeout(100);let p=await qa('v216PreviewInspect');assert.ok(p.visible&&p.stock===1&&p.count===0);
   await page.keyboard.press('KeyZ');await page.waitForTimeout(100);p=await qa('v216PreviewInspect');assert.ok(Math.abs(p.rotation-Math.PI/2)<.001);
   const before=p.position;await page.keyboard.down('KeyW');await page.waitForTimeout(250);await page.keyboard.up('KeyW');p=await qa('v216PreviewInspect');assert.ok(Math.hypot(p.position[0]-before[0],p.position[2]-before[2])>.1);

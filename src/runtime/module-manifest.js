@@ -3280,6 +3280,7 @@ export const GAME_MODULES=[
       "boundaryDecor",
       "boy",
       "camera",
+      "craftWorld",
       "familyHideout",
       "houseObjects",
       "ridgeObjects",
