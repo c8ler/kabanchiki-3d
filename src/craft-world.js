@@ -5,7 +5,7 @@ export class CraftWorld{
  addStock(kind){this.stock[kind]=(this.stock[kind]||0)+1;this.selected=kind}
  clear(){for(const item of [...this.items])this.remove(item);this.stock={};this.selected=''}
  remove(item){item.g.removeFromParent();item.g.traverse(mesh=>{if(mesh.isMesh&&!mesh.userData.sharedCraftGeometry)mesh.geometry.dispose()});const i=this.items.indexOf(item);if(i>=0)this.items.splice(i,1);this.epoch++}
- create(kind,x,y,z,level,rotation=0){const g=new T.Group(),m=this.materials,solids=[],supports=[];let living=false,light=null;
+ create(kind,x,y,z,level,rotation=0,preview=false){const g=new T.Group(),m=this.materials,solids=[],supports=[];let living=false,light=null;
  const box=(material,bx,by,bz,w,h,d,solid=true,support=true)=>{const mesh=new T.Mesh(new T.BoxGeometry(w,h,d),material);mesh.position.set(bx,by,bz);mesh.castShadow=false;mesh.receiveShadow=true;g.add(mesh);if(solid)solids.push(mesh);if(support)supports.push(mesh);return mesh};
  const legs=(w,d,h)=>{for(const a of [-1,1])for(const b of [-1,1])box(m.wood,a*w*.4,h/2,b*d*.4,.1,h,.1)};
  if(kind==='cat'||kind==='human'){const actor=this.builders[kind]();g.add(actor);living=true}
@@ -21,14 +21,47 @@ export class CraftWorld{
  else if(kind==='chair'){box(m.wood,0,.45,0,.7,.12,.7);box(m.wood,0,.85,-.3,.7,.75,.12);legs(.7,.7,.4)}
  else if(kind==='bed'){box(m.wood,0,.28,0,1.6,.4,2.2);box(m.white,0,.55,0,1.5,.2,2.1);box(m.white,0,.72,-.65,1.2,.16,.5)}
  else if(kind==='wardrobe'){box(m.wood,0,1,0,1.5,2,.7);box(m.gold,.15,1,.38,.08,.1,.07,false,false);box(m.gold,-.15,1,.38,.08,.1,.07,false,false)}
- else if(kind==='standingLamp'){box(m.stone,0,.05,0,.5,.1,.5);box(m.wood,0,.9,0,.08,1.7,.08);box(m.gold,0,1.85,0,.6,.35,.6,false,false);light=this.builders.light();light.position.set(0,1.8,0);g.add(light)}
- else if(kind==='stove'){box(m.stone,0,.6,0,1.2,1.2,1.2);box(m.black,0,.45,.62,.8,.6,.04,false,false);box(m.gold,0,.4,.65,.5,.3,.02,false,false);box(m.stone,.3,1.8,-.3,.35,1.6,.35);light=this.builders.light();light.position.set(0,.5,1);g.add(light)}
+ else if(kind==='standingLamp'){box(m.stone,0,.05,0,.5,.1,.5);box(m.wood,0,.9,0,.08,1.7,.08);box(m.gold,0,1.85,0,.6,.35,.6,false,false);light=preview?new T.PointLight(0,0):this.builders.light();light.position.set(0,1.8,0);g.add(light)}
+ else if(kind==='stove'){box(m.stone,0,.6,0,1.2,1.2,1.2);box(m.black,0,.45,.62,.8,.6,.04,false,false);box(m.gold,0,.4,.65,.5,.3,.02,false,false);box(m.stone,.3,1.8,-.3,.35,1.6,.35);light=preview?new T.PointLight(0,0):this.builders.light();light.position.set(0,.5,1);g.add(light)}
  else if(kind==='palm'){box(m.wood,0,2,0,.45,4,.45);for(let i=0;i<6;i++){const leaf=box(m.leaf,Math.sin(i*Math.PI/3)*1.2,4,Math.cos(i*Math.PI/3)*1.2,.6,.18,2.7,false,false);leaf.rotation.y=i*Math.PI/3;leaf.rotation.x=.2}}
- g.position.set(x,y,z);g.rotation.y=rotation;this.scene.add(g);g.updateWorldMatrix(true,true);const bounds=solids.map(mesh=>new T.Box3().setFromObject(mesh)),platforms=supports.map(mesh=>new T.Box3().setFromObject(mesh)),item={g,kind,level,living,solids:bounds,supports:platforms,home:{x,y,z},phase:this.items.length*2.4,light};this.items.push(item);this.epoch++;return item;
+ g.position.set(x,y,z);g.rotation.y=rotation;this.scene.add(g);g.updateWorldMatrix(true,true);const bounds=solids.map(mesh=>new T.Box3().setFromObject(mesh)),platforms=supports.map(mesh=>new T.Box3().setFromObject(mesh)),item={g,kind,level,living,solids:bounds,supports:platforms,home:{x,y,z},phase:this.items.length*2.4,light};if(!preview){this.items.push(item);this.epoch++}return item;
  }
  visible(level){for(const item of this.items)item.g.visible=item.level===level}
  blocked(x,z,y,r=.43,height=1.65){return this.items.some(item=>item.g.visible&&!item.living&&item.solids.some(b=>x>b.min.x-r&&x<b.max.x+r&&z>b.min.z-r&&z<b.max.z+r&&y<b.max.y-.025&&y+height>b.min.y+.03))}
  support(x,z,feet){let top=-Infinity;for(const item of this.items)if(item.g.visible&&!item.living)for(const b of item.supports)if(x>b.min.x+.03&&x<b.max.x-.03&&z>b.min.z+.03&&z<b.max.z-.03&&feet>=b.max.y-.12)top=Math.max(top,b.max.y);return top}
  walls(){return this.items.filter(item=>item.g.visible&&!item.living).flatMap(item=>item.solids.map(box=>({root:item.g,box,polygon:[{x:box.min.x,z:box.min.z},{x:box.max.x,z:box.min.z},{x:box.max.x,z:box.max.z},{x:box.min.x,z:box.max.z}]})))}
- update(dt,now,level,terrain,blocked,player){for(const item of this.items){if(item.level!==level||!item.living||item.airborne)continue;const p=item.g.position,small=item.kind==='worm'||item.kind==='snail',speed=small?.2:item.kind==='dog'?2.6:1.1,target=item.kind==='dog'&&Math.hypot(p.x-player.x,p.z-player.z)>3?player:{x:item.home.x+Math.sin(now*.14+item.phase)*3,z:item.home.z+Math.cos(now*.17+item.phase)*3},d=Math.hypot(target.x-p.x,target.z-p.z);if(d>.25){const step=Math.min(d,dt*speed),x=p.x+(target.x-p.x)/d*step,z=p.z+(target.z-p.z)/d*step;if(!blocked(x,z)){p.set(x,terrain(x,z),z);item.g.rotation.y=Math.atan2(target.x-x,target.z-z);item.g.rotation.z=small?Math.sin(now*5+item.phase)*.035:Math.sin(now*7+item.phase)*.02;}}}}
+ update(dt,now,level,terrain,blocked,player){
+  for(const item of this.items){
+   if(item.level!==level||!item.g.visible||!item.living||item.airborne)continue;
+   const p=item.g.position,small=item.kind==='worm'||item.kind==='snail',speed=item.kind==='worm'?.3:item.kind==='snail'?.16:item.kind==='dog'?2.6:1.1;
+   item.age=(item.age||0)+Math.max(0,dt);
+   const t=item.age,following=item.kind==='dog'&&Math.hypot(p.x-player.x,p.z-player.z)>3;
+   const target=following?player:{x:item.home.x+Math.sin(t*.14+item.phase)*3,z:item.home.z+Math.cos(t*.17+item.phase)*3};
+   const d=Math.hypot(target.x-p.x,target.z-p.z),desired=Math.atan2(target.x-p.x,target.z-p.z);
+   if(d>.08){
+    const step=Math.min(d,Math.max(0,dt)*speed),base=item.detourUntil>t?item.heading:desired;
+    let moved=false;
+    // Keep a chosen detour for a while; retrying opposite sides every frame causes shaking.
+    for(const turn of [0,.65,-.65,1.3,-1.3,Math.PI]){
+     const angle=base+turn,x=p.x+Math.sin(angle)*step,z=p.z+Math.cos(angle)*step,y=terrain(x,z,p.y);
+     if(Math.abs(y-p.y)>.3||blocked(x,z,y,small?.09:.25,small?.5:1.6,item))continue;
+     p.set(x,y,z);item.heading=angle;
+     if(turn!==0)item.detourUntil=t+2;
+     item.g.rotation.y=angle;item.g.rotation.z=small?0:Math.sin(t*7+item.phase)*.02;
+     moved=true;break;
+    }
+    item.moving=moved;
+   }
+   if(item.kind==='worm')for(let i=0;i<item.g.children.length;i++){
+    const segment=item.g.children[i],wave=t*6-i*.9;
+    segment.position.x=Math.sin(wave)*.045;segment.position.y=.09+Math.sin(wave)*.014;
+    segment.scale.z=1+Math.sin(wave)*.14;
+   }
+   if(item.kind==='snail'){
+    // The foot ripples under a steady shell; eyestalks sway independently.
+    item.g.children[0].scale.z=1+Math.sin(t*3)*.08;
+    for(const eye of item.g.children.slice(2))eye.rotation.z=Math.sin(t*2+item.phase)*.055;
+   }
+  }
+ }
 }

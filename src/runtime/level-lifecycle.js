@@ -1,8 +1,8 @@
-import { refreshExitLandscape } from "../exit-scenery.js?v=215";
+import { refreshExitLandscape } from "../exit-scenery.js?v=216";
 import * as THREE from "../../vendor/three/three.module.min.js";
-import { BOSS_HITS, lakeRadiusAt } from "../world-surface.js?v=215";
-import { LocationExit, LOCATION_EXITS } from "../location-exits.js?v=215";
-import { OpeningAdventure } from "../opening-adventure.js?v=215";
+import { BOSS_HITS, lakeRadiusAt } from "../world-surface.js?v=216";
+import { LocationExit, LOCATION_EXITS } from "../location-exits.js?v=216";
+import { OpeningAdventure } from "../opening-adventure.js?v=216";
 
 // Owns 3 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){

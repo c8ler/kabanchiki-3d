@@ -1,4 +1,4 @@
-import { forestEdgeBlocked } from "../world-interactions.js?v=215";
+import { forestEdgeBlocked } from "../world-interactions.js?v=216";
 import * as THREE from "../../vendor/three/three.module.min.js";
 
 // Owns 3 bindings. See docs/architecture.md for startup order.

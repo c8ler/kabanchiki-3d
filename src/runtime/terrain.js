@@ -1,6 +1,6 @@
 import * as THREE from "../../vendor/three/three.module.min.js";
-import { riverCenterAt, riverDepthAt, lakeInletCenterAt, lakeInletDepthAt, rainFillLimit, rainFillRate, WorldSurface, lakeRadiusAt, lakeDepth } from "../world-surface.js?v=215";
-import { openingStreamDepth } from "../opening-adventure.js?v=215";
+import { riverCenterAt, riverDepthAt, lakeInletCenterAt, lakeInletDepthAt, rainFillLimit, rainFillRate, WorldSurface, lakeRadiusAt, lakeDepth } from "../world-surface.js?v=216";
+import { openingStreamDepth } from "../opening-adventure.js?v=216";
 
 // Owns 8 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){

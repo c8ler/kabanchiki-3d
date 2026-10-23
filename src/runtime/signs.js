@@ -1,5 +1,5 @@
 import * as THREE from "../../vendor/three/three.module.min.js";
-import { capsuleCircleContact } from "../boar-physics.js?v=215";
+import { capsuleCircleContact } from "../boar-physics.js?v=216";
 
 // Owns 4 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){

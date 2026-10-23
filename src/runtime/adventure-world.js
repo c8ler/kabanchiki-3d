@@ -1,7 +1,7 @@
-import { CraftWorld } from "../craft-world.js?v=215";
-import { capturedByTornado, TORNADO_REACH, tornadoInfluence } from "../tornado-rules.js?v=215";
+import { CraftWorld } from "../craft-world.js?v=216";
+import { capturedByTornado, TORNADO_REACH, tornadoInfluence } from "../tornado-rules.js?v=216";
 import * as THREE from "../../vendor/three/three.module.min.js";
-import { riverCenterAt, lakeInletCenterAt } from "../world-surface.js?v=215";
+import { riverCenterAt, lakeInletCenterAt } from "../world-surface.js?v=216";
 
 // Owns 15 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){

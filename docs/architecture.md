@@ -55,3 +55,7 @@ When adding a state field, declare it in the owning factory, initialize it in
 Keep factories free of side effects before `initialize()`.
 When adding a runtime module, register it in `src/game.js`, the manifest and
 the service worker's module list. Keep modules below 48 KB and split by feature.
+
+## Размещение и созданные существа
+
+`src/craft-placement.js` проверяет реальные объёмы предметов и доступные по высоте поверхности. `src/runtime/crafting.js` собирает физическую геометрию локации, обновляет полупрозрачный предпросмотр и использует тот же расчёт при подтверждении. Предпросмотр не входит в `CraftWorld.items`, не расходует запас и не создаёт активного света. `updateCraftCreatures` вызывается из игрового цикла только во время игры; движение и анимации находятся в `CraftWorld.update`. Проверки: `tests/craft-placement.mjs`, `scripts/v216-browser.mjs` (Chromium и WebKit).

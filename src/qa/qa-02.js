@@ -1,9 +1,49 @@
-import { RECIPES } from "../crafting-rules.js?v=215";
+import { RECIPES } from "../crafting-rules.js?v=216";
 import * as THREE from "../../vendor/three/three.module.min.js";
-import { riverCenterAt } from "../world-surface.js?v=215";
+import { riverCenterAt } from "../world-surface.js?v=216";
 
 export function createQaPart(runtime){
  return {
+
+v216PlacementScenario(scenario='crafted',kind='chair',rotation=0){
+ this.v212Setup(3);runtime.craftWorld.clear();
+ for(const t of runtime.treeObjects)t.visible=false;for(const [,,,m] of runtime.rockPositions)if(m)m.visible=false;
+ let x=0,z=20;
+ if(scenario==='personal'){runtime.home.stage=4;runtime.syncHomeVisual();runtime.syncHomeLocation(3);x=runtime.personalHouse.position.x;z=runtime.personalHouse.position.z+.7;runtime.homeParts.door.userData.closed=false}
+ else if(scenario==='family'){x=runtime.familyHideout.position.x;z=runtime.familyHideout.position.z+.5;runtime.familyDoor.userData.closed=false}
+ else {for(const h of runtime.houseObjects)h.visible=false}
+ if(['crafted','roof','wall'].includes(scenario))runtime.craftWorld.create('house',0,0,20,3);
+ if(scenario==='surface')runtime.craftWorld.create('table',0,0,20,3);
+ if(scenario==='near-wall')runtime.craftWorld.create('wall',0,0,20.52,3);
+ if(scenario==='wall')z=22.3;
+ runtime.py=scenario==='roof'?3.075:0;runtime.vy=0;
+ runtime.boy.position.set(x,runtime.py,z-1.5);runtime.yaw=0;runtime.craftRotation=rotation;
+ runtime.craftWorld.addStock(kind);runtime.worldEpoch++;runtime.wallCacheEpoch=-1;runtime.paused=false;runtime.syncCraftPlacement();
+ const before=runtime.craftWorld.items.length,epoch=runtime.craftWorld.epoch,target=runtime.updateCraftPreview();
+ const preview=runtime.scene.children.find(g=>g.userData.craftPreview&&g.visible),materials=[];
+ preview?.traverse(m=>{if(m.isMesh)materials.push({transparent:m.material.transparent,opacity:m.material.opacity,depthWrite:m.material.depthWrite})});
+ const unchanged=runtime.craftWorld.items.length===before&&runtime.craftWorld.epoch===epoch&&runtime.craftWorld.stock[kind]===1;
+ const placed=runtime.placeCraftItem(),item=runtime.craftWorld.items.at(-1);
+ runtime.paused=true;runtime.updateCraftPreview();
+ return {scenario,kind,target,unchanged,materials,placed,remaining:runtime.craftWorld.stock[kind],position:placed?item.g.position.toArray():null,hiddenAfterPause:!preview?.visible};
+},
+v216PreviewSetup(){
+ this.v212Setup(3);runtime.craftWorld.clear();runtime.craftWorld.addStock('chair');runtime.boy.position.set(0,0,20);runtime.yaw=0;runtime.craftRotation=0;
+ for(const h of runtime.houseObjects)h.visible=false;
+ runtime.worldEpoch++;runtime.wallCacheEpoch=-1;runtime.paused=false;runtime.syncCraftPlacement();return runtime.updateCraftPreview();
+},
+v216PreviewInspect(){const g=runtime.scene.children.find(o=>o.userData.craftPreview&&o.visible);return {visible:!!g,position:g?.position.toArray(),rotation:g?.rotation.y,count:runtime.craftWorld.items.length,stock:runtime.craftWorld.stock.chair,paused:runtime.paused}},
+v216Crawl(fps=60,live=false){
+ this.v212Setup(3);runtime.craftWorld.clear();for(const t of runtime.treeObjects)t.visible=false;for(const [,,,m] of runtime.rockPositions)if(m)m.visible=false;for(const h of runtime.houseObjects)h.visible=false;
+ const worm=runtime.craftWorld.create('worm',0,0,20,3),snail=runtime.craftWorld.create('snail',1,0,20,3);runtime.craftWorld.create('wall',0,0,21,3);
+ runtime.worldEpoch++;runtime.wallCacheEpoch=-1;runtime.paused=false;
+ const initial=[worm,snail].map(i=>i.g.position.toArray());
+ if(!live)for(let i=0;i<fps*20;i++)runtime.updateCraftCreatures(1/fps,i*1000/fps);
+ const result={initial,items:[worm,snail].map(i=>({kind:i.kind,position:i.g.position.toArray(),age:i.age||0,animated:i.kind==='worm'?i.g.children.map(m=>m.position.x):i.g.children[0].scale.z,blocked:runtime.craftWorld.blocked(i.g.position.x,i.g.position.z,i.g.position.y,.09,.5)}))};
+ if(!live){runtime.paused=true;const before=worm.g.position.clone();runtime.updateCraftCreatures(1,99999);result.stopsWhenPaused=before.equals(worm.g.position)}
+ return result;
+},
+v216CrawlInspect(){return runtime.craftWorld.items.filter(i=>i.living).map(i=>({kind:i.kind,position:i.g.position.toArray(),age:i.age||0}))},
 v214MinionRobot(angle=0,fps=60,crowd=false){
   this.v212Setup(6);for(const f of runtime.foes)runtime.scene.remove(f.g);runtime.foes.length=0;if(runtime.friend){runtime.scene.remove(runtime.friend.g);runtime.friend=null}
   runtime.boy.position.set(0,0,0);const m=runtime.makeBoar(0,0,false);m.isMinion=true;const q=runtime.minionSpawnPoint(m,angle);
