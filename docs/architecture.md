@@ -12,7 +12,8 @@ the original creation order, including seeded random generation, scene objects,
 input handlers and rendering warm-up.
 
 Every state field/function has exactly one owner. Mutable state exposes a setter;
-constants/functions expose only a getter. Replacing `friend`, `keys`, a level or
+constants/functions expose only a getter, except the explicitly replaceable
+`updateFamilyHouseReveal` test hook. Replacing `friend`, `keys`, a level or
 an array remains visible to all modules through the live runtime context.
 `src/runtime/context.js` rejects duplicate bindings and unknown writes.
 This explicit bridge replaces the previous shared lexical scope without copying

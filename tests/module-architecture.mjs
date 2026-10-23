@@ -69,3 +69,11 @@ test('offline cache covers the complete production module graph without duplicat
  };
  walk('src/game.js?v=215');assert.ok(visited.size>90);assert.equal(requests.some(p=>p.includes('/src/qa/')),false);
 });
+
+test('furniture robot can temporarily replace and restore the house-reveal hook',async()=>{
+ const {createModule}=await import('../src/runtime/camera-fade.js');
+ const module=createModule(createRuntime()),state={};Object.defineProperties(state,module.bindings);
+ const original=state.updateFamilyHouseReveal,replacement=()=>42;
+ state.updateFamilyHouseReveal=replacement;assert.equal(state.updateFamilyHouseReveal(),42);
+ state.updateFamilyHouseReveal=original;assert.equal(state.updateFamilyHouseReveal,original);
+});

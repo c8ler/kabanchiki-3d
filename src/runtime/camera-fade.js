@@ -86,7 +86,7 @@ function houseBlockAt(x,z,pad=.45,allowJump=false){
 "familyHouseRevealAt":{get:()=>familyHouseRevealAt},
 "setHomeHouseCutaway":{get:()=>setHomeHouseCutaway},
 "setDadHouseCutaway":{get:()=>setDadHouseCutaway},
-"updateFamilyHouseReveal":{get:()=>updateFamilyHouseReveal},
+"updateFamilyHouseReveal":{get:()=>updateFamilyHouseReveal,set:value=>{updateFamilyHouseReveal=value}},
 "houseBlockAt":{get:()=>houseBlockAt}
   },
   initialize(){
