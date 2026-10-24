@@ -1,7 +1,7 @@
-import { forestEdgeLimit, forestEdgeBlocked } from "../world-interactions.js?v=216";
-import { capsuleCircleContact } from "../boar-physics.js?v=216";
-import { polygonContact } from "../movement-geometry.js?v=216";
-import { segmentHitsBox } from "../navigation.js?v=216";
+import { forestEdgeLimit, forestEdgeBlocked } from "../world-interactions.js?v=217";
+import { capsuleCircleContact } from "../boar-physics.js?v=217";
+import { polygonContact } from "../movement-geometry.js?v=217";
+import { segmentHitsBox } from "../navigation.js?v=217";
 
 // Owns 11 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){

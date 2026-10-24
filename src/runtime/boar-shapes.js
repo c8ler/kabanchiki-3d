@@ -1,5 +1,5 @@
-import { boarWaterStep } from "../boar-water.js?v=216";
-import { attacksPlayer, capsuleAt, capsuleCircleContact, capsuleCapsuleContact } from "../boar-physics.js?v=216";
+import { boarWaterStep } from "../boar-water.js?v=217";
+import { attacksPlayer, capsuleAt, capsuleCircleContact, capsuleCapsuleContact } from "../boar-physics.js?v=217";
 
 // Owns 17 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){

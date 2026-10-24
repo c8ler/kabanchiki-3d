@@ -67,7 +67,7 @@ test('offline cache covers the complete production module graph without duplicat
   const file=new URL('../'+path.split('?')[0],import.meta.url),code=fs.readFileSync(file,'utf8');
   for(const m of code.matchAll(/from\s*(['"])(\.[^'"]+)\1/g)){const next=new URL(m[2],new URL(path,origin)).href.slice(origin.length);walk(next)}
  };
- walk('src/game.js?v=216');assert.ok(visited.size>90);assert.equal(requests.some(p=>p.includes('/src/qa/')),false);
+ walk('src/game.js?v=217');assert.ok(visited.size>90);assert.equal(requests.some(p=>p.includes('/src/qa/')),false);
 });
 
 test('furniture robot can temporarily replace and restore the house-reveal hook',async()=>{

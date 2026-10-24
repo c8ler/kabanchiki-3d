@@ -42,6 +42,6 @@ export const lakeInletCenterAt=x=>{const t=Math.max(0,Math.min(1,(x+46)/24));ret
 export const lakeInletHalfWidthAt=x=>4.2;
 export function lakeInletDepthAt(x,z){if(x<-46||x>-22)return 0;const k=Math.max(0,1-Math.abs(z-lakeInletCenterAt(x))/4.2);return 1.35*k*k}
 export function bridgeRailBlocked(x,z,radius=.31){return Math.abs(z+14)<5.3+radius&&[-2.55,2.55].some(rail=>Math.abs(x-rail)<radius+.10)}
-export const weatherDeadline=(season,level,seconds)=>seconds<300||level===6?null:season==='winter'?'freeze':'carry';
+export const weatherDeadline=(season,level,seconds)=>seconds<300||level>=6?null:season==='winter'?'freeze':'carry';
 export const rainFillLimit=stage=>[0,.45,.95,1.55,2.1][stage]||0;
 export const rainFillRate=stage=>[0,1/65,1/25,1/14,1/9][stage]||0;

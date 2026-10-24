@@ -1,6 +1,6 @@
-import { BOAR_WADING_DEPTH, updateBoarBreath, shoreGoal } from "../boar-water.js?v=216";
+import { BOAR_WADING_DEPTH, updateBoarBreath, shoreGoal } from "../boar-water.js?v=217";
 import * as THREE from "../../vendor/three/three.module.min.js";
-import { findGridPath, StableRoute, smoothHeading, findClearEscape } from "../navigation.js?v=216";
+import { findGridPath, StableRoute, smoothHeading, findClearEscape } from "../navigation.js?v=217";
 
 // Owns 6 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){

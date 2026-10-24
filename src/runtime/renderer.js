@@ -1,6 +1,6 @@
 import * as THREE from "../../vendor/three/three.module.min.js";
-import { StaticSceneryBatches } from "../static-batching.js?v=216";
-import { lightBudget, selectEffectLights } from "../render-budget.js?v=216";
+import { StaticSceneryBatches } from "../static-batching.js?v=217";
+import { lightBudget, selectEffectLights } from "../render-budget.js?v=217";
 
 // Owns 24 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){

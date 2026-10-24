@@ -1,6 +1,6 @@
 import * as THREE from "../../vendor/three/three.module.min.js";
-import { riverDepthAt, onRiverBridge, lakeInletDepthAt, lakeDepth } from "../world-surface.js?v=216";
-import { AdaptiveQuality } from "../adaptive-quality.js?v=216";
+import { riverDepthAt, onRiverBridge, lakeInletDepthAt, lakeDepth } from "../world-surface.js?v=217";
+import { AdaptiveQuality } from "../adaptive-quality.js?v=217";
 
 // Owns 36 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){
@@ -27,6 +27,7 @@ function syncMeadowGrass(){
  for(let i=0;i<meadowSeeds.length;i++){matrix.copy(meadowSeeds[i]);const x=matrix.elements[12],z=matrix.elements[14];
   if(Math.abs(x)<roadHalfWidthAt(z)+.4)continue;
   if(runtime.level===3&&x>-29.3&&x<-5.7&&Math.abs(z-31.5)<1.4)continue;
+  if(runtime.level===7&&runtime.lakeDepthAt(x,z)>0)continue;
   if(runtime.level===2&&(lakeDepth(x,z)>0||lakeInletDepthAt(x,z)>0))continue;
   if(runtime.level===4&&(riverDepthAt(x,z)>0||onRiverBridge(x,z)))continue;
   if(houses.some(b=>x>b.min.x-.25&&x<b.max.x+.25&&z>b.min.z-.25&&z<b.max.z+.25))continue;
