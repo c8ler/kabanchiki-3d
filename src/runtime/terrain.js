@@ -1,13 +1,14 @@
+import {islandHeight,islandDepth} from '../creative-island.js?v=217';
 import * as THREE from "../../vendor/three/three.module.min.js";
-import { riverCenterAt, riverDepthAt, lakeInletCenterAt, lakeInletDepthAt, rainFillLimit, rainFillRate, WorldSurface, lakeRadiusAt, lakeDepth } from "../world-surface.js?v=216";
-import { openingStreamDepth } from "../opening-adventure.js?v=216";
+import { riverCenterAt, riverDepthAt, lakeInletCenterAt, lakeInletDepthAt, rainFillLimit, rainFillRate, WorldSurface, lakeRadiusAt, lakeDepth } from "../world-surface.js?v=217";
+import { openingStreamDepth } from "../opening-adventure.js?v=217";
 
 // Owns 8 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){
 
-function terrainHeightAt(x,z){let height=runtime.worldSurface.height(x,z);if(runtime.currentSeason!=='winter')for(const p of runtime.puddleObjects){if(!p.visible)continue;const r=Math.hypot(x-p.position.x,z-p.position.z)/Math.max(.01,p.scale.x);if(r<1.2){const k=Math.max(0,Math.min(1,(1.2-r)/.2));height=Math.min(height,height+(p.userData.baseY+.018-height)*k)}}if(runtime.currentSeason==='winter')for(const d of runtime.winterDrifts){const r=Math.hypot(x-d.x,z-d.z)/d.r;if(r<1)height+=d.height*Math.sqrt(1-r*r)}return height-runtime.blastTerrain.depression(runtime.level,x,z)}
+function terrainHeightAt(x,z){let height=runtime.level===7?islandHeight(x,z):runtime.worldSurface.height(x,z);if(runtime.currentSeason!=='winter')for(const p of runtime.puddleObjects){if(!p.visible)continue;const r=Math.hypot(x-p.position.x,z-p.position.z)/Math.max(.01,p.scale.x);if(r<1.2){const k=Math.max(0,Math.min(1,(1.2-r)/.2));height=Math.min(height,height+(p.userData.baseY+.018-height)*k)}}if(runtime.currentSeason==='winter')for(const d of runtime.winterDrifts){const r=Math.hypot(x-d.x,z-d.z)/d.r;if(r<1)height+=d.height*Math.sqrt(1-r*r)}return height-runtime.blastTerrain.depression(runtime.level,x,z)}
 
-function groundSurfaceHeightAt(x,z){const depth=runtime.level===2?Math.max(lakeDepth(x,z),lakeInletDepthAt(x,z)):runtime.level===4?riverDepthAt(x,z):0;return terrainHeightAt(x,z)-depth-puddleDepthAt(x,z)}
+function groundSurfaceHeightAt(x,z){const depth=runtime.level===7?islandDepth(x,z):runtime.level===2?Math.max(lakeDepth(x,z),lakeInletDepthAt(x,z)):runtime.level===4?riverDepthAt(x,z):0;return terrainHeightAt(x,z)-depth-puddleDepthAt(x,z)}
 
 function rebuildWorldSurface(){
  for(const p of runtime.puddleObjects)p.visible=false;
@@ -23,7 +24,7 @@ function puddleDepthAt(x,z){let depth=0;for(const p of runtime.puddleObjects){co
 
 function updatePuddles(dt){const cap=rainFillLimit(runtime.weatherStage),rate=rainFillRate(runtime.weatherStage);if(rate&&runtime.puddleRain<cap)runtime.puddleRain=Math.min(cap,runtime.puddleRain+dt*rate);for(const p of runtime.puddleObjects){p.visible=runtime.puddleRain>.025;p.scale.setScalar(Math.min(p.userData.basin.r*1.85,.15+runtime.puddleRain*2.8));p.position.y=p.userData.baseY+.018;p.material.opacity=Math.min(.78,.3+runtime.puddleRain*.25)}if(Math.abs(runtime.puddleRain-(updatePuddles.lastFill||0))>.025||dt===0){updatePuddles.lastFill=runtime.puddleRain;const a=runtime.surfaceGeometry.attributes.position;for(let i=0;i<a.count;i++)a.setZ(i,groundSurfaceHeightAt(a.getX(i),-a.getY(i)));a.needsUpdate=true;runtime.surfaceGeometry.computeVertexNormals()}}
 
-function waterAt(x,z){if(runtime.level===1&&runtime.opening&&runtime.currentSeason!=='winter'&&openingStreamDepth(x,z)>.012)return {depth:openingStreamDepth(x,z),y:runtime.openingProps?.userData.brook?.position.y||.05};if(runtime.lakeDepthAt(x,z)>.012)return {depth:runtime.lakeDepthAt(x,z),y:runtime.level===2?.12:.035};for(const p of runtime.puddleObjects)if(p.visible&&Math.hypot(x-p.position.x,z-p.position.z)<p.scale.x*.94)return {depth:puddleDepthAt(x,z),y:p.position.y};return null}
+function waterAt(x,z){if(runtime.level===7&&islandDepth(x,z)>.012)return {depth:islandDepth(x,z),y:.12,kind:'pond'};if(runtime.level===1&&runtime.opening&&runtime.currentSeason!=='winter'&&openingStreamDepth(x,z)>.012)return {kind:'brook',depth:openingStreamDepth(x,z),y:runtime.openingProps?.userData.brook?.position.y||.05};if(runtime.lakeDepthAt(x,z)>.012)return {kind:runtime.level===4?'river':'lake',depth:runtime.lakeDepthAt(x,z),y:runtime.level===2?.12:.035};for(const p of runtime.puddleObjects)if(p.visible&&Math.hypot(x-p.position.x,z-p.position.z)<p.scale.x*.94)return {kind:'puddle',depth:puddleDepthAt(x,z),y:p.position.y};return null}
 
 function walkingInWater(x,z){return !!waterAt(x,z)}
 

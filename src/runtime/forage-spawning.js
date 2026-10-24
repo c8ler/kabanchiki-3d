@@ -1,6 +1,6 @@
 import * as THREE from "../../vendor/three/three.module.min.js";
-import { riverCenterAt, lakeInletDepthAt, lakeRadiusAt } from "../world-surface.js?v=216";
-import { isCatBerryRoll } from "../form-rules.js?v=216";
+import { riverCenterAt, lakeInletDepthAt, lakeRadiusAt } from "../world-surface.js?v=217";
+import { isCatBerryRoll } from "../form-rules.js?v=217";
 
 // Owns 9 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){

@@ -1,9 +1,9 @@
-import { PLAYER_HEIGHTS } from "../player-house-physics.js?v=216";
-import { forestEdgeBlocked } from "../world-interactions.js?v=216";
-import { HOME_SITE } from "../home-construction.js?v=216";
+import { PLAYER_HEIGHTS } from "../player-house-physics.js?v=217";
+import { forestEdgeBlocked } from "../world-interactions.js?v=217";
+import { HOME_SITE } from "../home-construction.js?v=217";
 import * as THREE from "../../vendor/three/three.module.min.js";
-import { bridgeRailBlocked } from "../world-surface.js?v=216";
-import { forestExitBlocked } from "../opening-adventure.js?v=216";
+import { bridgeRailBlocked } from "../world-surface.js?v=217";
+import { forestExitBlocked } from "../opening-adventure.js?v=217";
 
 // Owns 8 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){
@@ -30,7 +30,7 @@ function roofHeightAt(x,z){let top=0;if(runtime.level!==3)return top;for(const h
 
 function playerSupportHeightAtNoRock(x,z){return roofHeightAt(x,z)}
 
-function familyFloorAt(x,z){if(runtime.level===3&&runtime.home.stage>0&&Math.abs(x-HOME_SITE.x)<2.35&&Math.abs(z-HOME_SITE.z)<2.35)return .16;if(runtime.level===4&&runtime.locationExitReady()&&Math.abs(x)<5.4&&z<-37&&z>-47)return .37;if(runtime.level!==3||!runtime.familyHideout.visible)return 0;const p=runtime.familyHideout.worldToLocal(new THREE.Vector3(x,0,z));return Math.abs(p.x)<2.4&&p.z>-1.95&&p.z<2.08?.16:0}
+function familyFloorAt(x,z){if(runtime.level===3&&runtime.personalHouse?.visible&&runtime.home.stage>0&&Math.abs(x-HOME_SITE.x)<2.35&&Math.abs(z-HOME_SITE.z)<2.35)return .16;if(runtime.level===4&&runtime.locationExitReady()&&Math.abs(x)<5.4&&z<-37&&z>-47)return .37;if(runtime.level!==3||!runtime.familyHideout.visible)return 0;const p=runtime.familyHideout.worldToLocal(new THREE.Vector3(x,0,z));return Math.abs(p.x)<2.4&&p.z>-1.95&&p.z<2.08?.16:0}
 
 function branchStepHeightAt(x,z){
  let top=familyFloorAt(x,z),craftedFloor=runtime.craftWorld.support(x,z,runtime.terrainHeightAt(x,z)+.25)-runtime.terrainHeightAt(x,z);if(craftedFloor<=.25)top=Math.max(top,craftedFloor);if(runtime.level===1&&runtime.forestVisual.visible)for(const o of runtime.logObstacles)if(o?.g?.visible!==false&&runtime.logDistance(o,x,z).distance<o.r+runtime.PLAYER_RADIUS+.015)top=Math.max(top,o.top);return top;

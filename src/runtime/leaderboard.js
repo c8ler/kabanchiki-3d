@@ -1,4 +1,4 @@
-import { AdventureHud } from "../adventure-hud.js?v=216";
+import { AdventureHud } from "../adventure-hud.js?v=217";
 
 // Owns 7 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){

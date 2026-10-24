@@ -1,15 +1,16 @@
-import { TornadoState } from "../tornado-rules.js?v=216";
-import { TornadoVisual } from "../tornado-visual.js?v=216";
+import {islandDepth} from '../creative-island.js?v=217';
+import { TornadoState } from "../tornado-rules.js?v=217";
+import { TornadoVisual } from "../tornado-visual.js?v=217";
 import * as THREE from "../../vendor/three/three.module.min.js";
-import { riverDepthAt, lakeInletDepthAt, lakeRadiusAt, lakeDepth } from "../world-surface.js?v=216";
-import { openingStreamDepth } from "../opening-adventure.js?v=216";
+import { riverDepthAt, lakeInletDepthAt, lakeRadiusAt, lakeDepth } from "../world-surface.js?v=217";
+import { openingStreamDepth } from "../opening-adventure.js?v=217";
 
 // Owns 29 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){
  let weatherGroup,rainCount,rainPos,rainGeo,rainMat,rainPoints,stormLeaves,stormLeafMat,stormBurning,stormRemains,stormTouched,lightningBolts,worldEpoch,lightningSky,lightningSun,tornadoState,tornadoVisual,tornadoSweep,weatherStage,underwaterTime,underwaterDamageCd,hurricaneCarry,leafSpawnCd,nextLightningAt,lightningFlash,weatherBaseSky;
 
 // v134: physical lake depth. Characters descend below the water surface toward the centre.
-function lakeDepthAt(x,z){if(runtime.currentSeason==='winter')return 0;if(runtime.level===4)return riverDepthAt(x,z);if(runtime.level===1&&runtime.opening)return openingStreamDepth(x,z);if(runtime.level!==2)return 0;return Math.max(lakeDepth(x,z),lakeInletDepthAt(x,z))}
+function lakeDepthAt(x,z){if(runtime.level===7)return islandDepth(x,z);if(runtime.currentSeason==='winter')return 0;if(runtime.level===4)return riverDepthAt(x,z);if(runtime.level===1&&runtime.opening)return openingStreamDepth(x,z);if(runtime.level!==2)return 0;return Math.max(lakeDepth(x,z),lakeInletDepthAt(x,z))}
 
 function inLake(x,z,margin=0){return runtime.level===2&&lakeRadiusAt(x,z)<13.6+margin}
 

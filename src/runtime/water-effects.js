@@ -29,19 +29,21 @@ function updateWaterEffects(dt,now){const active=runtime.started&&!runtime.pause
 
 /* init:const */ fishingRig = new THREE.Group();
 
-runtime.boy.add(fishingRig);
+runtime.scene.add(fishingRig);
+fishingRig.scale.setScalar(.52);
 
 fishingRig.visible=false;
 
 /* init:const */ rod = new THREE.Mesh(new THREE.CylinderGeometry(.025,.035,3.2,6),new THREE.MeshLambertMaterial({color:0x6c4324}));
 
-rod.position.set(-.7,2.15,.85);
+rod.geometry.translate(0,1.4,0);
+rod.position.set(0,0,0);
 
-rod.rotation.x=-.75;
+rod.rotation.x=0;
 
 fishingRig.add(rod);
 
-/* init:const */ fishingLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),new THREE.Vector3()]),new THREE.LineBasicMaterial({color:0xc2d8d7,transparent:true,opacity:.65}));
+/* init:const */ fishingLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(Array.from({length:17},()=>new THREE.Vector3())),new THREE.LineBasicMaterial({color:0xc2d8d7,transparent:true,opacity:.65}));
 
 runtime.scene.add(fishingLine);
 
@@ -53,9 +55,12 @@ runtime.scene.add(fishingFloat);
 
 fishingFloat.visible=false;
 
-/* init:const */ caughtFish = new THREE.Mesh(new THREE.SphereGeometry(.17,8,6),new THREE.MeshLambertMaterial({color:0xb3d4c1}));
+/* init:const */ caughtFish = new THREE.Group();
+const fishMaterial=new THREE.MeshLambertMaterial({color:0xf2b35f}),fishBody=new THREE.Mesh(new THREE.SphereGeometry(.24,10,6),fishMaterial);fishBody.scale.set(.55,.9,1.65);caughtFish.add(fishBody);
+const tail=new THREE.Mesh(new THREE.ConeGeometry(.23,.3,3),fishMaterial);tail.rotation.x=-Math.PI/2;tail.position.z=-.45;caughtFish.add(tail);
+for(const side of [-1,1])runtime.sphere(caughtFish,runtime.mats.black,side*.12,.07,.22,.04);
 
-caughtFish.scale.set(.55,.6,1.6);
+caughtFish.renderOrder=3;
 
 runtime.scene.add(caughtFish);
 

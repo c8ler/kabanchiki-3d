@@ -1,4 +1,4 @@
-import { makeExitBarrier, animateExitBarrier, buildExitLandscape } from "../exit-scenery.js?v=216";
+import { makeExitBarrier, animateExitBarrier, buildExitLandscape } from "../exit-scenery.js?v=217";
 import * as THREE from "../../vendor/three/three.module.min.js";
 
 // Owns 13 bindings. See docs/architecture.md for startup order.

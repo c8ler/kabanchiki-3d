@@ -1,6 +1,6 @@
-import { stormClock } from "../tornado-rules.js?v=216";
-import { briefNotice } from "../adventure-hud.js?v=216";
-import { parseCheatCode } from "../cheat-codes.js?v=216";
+import { stormClock } from "../tornado-rules.js?v=217";
+import { briefNotice } from "../adventure-hud.js?v=217";
+import { parseCheatCode } from "../cheat-codes.js?v=217";
 
 // Owns 5 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){
@@ -10,7 +10,7 @@ function notice(t){runtime.adventureHud.log(t);const m=runtime.$('message');m.te
 
 function hud(force=true){const now=performance.now();if(!force&&now-lastHudUpdate<150)return;lastHudUpdate=now;runtime.syncCraftUI();
  runtime.adventureHud.update({life: runtime.life,maxLife:runtime.diffCfg().playerHP,food:runtime.food+runtime.fishStock+runtime.yellowAppleStock+runtime.yellowMushroomStock,maxFood:runtime.foodCapacity(),form:runtime.catFormTime>0?'cat':runtime.boarFormTime>0?'boar':null,seconds:Math.max(runtime.catFormTime,runtime.boarFormTime),storm:stormClock(runtime.levelTime,runtime.level)},now);
- runtime.$('stats').textContent=`${runtime.levels[runtime.level-1]} · ${{summer:'Лето',autumn:'Осень',winter:'Зима',spring:'Весна'}[runtime.currentSeason]}\nСложность: ${runtime.DIFF_NAMES[runtime.selectedDiff]} · Семья: ${runtime.familyFound}/4 · Очки: ${runtime.score}\nПрипасы: обычные ${runtime.food}, рыба ${runtime.fishStock}, жёлтые яблоки ${runtime.yellowAppleStock}, мухоморы ${runtime.yellowMushroomStock}${runtime.friend?'\nДруг: '+runtime.friendHP+'/'+runtime.diffCfg().friendHP+' здоровья':''}${runtime.hasFlashlight?' · Фонарик есть':''}`;
+ runtime.$('stats').textContent=`${(runtime.level===7?'✨ Секретный остров':runtime.levels[runtime.level-1])} · ${{summer:'Лето',autumn:'Осень',winter:'Зима',spring:'Весна'}[runtime.currentSeason]}\nСложность: ${runtime.DIFF_NAMES[runtime.selectedDiff]} · Семья: ${runtime.familyFound}/4 · Очки: ${runtime.score}\nПрипасы: обычные ${runtime.food}, рыба ${runtime.fishStock}, жёлтые яблоки ${runtime.yellowAppleStock}, мухоморы ${runtime.yellowMushroomStock}${runtime.friend?'\nДруг: '+runtime.friendHP+'/'+runtime.diffCfg().friendHP+' здоровья':''}${runtime.hasFlashlight?' · Фонарик есть':''}`;
  runtime.$('quest').textContent=runtime.win?'Семья снова вместе!':runtime.questState();
 }
 
@@ -49,7 +49,9 @@ runtime.$('pauseBtn').onclick=togglePause;
 
 runtime.$('resume').onclick=()=>{setPause(false);runtime.requestDesktopMouseLock()};
 
-runtime.$('cheatForm').addEventListener('submit',e=>{e.preventDefault();const result=runtime.$('cheatResult'),code=parseCheatCode(runtime.$('cheatCode').value);if(!code){result.textContent='Неизвестный код. Используй LEVEL1–LEVEL6, BOAR, CAT, TIMUR, LIGHT или BOMB.';return}if(!runtime.started||runtime.endShown||runtime.win||runtime.life<=0||runtime.cinematicRunning){result.textContent='Примени код во время игры через меню паузы.';return}runtime.keys={};runtime.stick.x=runtime.stick.y=0;runtime.jump=false;runtime.stopFishing();if(code.type==='level'){for(const shot of runtime.shots)runtime.scene.remove(shot.g);runtime.shots.length=0;runtime.throwCooldown=0;runtime.endBoarForm();runtime.life=runtime.diffCfg().playerHP;runtime.invuln=3;runtime.py=runtime.vy=0;runtime.hasFlashlight=false;runtime.torch.intensity=0;runtime.loadLevel(code.level);result.textContent=`Локация ${code.level}: ${runtime.levels[code.level-1]}. Нажми «Продолжить».`}else if(code.type==='bomb'){runtime.adventureInventory.bombs++;result.textContent='💣 Получена 1 бомбочка. Нажми «Продолжить», затем G или кнопку 💣, чтобы поставить её.';}else if(code.type==='light'){runtime.hasFlashlight=!runtime.hasFlashlight;runtime.torch.intensity=runtime.hasFlashlight?42:0;if(runtime.hasFlashlight){if(runtime.flashlightObj){runtime.scene.remove(runtime.flashlightObj);runtime.flashlightObj=null}result.textContent='Фонарик получен.';}else{if(runtime.flashlightObj)runtime.scene.remove(runtime.flashlightObj);const point=runtime.nearestSafeSpawn(runtime.boy.position.x+Math.sin(runtime.yaw)*2.8,runtime.boy.position.z+Math.cos(runtime.yaw)*2.8,.5)||[runtime.boy.position.x,runtime.boy.position.z];runtime.flashlightObj=runtime.group(point[0],point[1]);runtime.flashlightObj.position.y=runtime.terrainHeightAt(point[0],point[1]);runtime.block(runtime.flashlightObj,runtime.mats.gold,0,.45,0,.35,.35,.8);runtime.block(runtime.flashlightObj,runtime.mats.white,0,.45,.55,.28,.28,.28);runtime.flashlightDropUntil=performance.now()+3000;result.textContent='Фонарик выброшен рядом. Его можно подобрать или вернуть кодом LIGHT.';}}else{if(code.form==='boar')runtime.startBoarForm();else if(code.form==='cat')runtime.startCatForm();else runtime.endBoarForm();result.textContent=code.form==='human'?'Тимур снова мальчик.':`Тимур стал ${code.form==='cat'?'котиком':'кабанчиком'} на 30 секунд.`}hud();runtime.$('cheatCode').value='';});
+runtime.$('cheatForm').addEventListener('submit',e=>{e.preventDefault();runtime.applyCheat(runtime.$('cheatCode').value);runtime.$('cheatCode').value=''});
+for(const button of document.querySelectorAll('[data-cheat]'))button.onclick=()=>runtime.applyCheat(button.dataset.cheat);
+
   }
  };
 

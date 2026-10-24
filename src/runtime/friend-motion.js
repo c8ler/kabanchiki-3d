@@ -1,6 +1,6 @@
-import { capsuleCapsuleContact } from "../boar-physics.js?v=216";
-import { FriendYield } from "../movement-geometry.js?v=216";
-import { Knockback } from "../knockback.js?v=216";
+import { capsuleCapsuleContact } from "../boar-physics.js?v=217";
+import { FriendYield } from "../movement-geometry.js?v=217";
+import { Knockback } from "../knockback.js?v=217";
 
 // Owns 9 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){

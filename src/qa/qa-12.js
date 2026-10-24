@@ -1,5 +1,5 @@
 import * as THREE from "../../vendor/three/three.module.min.js";
-import { lightBudget } from "../render-budget.js?v=216";
+import { lightBudget } from "../render-budget.js?v=217";
 
 export function createQaPart(runtime){
  return {

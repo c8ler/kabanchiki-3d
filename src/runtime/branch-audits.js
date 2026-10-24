@@ -1,5 +1,5 @@
 import * as THREE from "../../vendor/three/three.module.min.js";
-import { onRiverBridge } from "../world-surface.js?v=216";
+import { onRiverBridge } from "../world-surface.js?v=217";
 
 // Owns 4 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){
