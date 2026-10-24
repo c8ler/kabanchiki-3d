@@ -3491,6 +3491,7 @@ export const GAME_MODULES=[
       "effectLights",
       "endShown",
       "familyFloorAt",
+      "fishingTarget",
       "foodView",
       "formatTime",
       "gameInformation",

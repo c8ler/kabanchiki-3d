@@ -42,6 +42,7 @@ rod.position.set(0,0,0);
 rod.rotation.x=0;
 
 fishingRig.add(rod);
+const fishingHand=new THREE.Mesh(new THREE.BoxGeometry(.24,.26,.24),runtime.mats.skin);fishingHand.position.y=.02;fishingRig.add(fishingHand);
 
 /* init:const */ fishingLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(Array.from({length:17},()=>new THREE.Vector3())),new THREE.LineBasicMaterial({color:0xc2d8d7,transparent:true,opacity:.65}));
 
