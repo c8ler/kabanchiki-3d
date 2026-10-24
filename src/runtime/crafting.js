@@ -127,6 +127,7 @@ function updateCraftCreatures(dt,now){
  const terrain=(x,z,feet=runtime.terrainHeightAt(x,z))=>placementHeight(x,z,feet,runtime.terrainHeightAt(x,z)+runtime.familyFloorAt(x,z),geometry.surfaces,.2);
  const blocked=(x,z,y,r=.22,height=1)=>!!placementProblem([new THREE.Box3(new THREE.Vector3(x-r,y+.04,z-r),new THREE.Vector3(x+r,y+height,z+r))],{...geometry,wet:(px,pz)=>runtime.lakeDepthAt(px,pz)>.08});
  const cats=runtime.craftWorld.items.filter(i=>i.g.visible&&i.catActor).map(i=>i.catActor);
+ if(!cats.length&&craftedCats){craftedCats.cats=[];craftedCats.root.visible=false}
  if(cats.length){
   craftedCats??=new CatLife(THREE,runtime.scene,runtime.mobile,true);craftedCats.root.visible=true;craftedCats.cats=cats;craftedCats.epoch=runtime.worldEpoch;
   craftedCats.houses=runtime.catLife.houses?.length?runtime.catLife.houses:[{x:0,z:0,y:0,w:3,d:3,exit:{x:2,z:2}}];craftedCats.objects=runtime.catLife.objects||[];

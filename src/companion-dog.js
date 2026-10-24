@@ -22,7 +22,7 @@ export class DogCompanion{
   if(this.goal&&Math.hypot(p.x-this.goal.x,p.z-this.goal.z)>(this.following?1.8:.25)){
    const query=(x,z)=>blocked(x,z,terrain(x,z,p.y),.36,1.25),waypoint=this.route.next(p,this.goal,query,dt,{step:.7,bound:41,epoch});
    if(waypoint){const dx=waypoint.x-p.x,dz=waypoint.z-p.z,length=Math.hypot(dx,dz),desired=Math.atan2(dx,dz),turn=Math.max(-dt*3.2,Math.min(dt*3.2,angleDelta(this.g.rotation.y,desired)));
-    this.g.rotation.y+=turn;const step=Math.min(length,dt*(this.following?2.8:.8))*Math.max(.1,1-Math.abs(angleDelta(this.g.rotation.y,desired))/Math.PI);
+    this.g.rotation.y+=turn;const step=Math.min(length,dt*(this.following?2.8:.8))*Math.max(0,Math.cos(angleDelta(this.g.rotation.y,desired)))*Math.min(1,length/.6);
     const x=p.x+Math.sin(this.g.rotation.y)*step,z=p.z+Math.cos(this.g.rotation.y)*step,y=terrain(x,z,p.y),reach=.4;
     if(Math.abs(y-p.y)<.3&&[0,-reach,reach].every(a=>!blocked(x+Math.sin(this.g.rotation.y)*a,z+Math.cos(this.g.rotation.y)*a,y,.28,1.25))){p.set(x,y,z);moved=step;this.steps+=step*9}this.route.record(moved,dt);
    }
