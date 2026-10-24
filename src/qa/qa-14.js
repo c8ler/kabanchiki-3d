@@ -11,7 +11,7 @@ export function createQaPart(runtime){return {
  },
  v217FishInspect(){
   const arm=runtime.boy.children[5];runtime.boy.updateWorldMatrix(true,true);const wrist=arm.localToWorld(new THREE.Vector3(0,-.34,0)),grip=runtime.fishingRig.getWorldPosition(new THREE.Vector3());
-  return {active:!!runtime.fishingTarget,target:runtime.fishingTarget,stock:runtime.fishStock,fishVisible:runtime.caughtFish.visible,fish:runtime.caughtFish.position.toArray(),gripDistance:wrist.distanceTo(grip),rod:runtime.fishingRig.visible,line:runtime.fishingLine.visible,arm:arm.rotation.x,button:!runtime.$('fishAction').hidden};
+  return {camera:runtime.camMode,active:!!runtime.fishingTarget,target:runtime.fishingTarget,stock:runtime.fishStock,fishVisible:runtime.caughtFish.visible,fish:runtime.caughtFish.position.toArray(),gripDistance:wrist.distanceTo(grip),rod:runtime.fishingRig.visible,line:runtime.fishingLine.visible,arm:arm.rotation.x,button:!runtime.$('fishAction').hidden};
  },
  v217ShoreAudit(){
   const results=[];
@@ -27,7 +27,7 @@ export function createQaPart(runtime){return {
   const boar=runtime.makeBoar(6,20,true);if(runtime.friend)runtime.scene.remove(runtime.friend.g);runtime.friend=boar;runtime.friendHP=4;runtime.boy.position.set(5,0,22);runtime.paused=false;runtime.worldEpoch++;runtime.wallCacheEpoch=-1;
   let turn=0,step=0,legs=0,catJump=false,catRide=false;const before=dog.g.position.clone();
   for(let i=0;i<fps*24;i++){
-   const a=dog.g.rotation.y,p=dog.g.position.clone();runtime.updateCraftCreatures(1/fps,i*1000/fps);turn=Math.max(turn,Math.abs(Math.atan2(Math.sin(dog.g.rotation.y-a),Math.cos(dog.g.rotation.y-a))));step=Math.max(step,p.distanceTo(dog.g.position));legs=Math.max(legs,...dog.g.companionRig.legs.map(l=>Math.abs(l.rotation.x)));catJump ||=!!cat.catActor.jump;catRide ||=cat.catActor.state==='ride';
+   const a=dog.g.rotation.y,p=dog.g.position.clone();runtime.updateCraftCreatures(1/fps,i*1000/fps);turn=Math.max(turn,Math.abs(Math.atan2(Math.sin(dog.g.rotation.y-a),Math.cos(dog.g.rotation.y-a))));step=Math.max(step,Math.hypot(p.x-dog.g.position.x,p.z-dog.g.position.z));legs=Math.max(legs,...dog.g.companionRig.legs.map(l=>Math.abs(l.rotation.x)));catJump ||=!!cat.catActor.jump;catRide ||=cat.catActor.state==='ride';
   }runtime.paused=true;return {turn,step,legs,travel:before.distanceTo(dog.g.position),remaining:dog.g.position.distanceTo(runtime.boy.position),catJump,catRide,catState:cat.catActor.state,position:dog.g.position.toArray()};
  },
  v217SandboxSetup(){this.v212Setup(3);runtime.applyCheat('SANDBOX');runtime.paused=false;runtime.$('pauseMenu').style.display='none';runtime.camMode=1;return this.v217Inspect()},

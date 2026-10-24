@@ -10,7 +10,7 @@ function musicTone(freq,duration=.18,type='triangle',gain=.014,when=0,cutoff=100
 
 function ensureMusicPlayer(){runtime.audio??=new (window.AudioContext||window.webkitAudioContext)();if(runtime.audio.state==='suspended'&&!audioSuspendedByPage)runtime.audio.resume();return runtime.musicPlayer??=new BufferedMusic(runtime.audio,runtime.audioBus('music'))}
 
-function startMusic(){if(!runtime.musicEnabled||!runtime.started||runtime.paused||runtime.win||runtime.cinematicRunning||document.hidden||audioSuspendedByPage)return;const theme=runtime.MUSIC_THEMES[runtime.level-1];ensureMusicPlayer().play('level:'+runtime.level,gameScore(theme,runtime.level===6))}
+function startMusic(){if(!runtime.musicEnabled||!runtime.started||runtime.paused||runtime.win||runtime.cinematicRunning||document.hidden||audioSuspendedByPage)return;const theme=runtime.MUSIC_THEMES[runtime.level===7?2:runtime.level-1];ensureMusicPlayer().play('level:'+runtime.level,gameScore(theme,runtime.level===6))}
 
 function stopMusic(){runtime.musicPlayer?.stop()}
 

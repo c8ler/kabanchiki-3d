@@ -24,8 +24,10 @@ function fishingAvailable(){
 function toggleFishing(){
  if(!runtime.started||runtime.paused||runtime.cinematicRunning||runtime.endShown||runtime.mountedFriend||runtime.catFormTime>0||runtime.boarFormTime>0)return false;
  if(fishingTarget){stopFishing();return false}
+ if((runtime.waterAt(runtime.boy.position.x,runtime.boy.position.z)?.depth||0)>.28){runtime.notice('🎣 Выйди на берег или мостик.');return false}
  fishingTarget=nearbyFishingWater();
  if(!fishingTarget){runtime.notice('🎣 Подойди к незамёрзшему берегу или краю мостика.');return false}
+ runtime.yaw=Math.atan2(fishingTarget.x-runtime.boy.position.x,fishingTarget.z-runtime.boy.position.z);
  fishingIdle=4;fishingTime=0;fishingNextBite=runtime.rand(7,11);fishingCatch=-1;
  runtime.fishingRig.visible=runtime.fishingLine.visible=runtime.fishingFloat.visible=true;
  runtime.notice('🎣 Жди поклёвку. H — убрать удочку; движение тоже завершит рыбалку.');return true;
@@ -37,7 +39,7 @@ function updateFishing(dt,now){
   if(fishingTarget)stopFishing();fishingIdle=0;return;
  }
  fishingIdle+=dt;
- if(!fishingTarget&&fishingIdle>4&&fishingAvailable()){fishingTarget=nearbyFishingWater();if(fishingTarget){runtime.fishingRig.visible=runtime.fishingLine.visible=runtime.fishingFloat.visible=true;fishingTime=0;fishingNextBite=runtime.rand(7,11);fishingCatch=-1;runtime.notice('🎣 Тимур ловит рыбу. H или движение — убрать удочку.')}}
+ if(!fishingTarget&&fishingIdle>4&&fishingAvailable()){fishingTarget=nearbyFishingWater();if(fishingTarget){runtime.yaw=Math.atan2(fishingTarget.x-x,fishingTarget.z-z);runtime.fishingRig.visible=runtime.fishingLine.visible=runtime.fishingFloat.visible=true;fishingTime=0;fishingNextBite=runtime.rand(7,11);fishingCatch=-1;runtime.notice('🎣 Тимур ловит рыбу. H или движение — убрать удочку.')}}
  if(!fishingTarget)return;
  const water=runtime.waterAt(fishingTarget.x,fishingTarget.z);if(!water||water.depth<.02){stopFishing();return}
  fishingTime+=dt;

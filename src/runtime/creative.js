@@ -8,7 +8,7 @@ export function createModule(runtime){
  function leaveSandbox(){
   if(!sandboxMode)return;sandboxMode=false;if(sandboxReturnSeason)runtime.currentSeason=sandboxReturnSeason;
   if(sandboxVisual){sandboxVisual.visible=false;for(const m of sandboxVisual.userData.solids){const index=runtime.treeSolidMeshes.indexOf(m);if(index>=0)runtime.treeSolidMeshes.splice(index,1)}for(const entry of sandboxVisual.userData.rocks){const index=runtime.rockPositions.indexOf(entry);if(index>=0)runtime.rockPositions.splice(index,1)}}
-  runtime.weatherBaseSky=null;runtime.worldEpoch++;runtime.wallCacheEpoch=-1;
+  runtime.syncSeasonChoices();runtime.weatherBaseSky=null;runtime.worldEpoch++;runtime.wallCacheEpoch=-1;
  }
  function enterSandbox(){
   leaveSandbox();sandboxReturnSeason=runtime.currentSeason;runtime.loadLevel(2);sandboxMode=true;craftUnlocked=homeUnlocked=true;runtime.level=SECRET_LEVEL;
@@ -28,7 +28,7 @@ export function createModule(runtime){
   runtime.craftWorld.visible(SECRET_LEVEL);runtime.catLife.root.visible=false;runtime.birdLife.root&&(runtime.birdLife.root.visible=false);
   runtime.portalObj.g.visible=false;runtime.roadSurface.visible=runtime.roadEdge.visible=false;
   runtime.currentSeason='summer';runtime.seasonVisual.visible=false;runtime.levelTime=0;runtime.weatherStage=0;runtime.weatherGroup.visible=false;runtime.tornadoState.reset();
-  creativeNight=false;runtime.scene.background.set(0xb1a8e0);runtime.scene.fog.color.copy(runtime.scene.background);runtime.scene.fog.near=40;runtime.scene.fog.far=120;
+  runtime.$('pauseSeason').closest('label').hidden=true;creativeNight=false;runtime.scene.background.set(0xb1a8e0);runtime.scene.fog.color.copy(runtime.scene.background);runtime.scene.fog.near=40;runtime.scene.fog.far=120;
   runtime.sun.intensity=2;runtime.hemi.intensity=1.8;runtime.ground.material.color.set(0xcbd2eb);
   runtime.boy.position.set(0,0,12);runtime.py=runtime.vy=0;runtime.yaw=Math.PI;runtime.worldEpoch++;runtime.wallCacheEpoch=-1;
   runtime.rebuildWorldSurface();runtime.refreshBlastSurface();refillCreative();runtime.syncCraftUI();runtime.hud();

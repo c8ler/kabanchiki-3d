@@ -49,6 +49,7 @@ export const GAME_MODULES=[
       "hemi",
       "hud",
       "level",
+      "sandboxMode",
       "sun",
       "surfaceGeometry"
     ]
@@ -167,6 +168,7 @@ export const GAME_MODULES=[
       "currentSeason",
       "houseObjects",
       "lairObstacles",
+      "lakeDepthAt",
       "level",
       "mats",
       "mobile",
@@ -1424,6 +1426,7 @@ export const GAME_MODULES=[
       "syncCraftUI",
       "syncHomeLocation",
       "syncHomeVisual",
+      "syncSeasonChoices",
       "terrainHeightAt",
       "throwCooldown",
       "torch",

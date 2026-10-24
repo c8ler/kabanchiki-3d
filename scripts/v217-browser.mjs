@@ -33,7 +33,7 @@ for(const engine of [chromium,webkit]){
    await page.waitForFunction(()=>window.__KABANCHIKI_QA__.v217FishInspect().active);await shot('fish-catch');
    await page.locator('#fishAction').click();r=await qa('v217FishInspect');assert.equal(r.active,false);
    await page.keyboard.press('KeyH');r=await qa('v217FishInspect');assert.equal(r.active,true);
-   for(let i=0;i<9;i++)await page.keyboard.press('KeyV');await page.waitForTimeout(100);r=await qa('v217FishInspect');assert.ok(r.rod&&r.line&&r.gripDistance<.0001);await shot('fishing-first-person');
+   for(let i=0;i<10&&(await qa('v217FishInspect')).camera!==9;i++)await page.keyboard.press('KeyV');await page.waitForTimeout(100);r=await qa('v217FishInspect');assert.ok(r.camera===9&&r.rod&&r.line&&r.gripDistance<.0001);await shot('fishing-first-person');
    await page.keyboard.down('KeyW');await page.waitForFunction(()=>!window.__KABANCHIKI_QA__.v217FishInspect().active,null,{timeout:10000});await page.keyboard.up('KeyW');assert.equal((await qa('v217FishInspect')).active,false);
   });
   await check('cheat menu fits small screens in both orientations',async()=>{
