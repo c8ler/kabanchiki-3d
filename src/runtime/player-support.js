@@ -1,9 +1,9 @@
-import { PLAYER_HEIGHTS } from "../player-house-physics.js?v=217";
-import { forestEdgeBlocked } from "../world-interactions.js?v=217";
-import { HOME_SITE } from "../home-construction.js?v=217";
+import { PLAYER_HEIGHTS } from "../player-house-physics.js?v=218";
+import { forestEdgeBlocked } from "../world-interactions.js?v=218";
+import { HOME_SITE } from "../home-construction.js?v=218";
 import * as THREE from "../../vendor/three/three.module.min.js";
-import { bridgeRailBlocked } from "../world-surface.js?v=217";
-import { forestExitBlocked } from "../opening-adventure.js?v=217";
+import { bridgeRailBlocked } from "../world-surface.js?v=218";
+import { forestExitBlocked } from "../opening-adventure.js?v=218";
 
 // Owns 8 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){
