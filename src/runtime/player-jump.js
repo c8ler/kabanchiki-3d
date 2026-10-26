@@ -1,9 +1,9 @@
-import { BOAR_JUMP_SPEED } from "../tornado-rules.js?v=217";
-import { ceilingMotion } from "../player-house-physics.js?v=217";
-import { capsuleCircleContact } from "../boar-physics.js?v=217";
-import { polygonContact } from "../movement-geometry.js?v=217";
-import { riverDepthAt, onRiverBridge, lakeInletDepthAt, lakeDepth } from "../world-surface.js?v=217";
-import { CAT_JUMP_SPEED } from "../form-rules.js?v=217";
+import { BOAR_JUMP_SPEED } from "../tornado-rules.js?v=218";
+import { ceilingMotion } from "../player-house-physics.js?v=218";
+import { capsuleCircleContact } from "../boar-physics.js?v=218";
+import { polygonContact } from "../movement-geometry.js?v=218";
+import { riverDepthAt, onRiverBridge, lakeInletDepthAt, lakeDepth } from "../world-surface.js?v=218";
+import { CAT_JUMP_SPEED } from "../form-rules.js?v=218";
 
 // Owns 6 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){
