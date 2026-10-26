@@ -18,10 +18,10 @@ jobs:
       - name: Play new survival mechanics
         run: |
           node scripts/serve.mjs 8080 > /tmp/game-server.log 2>&1 &
+          node scripts/v218-browser.mjs
+          node scripts/v217-browser.mjs
           node scripts/v212-browser.mjs
           node scripts/v216-browser.mjs
-          node scripts/v217-browser.mjs
-          node scripts/v218-browser.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
