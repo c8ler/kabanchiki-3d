@@ -13,3 +13,12 @@
 @media(pointer:coarse){#openingGuide{bottom:176px}body:has(#stormMeter:not([hidden])) #openingGuide{bottom:234px}}
 
 .pauseHeader{box-shadow:0 -24px 0 #1b3f34}
+
+.versionFooter{display:flex;justify-content:center;margin-top:12px}
+#versionSecret{border:0;background:transparent;box-shadow:none;opacity:.48;font-size:12px;padding:8px 16px;transform:none;transition:none}
+#versionSecret:hover,#versionSecret:active{transform:none;box-shadow:none}
+#secretMenu{z-index:20}
+#secretMenu .pauseHeader{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+#secretMenu .pauseHeader h2{flex:1 0 100%;margin:0}
+#secretMenu summary[hidden]{display:none!important}
+#secretResume{background:#67a743}

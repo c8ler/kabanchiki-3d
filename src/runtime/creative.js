@@ -1,7 +1,18 @@
 import * as THREE from '../../vendor/three/three.module.min.js';
-import {parseCheatCode} from '../cheat-codes.js?v=217';
-import {createIsland,islandDepth,SECRET_LEVEL} from '../creative-island.js?v=217';
+import {parseCheatCode} from '../cheat-codes.js?v=218';
+import {createIsland,islandDepth,SECRET_LEVEL} from '../creative-island.js?v=218';
+import {SecretEntry} from '../secret-entry.js?v=218';
 export function createModule(runtime){
+ let secretEntry=new SecretEntry(),secretMenuOpen=false;
+ function openSecretMenu(){
+  if(!runtime.started||runtime.cinematicRunning||runtime.endShown||runtime.win||runtime.life<=0)return false;
+  runtime.setPause(true);secretMenuOpen=true;runtime.$('pauseMenu').style.display='none';runtime.$('secretMenu').style.display='grid';runtime.$('secretMenu').firstElementChild.scrollTop=0;return true;
+ }
+ function closeSecretMenu(backToPause=true){
+  secretMenuOpen=false;secretEntry.reset();runtime.$('secretMenu').style.display='none';
+  if(backToPause&&runtime.started&&!runtime.cinematicRunning&&!runtime.endShown)runtime.setPause(true);
+ }
+
  let sandboxReturnSeason=null;
  let craftUnlocked,homeUnlocked,sandboxMode,sandboxVisual,creativeNight;
  function refillCreative(){runtime.adventureInventory.wood=200;runtime.adventureInventory.wool=200;runtime.adventureInventory.bombs=20;runtime.food=runtime.foodCapacity();runtime.life=runtime.diffCfg().playerHP;runtime.invuln=999}
@@ -62,11 +73,19 @@ export function createModule(runtime){
   runtime.hud();return true;
  }
  return {bindings:{
+ "secretMenuOpen":{get:()=>secretMenuOpen},
+ "openSecretMenu":{get:()=>openSecretMenu},
+ "closeSecretMenu":{get:()=>closeSecretMenu},
  "craftUnlocked":{get:()=>craftUnlocked,set:v=>{craftUnlocked=v}},
  "homeUnlocked":{get:()=>homeUnlocked,set:v=>{homeUnlocked=v}},
  "sandboxMode":{get:()=>sandboxMode},
  "sandboxVisual":{get:()=>sandboxVisual},
  "creativeNight":{get:()=>creativeNight},
  "refillCreative":{get:()=>refillCreative},"leaveSandbox":{get:()=>leaveSandbox},"enterSandbox":{get:()=>enterSandbox},"updateCreative":{get:()=>updateCreative},"applyCheat":{get:()=>applyCheat}
- },initialize(){craftUnlocked=false;homeUnlocked=false;sandboxMode=false;sandboxVisual=null;creativeNight=false}}
+ },initialize(){
+ runtime.$("versionSecret").textContent=runtime.GAME_VERSION;
+ runtime.$("versionSecret").onclick=()=>{if(runtime.paused&&secretEntry.tap(performance.now()))openSecretMenu()};
+ runtime.$("secretBack").onclick=()=>closeSecretMenu();
+ runtime.$("secretResume").onclick=()=>{closeSecretMenu(false);runtime.setPause(false);runtime.requestDesktopMouseLock()};
+ craftUnlocked=false;homeUnlocked=false;sandboxMode=false;sandboxVisual=null;creativeNight=false}}
 }

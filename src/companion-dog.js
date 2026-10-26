@@ -1,5 +1,5 @@
 import * as T from '../vendor/three/three.module.min.js';
-import {StableRoute} from './navigation.js?v=217';
+import {StableRoute} from './navigation.js?v=218';
 const angleDelta=(a,b)=>Math.atan2(Math.sin(b-a),Math.cos(b-a));
 export function createDog(materials){
  const g=new T.Group(),legs=[],wood=materials.boar;

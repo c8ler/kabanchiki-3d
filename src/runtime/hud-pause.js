@@ -1,6 +1,6 @@
-import { stormClock } from "../tornado-rules.js?v=217";
-import { briefNotice } from "../adventure-hud.js?v=217";
-import { parseCheatCode } from "../cheat-codes.js?v=217";
+import { stormClock } from "../tornado-rules.js?v=218";
+import { briefNotice } from "../adventure-hud.js?v=218";
+import { parseCheatCode } from "../cheat-codes.js?v=218";
 
 // Owns 5 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){
@@ -14,9 +14,9 @@ function hud(force=true){const now=performance.now();if(!force&&now-lastHudUpdat
  runtime.$('quest').textContent=runtime.win?'Семья снова вместе!':runtime.questState();
 }
 
-function setPause(on){if(!runtime.started)return;runtime.paused=on;if(on)runtime.$('pauseMenu').firstElementChild.scrollTop=0;if(on){runtime.$('homeAction').hidden=true;runtime.$('craftResult').textContent='';}runtime.syncCraftUI();if(on)runtime.stopMusic();else runtime.startMusic();runtime.$('pauseMenu').style.display=on?'grid':'none';runtime.$('pauseBtn').textContent=on?'▶':'☰';if(on&&!runtime.mobile){try{(document.exitPointerLock||document.webkitExitPointerLock)?.call(document)}catch{}}}
+function setPause(on){if(!on)runtime.closeSecretMenu(false);if(!runtime.started)return;runtime.paused=on;if(on)runtime.$('pauseMenu').firstElementChild.scrollTop=0;if(on){runtime.$('homeAction').hidden=true;runtime.$('craftResult').textContent='';}runtime.syncCraftUI();if(on)runtime.stopMusic();else runtime.startMusic();runtime.$('pauseMenu').style.display=on?'grid':'none';runtime.$('pauseBtn').textContent=on?'▶':'☰';if(on&&!runtime.mobile){try{(document.exitPointerLock||document.webkitExitPointerLock)?.call(document)}catch{}}}
 
-function togglePause(){if(runtime.difficultyFromPause){runtime.closeDifficultyChoice();return}setPause(!runtime.paused)}
+function togglePause(){if(runtime.secretMenuOpen){runtime.closeSecretMenu();return}if(runtime.difficultyFromPause){runtime.closeDifficultyChoice();return}setPause(!runtime.paused)}
  return {
   bindings:{
 "notice":{get:()=>notice},

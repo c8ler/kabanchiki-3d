@@ -1,9 +1,9 @@
-import {findFishingWater,fishingCatchPosition} from '../fishing-rules.js?v=217';
-import { HomeConstruction } from "../home-construction.js?v=217";
+import {findFishingWater,fishingCatchPosition} from '../fishing-rules.js?v=218';
+import { HomeConstruction } from "../home-construction.js?v=218";
 import * as THREE from "../../vendor/three/three.module.min.js";
-import { onRiverBridge } from "../world-surface.js?v=217";
+import { onRiverBridge } from "../world-surface.js?v=218";
 
-// Owns 24 bindings. See docs/architecture.md for startup order.
+// Owns 25 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){
  let probe=null,probeAt=-Infinity,probeX=Infinity,probeZ=Infinity;
  let fishStock,fishingNextBite,fishingIdle,fishingTime,fishingTarget,fishingPrevious,fishingCatch,iceShell,freezeTime,homeSaved,home,personalHouse,homeYard,homePiles,homeParts;
@@ -21,17 +21,6 @@ function fishingAvailable(){
  if(now-probeAt>450||Math.hypot(p.x-probeX,p.z-probeZ)>.5){probe=nearbyFishingWater();probeAt=now;probeX=p.x;probeZ=p.z}
  return probe;
 }
-function toggleFishing(){
- if(!runtime.started||runtime.paused||runtime.cinematicRunning||runtime.endShown||runtime.mountedFriend||runtime.catFormTime>0||runtime.boarFormTime>0)return false;
- if(fishingTarget){stopFishing();return false}
- if((runtime.waterAt(runtime.boy.position.x,runtime.boy.position.z)?.depth||0)>.28){runtime.notice('🎣 Выйди на берег или мостик.');return false}
- fishingTarget=nearbyFishingWater();
- if(!fishingTarget){runtime.notice('🎣 Подойди к незамёрзшему берегу или краю мостика.');return false}
- runtime.yaw=Math.atan2(fishingTarget.x-runtime.boy.position.x,fishingTarget.z-runtime.boy.position.z);
- fishingIdle=4;fishingTime=0;fishingNextBite=runtime.rand(7,11);fishingCatch=-1;
- runtime.fishingRig.visible=runtime.fishingLine.visible=runtime.fishingFloat.visible=true;
- runtime.notice('🎣 Жди поклёвку. H — убрать удочку; движение тоже завершит рыбалку.');return true;
-}
 function updateFishing(dt,now){
  const x=runtime.boy.position.x,z=runtime.boy.position.z,moving=['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].some(k=>runtime.keys[k])||Math.hypot(runtime.stick.x,runtime.stick.y)>.08||runtime.jump||runtime.act||Math.abs(runtime.vy)>.1||(fishingPrevious&&Math.hypot(x-fishingPrevious.x,z-fishingPrevious.z)>.25);
  fishingPrevious={x,z};
@@ -39,15 +28,14 @@ function updateFishing(dt,now){
   if(fishingTarget)stopFishing();fishingIdle=0;return;
  }
  fishingIdle+=dt;
- if(!fishingTarget&&fishingIdle>4&&fishingAvailable()){fishingTarget=nearbyFishingWater();if(fishingTarget){runtime.yaw=Math.atan2(fishingTarget.x-x,fishingTarget.z-z);runtime.fishingRig.visible=runtime.fishingLine.visible=runtime.fishingFloat.visible=true;fishingTime=0;fishingNextBite=runtime.rand(7,11);fishingCatch=-1;runtime.notice('🎣 Тимур ловит рыбу. H или движение — убрать удочку.')}}
+ if(!fishingTarget&&fishingIdle>1.25&&fishingAvailable()){fishingTarget=nearbyFishingWater();if(fishingTarget){runtime.yaw=Math.atan2(fishingTarget.x-x,fishingTarget.z-z);runtime.fishingRig.visible=runtime.fishingLine.visible=runtime.fishingFloat.visible=true;fishingTime=0;fishingNextBite=runtime.rand(7,11);fishingCatch=-1;runtime.notice('🎣 Тимур ловит рыбу. Двигайся, чтобы убрать удочку.')}}
  if(!fishingTarget)return;
  const water=runtime.waterAt(fishingTarget.x,fishingTarget.z);if(!water||water.depth<.02){stopFishing();return}
  fishingTime+=dt;
  if(fishingTime>=fishingNextBite){fishingNextBite=fishingTime+runtime.rand(8,14);if(fishStock<10){fishingCatch=fishingTime;fishStock++;runtime.spawnWaterSplash(fishingTarget.x,fishingTarget.z,1.2);runtime.notice('🐟 Рыба поймана! Можно покормить кабанчика.');runtime.score+=5}}
 }
 function updateFishingVisual(now){
- const button=runtime.$('fishAction'),active=runtime.started&&!runtime.paused&&!runtime.cinematicRunning&&!runtime.endShown&&runtime.life>0&&runtime.catFormTime<=0&&runtime.boarFormTime<=0&&!runtime.mountedFriend;
- if(button){button.hidden=!active||(!fishingTarget&&((runtime.waterAt(runtime.boy.position.x,runtime.boy.position.z)?.depth||0)>.28||!fishingAvailable()));button.textContent=fishingTarget?'🎣 Убрать удочку · H':'🎣 Рыбачить · H'}
+ const active=runtime.started&&!runtime.paused&&!runtime.cinematicRunning&&!runtime.endShown&&runtime.life>0&&runtime.catFormTime<=0&&runtime.boarFormTime<=0&&!runtime.mountedFriend;
  if(!fishingTarget||!active){runtime.fishingRig.visible=runtime.fishingLine.visible=runtime.fishingFloat.visible=runtime.caughtFish.visible=false;return}
  runtime.boy.rotation.y=Math.atan2(fishingTarget.x-runtime.boy.position.x,fishingTarget.z-runtime.boy.position.z);
  const arm=runtime.boy.children[5];arm.rotation.x=-1.05;arm.rotation.z=-.08;runtime.boy.updateWorldMatrix(true,true);
@@ -85,7 +73,6 @@ function addChristmasTree(){const g=new THREE.Group();g.position.set(10,runtime.
 "stopFishing":{get:()=>stopFishing},
 "nearbyFishingWater":{get:()=>nearbyFishingWater},
 "updateFishing":{get:()=>updateFishing},
-"toggleFishing":{get:()=>toggleFishing},
 "updateFishingVisual":{get:()=>updateFishingVisual},
 "iceShell":{get:()=>iceShell},
 "freezeTime":{get:()=>freezeTime,set:value=>{freezeTime=value}},
@@ -104,7 +91,6 @@ function addChristmasTree(){const g=new THREE.Group();g.position.set(10,runtime.
   },
   initialize(){
 
-runtime.$('fishAction').onclick=toggleFishing;
 /* init:let */ fishStock = 0;
 /* init:let */ fishingNextBite = 10;
 

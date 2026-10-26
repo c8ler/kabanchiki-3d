@@ -1,6 +1,6 @@
-import { BlastTerrain } from "../blast-terrain.js?v=217";
+import { BlastTerrain } from "../blast-terrain.js?v=218";
 import * as THREE from "../../vendor/three/three.module.min.js";
-import { riverCenterAt, riverDepthAt, lakeInletCenterAt, lakeInletHalfWidthAt, lakeInletDepthAt, WorldSurface, lakePointAt, lakeDepth } from "../world-surface.js?v=217";
+import { riverCenterAt, riverDepthAt, lakeInletCenterAt, lakeInletHalfWidthAt, lakeInletDepthAt, WorldSurface, lakePointAt, lakeDepth } from "../world-surface.js?v=218";
 
 // Owns 41 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){

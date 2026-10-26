@@ -1,5 +1,5 @@
-import {StableRoute} from './navigation.js?v=217';
-import {capsuleAt,capsuleCircleContact,capsuleCapsuleContact} from './boar-physics.js?v=217';
+import {StableRoute} from './navigation.js?v=218';
+import {capsuleAt,capsuleCircleContact,capsuleCapsuleContact} from './boar-physics.js?v=218';
 const distance=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
 export class CatLife{
  constructor(T,scene,mobile=false,empty=false){this.T=T;this.mobile=mobile;this.root=new T.Group();scene.add(this.root);this.root.visible=false;this.cats=empty?[]:[this.model(0),this.model(1)];this.time=0;this.stats={chases:0,scratches:0,roofVisits:0,boarGames:0,escapes:0,repairs:0}}
