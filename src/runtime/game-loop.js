@@ -1,7 +1,7 @@
 import * as THREE from "../../vendor/three/three.module.min.js";
-import { onRiverBridge } from "../world-surface.js?v=217";
-import { GRAPHICS_TIERS } from "../adaptive-quality.js?v=217";
-import { lightBudget } from "../render-budget.js?v=217";
+import { onRiverBridge } from "../world-surface.js?v=218";
+import { GRAPHICS_TIERS } from "../adaptive-quality.js?v=218";
+import { lightBudget } from "../render-budget.js?v=218";
 
 // Owns 9 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){
