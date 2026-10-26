@@ -21,6 +21,7 @@ jobs:
           node scripts/v212-browser.mjs
           node scripts/v216-browser.mjs
           node scripts/v217-browser.mjs
+          node scripts/v218-browser.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
