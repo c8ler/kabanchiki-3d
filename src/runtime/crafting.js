@@ -1,7 +1,7 @@
-import {CatLife} from "../cat-life.js?v=217";
-import { candidateBoxes, placementHeight, placementProblem } from "../craft-placement.js?v=217";
-import { PROP_FOOTPRINTS } from "../craft-world.js?v=217";
-import { RECIPES, craftResult } from "../crafting-rules.js?v=217";
+import {CatLife} from "../cat-life.js?v=218";
+import { candidateBoxes, placementHeight, placementProblem } from "../craft-placement.js?v=218";
+import { PROP_FOOTPRINTS } from "../craft-world.js?v=218";
+import { RECIPES, craftResult } from "../crafting-rules.js?v=218";
 import * as THREE from "../../vendor/three/three.module.min.js";
 
 // Owns 18 bindings. See docs/architecture.md for startup order.
@@ -21,11 +21,11 @@ function syncAdventureItems(){
  for(const b of runtime.blastEffects)b.g.removeFromParent();runtime.blastEffects.length=0;
  if(runtime.level>=6){syncCraftUI();return}
  for(const obj of runtime.adventureDestroyed.get(runtime.level)||[])obj.visible=false;
- for(let i=0;i<5;i++){
+ for(let i=2;runtime.craftUnlocked&&i<5;i++){
   const key=runtime.level+':'+i;if(runtime.adventureCollected.has(key))continue;
   const tree=runtime.treeObjects.filter(t=>t.visible&&Math.abs(t.position.x)>8)[(runtime.level*11+i*13)%Math.max(1,runtime.treeObjects.filter(t=>t.visible&&Math.abs(t.position.x)>8).length)];
   const q=runtime.nearestSafeSpawn((i%2?1:-1)*(5.5+i%2),20-i*9,.9,{allowRoad:true});if(!q||!runtime.clearWallLine(new THREE.Vector3(0,.8,q[1]),new THREE.Vector3(q[0],.8,q[1]))||runtime.lakeDepthAt(...q)>.1)continue;
-  const kind=i<2?'bomb':'wood',g=kind==='bomb'?bombModel(runtime.scene):new THREE.Group();if(kind==='wood'){runtime.scene.add(g);for(let j=0;j<3;j++)runtime.block(g,runtime.mats.wood,(j-1)*.13,.12,0,.1,.16,.65)}
+  const kind='wood',g=new THREE.Group();if(kind==='wood'){runtime.scene.add(g);for(let j=0;j<3;j++)runtime.block(g,runtime.mats.wood,(j-1)*.13,.12,0,.1,.16,.65)}
   g.position.set(q[0],runtime.forageGroundAt(...q),q[1]);runtime.adventurePickups.push({g,key,kind});
  }
  syncCraftUI();
