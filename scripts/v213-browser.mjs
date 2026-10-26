@@ -27,7 +27,7 @@ for(const [engine,mobile] of [[chromium,false],[webkit,true]]){
  if(id==='pauseMenu'){const b=await page.locator('#resume').boundingBox();assert.ok(b&&b.y>=0&&b.y+b.height<=height,'resume remains visible')}
  if((id==='pauseMenu'&&width===320&&height===240)||(id==='difficultyScreen'&&width===568&&height===320))await shot(id+'-'+width+'x'+height);
  });
- await check('bomb cheat through the pause cheat button',async()=>{await qa('v214Menu','pauseMenu');await page.locator('[data-cheat="BOMB"]').click();assert.match(await page.locator('#cheatResult').textContent(),/Получена 1 бомбочка/);await page.locator('#resume').click();await page.waitForTimeout(100);assert.equal(await page.locator('#bombAction').isVisible(),true)});
+ await check('bomb cheat through the pause cheat button',async()=>{await qa('v214Menu','pauseMenu');for(let i=0;i<5;i++)await page.locator('#versionSecret').click();await page.locator('[data-cheat="BOMB"]').click();assert.match(await page.locator('#cheatResult').textContent(),/Получена 1 бомбочка/);await page.locator('#secretResume').click();await page.waitForTimeout(100);assert.equal(await page.locator('#bombAction').isVisible(),true)});
  await check('resume works after scrolling',async()=>{await qa('v214Menu','pauseMenu');await page.locator('#resume').click();await page.waitForTimeout(100);assert.equal(await page.locator('#pauseMenu').isVisible(),false)});
  await check('runtime errors',async()=>assert.deepEqual(errors,[]));
  }finally{await browser.close()}
