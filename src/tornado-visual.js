@@ -1,5 +1,5 @@
 import * as T from '../vendor/three/three.module.min.js';
-import {orbitPose} from './tornado-rules.js?v=217';
+import {orbitPose} from './tornado-rules.js?v=218';
 export class TornadoVisual{
  constructor(scene,mobile=false){this.scene=scene;this.root=new T.Group();scene.add(this.root);this.root.visible=false;this.items=[];this.actors=[];this.waterSources=[];this.capacity=mobile?12:24;this.actorCapacity=mobile?5:10;this.dummy=new T.Object3D();this.color=new T.Color();
  this.haze=new T.Mesh(new T.CylinderGeometry(7,.7,23,20,1,true),new T.MeshBasicMaterial({color:0x7b898f,transparent:true,opacity:.25,side:T.DoubleSide,depthWrite:false}));this.haze.position.y=11.5;this.root.add(this.haze);
