@@ -1,0 +1,3 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {SecretEntry} from '../src/secret-entry.js';
+test('secret entry requires five rapid taps and resets after opening',()=>{const entry=new SecretEntry();for(let i=0;i<4;i++)assert.equal(entry.tap(i*100),false);assert.equal(entry.tap(400),true);assert.equal(entry.tap(500),false)});
+test('slow taps, clock changes and closing cannot accumulate an accidental unlock',()=>{const entry=new SecretEntry();for(const now of [0,6000,12000,18000])assert.equal(entry.tap(now),false);entry.reset();for(let i=0;i<4;i++)assert.equal(entry.tap(i*100),false);entry.reset();assert.equal(entry.tap(450),false);assert.equal(entry.tap(1),false)});
