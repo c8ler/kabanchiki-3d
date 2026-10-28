@@ -27,3 +27,5 @@ button,input,select{font-size:15px}button{border-radius:15px;border-color:#f8e7b
 @media(prefers-reduced-motion:reduce){.resource,.meter-track::after,.worldHint i::after{transition:none}}
 
 #buttons #homeAction{position:absolute;right:0;top:56px;white-space:nowrap}#pauseMenu details>summary{cursor:pointer;font-weight:700;padding:3px 0}#pauseMenu .menuBtns{margin:12px 0}#pauseMenu .menuBtns #resume{background:#67a743}
+
+[data-hint="goal"][data-kind="exit"]{max-width:min(420px,88vw);white-space:normal;text-align:center;line-height:1.4}
