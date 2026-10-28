@@ -1,5 +1,6 @@
-import { reunionProfile } from "../family-reunion.js?v=218";
-import { CinematicTreeGuard } from "../cinematic-tree-guard.js?v=218";
+import {cinematicShot} from "../cinematic-support.js?v=219";
+import { reunionProfile } from "../family-reunion.js?v=219";
+import { CinematicTreeGuard } from "../cinematic-tree-guard.js?v=219";
 import * as THREE from "../../vendor/three/three.module.min.js";
 
 // Owns 4 bindings. See docs/architecture.md for startup order.
@@ -15,7 +16,7 @@ function cineSetup(kind,detail={}){runtime.sceneryBatches?.dispose();runtime.sce
  let hero;if(heroForm==='cat'){hero=runtime.catLife.model(2,runtime.movieRoot).g;hero.scale.setScalar(1.35)}else if(heroForm==='boar'){const actor=runtime.makeBoar(0,0,true);hero=actor.g;runtime.scene.remove(hero);actor.aura.visible=false;actor.bolt.visible=false;for(const o of hero.children)if(o.isMesh&&o.geometry.type==='RingGeometry')o.visible=false;hero.scale.setScalar(.86)}else hero=runtime.boy.clone(true);hero.visible=true;if(heroForm==='human')hero.children.forEach(o=>{o.rotation.x=0;o.rotation.z=0});hero.traverse(o=>{if(o.isMesh&&o.userData._cameraFade)o.userData._cameraFade=false});const lamp=heroForm==='human'?hero.children.find(o=>o.type==='Group'):null;if(lamp)lamp.visible=false;
  if(runtime.hasFlashlight&&heroForm==='human'){const held=new THREE.Group();runtime.block(held,runtime.mats.black,.6,1.0,.5,.22,.22,.55);runtime.block(held,runtime.flashlightLensMat,.6,1.0,.79,.19,.19,.04);hero.add(held);runtime.movie.lamp=held;const light=new THREE.SpotLight(0xfff0cd,38,28,.48,.58,1.1),target=new THREE.Object3D();runtime.movieRoot.add(light,target);light.target=target;runtime.movie.lampLight=light}
 runtime.movieRoot.add(hero);runtime.movie.hero=hero;
- if(kind==='death'){runtime.movieRoot.position.set(runtime.boy.position.x,detail.cause==='water'?.05:runtime.terrainHeightAt(runtime.boy.position.x,runtime.boy.position.z),runtime.boy.position.z);hero.position.set(0,0,0);hero.rotation.y=runtime.boy.rotation.y;runtime.movie.deathCause=detail.cause;if(detail.cause==='bomb'){const flash=new THREE.Mesh(new THREE.SphereGeometry(1,10,6),new THREE.MeshBasicMaterial({color:0xffbd70,transparent:true,opacity:.65,depthWrite:false}));flash.position.set(0,.7,0);runtime.movieRoot.add(flash);runtime.movie.deathFlash=flash}if(detail.cause==='boar'){const b=runtime.lastDeathBoar?.g.clone(true)||runtime.makeBoar(0,0,false).g;runtime.scene.remove(b);b.position.set(-2,0,0);b.rotation.y=Math.PI/2;b.visible=true;runtime.movieRoot.add(b);runtime.movie.deathBoar=b}if(detail.cause==='water'){const ring=new THREE.Mesh(new THREE.RingGeometry(.5,.65,24),new THREE.MeshBasicMaterial({color:0xc3e3ef,transparent:true,opacity:.65,side:THREE.DoubleSide}));ring.rotation.x=-Math.PI/2;runtime.movieRoot.add(ring);runtime.movie.deathRing=ring}
+ if(kind==='death'){runtime.movieRoot.position.set(runtime.boy.position.x,detail.cause==='water'?.05:runtime.terrainHeightAt(runtime.boy.position.x,runtime.boy.position.z)+runtime.playerSupportHeightAt(runtime.boy.position.x,runtime.boy.position.z),runtime.boy.position.z);hero.position.set(0,0,0);hero.rotation.y=runtime.boy.rotation.y;runtime.movie.deathCause=detail.cause;if(detail.cause==='bomb'){const flash=new THREE.Mesh(new THREE.SphereGeometry(1,10,6),new THREE.MeshBasicMaterial({color:0xffbd70,transparent:true,opacity:.65,depthWrite:false}));flash.position.set(0,.7,0);runtime.movieRoot.add(flash);runtime.movie.deathFlash=flash}if(detail.cause==='boar'){const b=runtime.lastDeathBoar?.g.clone(true)||runtime.makeBoar(0,0,false).g;runtime.scene.remove(b);b.position.set(-2,0,0);b.rotation.y=Math.PI/2;b.visible=true;runtime.movieRoot.add(b);runtime.movie.deathBoar=b}if(detail.cause==='water'){const ring=new THREE.Mesh(new THREE.RingGeometry(.5,.65,24),new THREE.MeshBasicMaterial({color:0xc3e3ef,transparent:true,opacity:.65,side:THREE.DoubleSide}));ring.rotation.x=-Math.PI/2;runtime.movieRoot.add(ring);runtime.movie.deathRing=ring}
  }else if(kind==='storm'){runtime.movieRoot.position.set(runtime.tornadoState.x,runtime.terrainHeightAt(runtime.tornadoState.x,runtime.tornadoState.z),runtime.tornadoState.z);hero.position.set(0,0,0);hero.rotation.y=runtime.boy.rotation.y;runtime.movie.stormHeading=runtime.boy.rotation.y;runtime.movie.people=[];
  }else if(kind==='family'){
   const cx=0,cz=Math.max(-25,Math.min(25,runtime.boy.position.z));runtime.movieRoot.position.set(cx,runtime.terrainHeightAt(cx,cz),cz);hero.position.set(-.7,0,0);hero.rotation.y=Math.PI/2;const person=runtime.buildCinemaPerson(detail.role||0);person.traverse(o=>{if(o.userData.familyMarker)o.visible=false});person.visible=true;runtime.movieRoot.add(person);person.position.set(.85,0,0);person.rotation.y=-Math.PI/2;runtime.movie.people=[person];const gift=new THREE.Group();runtime.makeFoodModel('apple',gift,0,0,0);runtime.movieRoot.add(gift);runtime.movie.gift=gift;gift.visible=false;
@@ -29,13 +30,19 @@ runtime.movieRoot.add(hero);runtime.movie.hero=hero;
  }
  runtime.movie.treeGuard=new CinematicTreeGuard(THREE,[...new Set([...runtime.treeObjects,...[runtime.openingProps?.userData.edge,runtime.openingProps?.userData.forestCorridor,runtime.lakeExitProps?.userData.forestCorridor,...[...runtime.locationExitProps.values()].map(p=>p.userData.forestCorridor)].filter(Boolean)])]);
  runtime.movie.privateGeometries=new Set();runtime.movie.privateMaterials=new Set();runtime.movieRoot.traverse(o=>{if(o.geometry&&!existingGeometries.has(o.geometry))runtime.movie.privateGeometries.add(o.geometry);if(o.material)for(const m of Array.isArray(o.material)?o.material:[o.material])if(!existingMaterials.has(m))runtime.movie.privateMaterials.add(m)});
+ // Reserve a fixed set of obstructing trees before the first frame of each moving shot.
+ if(kind==='intro'||kind==='outro'){
+  const m=runtime.movie,end=kind==='intro'?18.5:15.5,look=new THREE.Vector3();
+  for(let t=0;t<end;t+=.125){m.elapsedOverride=t;runtime.updateCinematic(m.start+t*1000,look)}
+  m.treeGuard.seal();delete m.elapsedOverride;runtime.updateCinematic(m.start,look);
+ }
 }
 
 function movieEase(a){a=Math.max(0,Math.min(1,a));return a*a*(3-2*a)}
 
 function cinematicActors(m){return [m.hero,...m.people,...m.boars.map(b=>b.g),m.car,m.picnic,m.fleeingBoss?.g,m.deathBoar].filter(Boolean)}
 
-function protectCinematicAction(m){runtime.movieRoot.updateWorldMatrix(true,true);m.treeGuard?.update(runtime.camera,cinematicActors(m));}
+function protectCinematicAction(m){runtime.movieRoot.updateWorldMatrix(true,true);m.treeGuard?.update(runtime.camera,cinematicActors(m),cinematicShot(m.kind,m.elapsed||0));}
  return {
   bindings:{
 "cineSetup":{get:()=>cineSetup},
