@@ -20,6 +20,7 @@ for(const engine of [chromium,webkit]){
   await check('flat readable signs',async()=>{const sign=await qa('v219Signs');assert.ok(sign.normal[1]>.9999&&sign.min>=sign.ground+.039);assert.ok(Math.abs(sign.angle+Math.PI/2)<.0001)});
   await check('no family markers',async()=>{for(const r of await qa('v219Markers'))assert.equal(r.markers,0)});
   console.log('PASS219',engine.name(),'sign inscription faces up and family markers are absent');
+  for(let n=1;n<=6;n++)for(const form of ['human','cat','boar','mounted'])for(const open of n<6?[false,true]:[false])await check('walls '+n+' '+form+' '+open,async()=>{const r=await qa('v219Walls',n,form,open);assert.ok(r.tested>=2,JSON.stringify(r));assert.deepEqual(r.issues,[],JSON.stringify(r))});
   for(const kind of ['intro','outro'])await check(kind+' stable trees',async()=>{const r=await qa('v219CinemaAudit',kind);console.log('CINEMA219',engine.name(),kind,JSON.stringify(r));assert.equal(r.changes,0);assert.equal(r.faded,0);assert.ok(r.restored)});
   for(let n=1;n<=6;n++)for(const cause of ['boar','fire','bomb','water','ice'])await check('death '+n+' '+cause,async()=>{const r=await qa('v219CinemaAudit','death',cause,n);assert.ok(r.visible>=40,JSON.stringify({n,cause,r}));if(cause!=='water')assert.ok(r.minClearance>=.039,JSON.stringify({n,cause,r}));assert.ok(r.restored)});
   await qa('v219DeathPreview','fire',5);await shot('grounded-death');
