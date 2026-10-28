@@ -1,4 +1,4 @@
-import { BufferedMusic, gameScore, cinematicScore } from "../music-player.js?v=218";
+import { BufferedMusic, gameScore, cinematicScore } from "../music-player.js?v=219";
 
 // Owns 14 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){
