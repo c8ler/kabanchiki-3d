@@ -10,8 +10,8 @@ export function exitObstacleShapes(props){
  const barrier=props?.userData.exitBarrier;if(!props?.visible||!barrier)return [];
  props.updateWorldMatrix(true,true);const result=[],addMesh=(mesh,first=0)=>{for(const q of mesh.isInstancedMesh?instances(mesh,first):[{box:(mesh.geometry.computeBoundingBox(),mesh.geometry.boundingBox),matrix:mesh.matrixWorld}])result.push(shape(q.box,q.matrix,props))};
  for(const q of barrier.parts){
-  if(barrier.kind==='gate'||barrier.kind==='bridge'&&!barrier.root.userData.open)result.push(shape(localBounds(q.mesh),q.mesh.matrixWorld,props));
-  else if(barrier.kind==='bridge'){for(const mesh of q.mesh.children)if(mesh.isInstancedMesh)addMesh(mesh,18)}
+  if(barrier.kind==='gate')result.push(shape(localBounds(q.mesh),q.mesh.matrixWorld,props));
+  else if(barrier.kind==='bridge'){for(const mesh of q.mesh.children)if(mesh.isInstancedMesh)addMesh(mesh,barrier.root.userData.open?18:0)}
   else addMesh(q.mesh);
  }
  for(const child of barrier.root.children)if(child.isInstancedMesh)addMesh(child);
