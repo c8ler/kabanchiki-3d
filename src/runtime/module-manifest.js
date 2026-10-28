@@ -1499,6 +1499,7 @@ export const GAME_MODULES=[
       "food",
       "forageGroundAt",
       "forestVisual",
+      "friend",
       "hasFlashlight",
       "home",
       "homeParts",
@@ -1885,10 +1886,12 @@ export const GAME_MODULES=[
       "boarBody",
       "boy",
       "effect",
+      "familyFloorAt",
       "mats",
       "openingLabel",
       "py",
-      "signBoards"
+      "signBoards",
+      "terrainHeightAt"
     ]
   },
   {
@@ -2047,13 +2050,15 @@ export const GAME_MODULES=[
       "movie",
       "movieRoot",
       "openingProps",
+      "playerSupportHeightAt",
       "scene",
       "sceneryBatches",
       "sceneryEpoch",
       "sun",
       "terrainHeightAt",
       "tornadoState",
-      "treeObjects"
+      "treeObjects",
+      "updateCinematic"
     ]
   },
   {
@@ -2071,6 +2076,7 @@ export const GAME_MODULES=[
       "movie",
       "movieEase",
       "movieRoot",
+      "playerSupportHeightAt",
       "protectCinematicAction",
       "scene",
       "sun",
@@ -3400,6 +3406,7 @@ export const GAME_MODULES=[
       "boundaryDecor",
       "boy",
       "camera",
+      "cinematicRunning",
       "craftWorld",
       "familyHideout",
       "houseObjects",
@@ -3433,6 +3440,10 @@ export const GAME_MODULES=[
       "friendHP",
       "lakeExitReady",
       "level",
+      "levelBoarsDone",
+      "levelBoarsTotal",
+      "levelFamilyDone",
+      "levelFamilyTotal",
       "life",
       "locationExitReady",
       "mountedFriend",
@@ -3495,6 +3506,7 @@ export const GAME_MODULES=[
       "catLife",
       "cinematicAssets",
       "cinematicRunning",
+      "craftWorld",
       "currentSeason",
       "effectLights",
       "endShown",
@@ -3502,6 +3514,7 @@ export const GAME_MODULES=[
       "fishingTarget",
       "foodView",
       "formatTime",
+      "friend",
       "gameInformation",
       "hearthFlame",
       "hearthLight",
@@ -3825,5 +3838,6 @@ export const GAME_SOURCES=[
   "src/qa/qa-13.js",
   "src/qa/index.js",
   "src/qa/qa-14.js",
-  "src/qa/qa-15.js"
+  "src/qa/qa-15.js",
+  "src/qa/qa-16.js"
 ];
