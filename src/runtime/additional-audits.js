@@ -1,4 +1,4 @@
-import { polygonContact } from "../movement-geometry.js?v=218";
+import { polygonContact } from "../movement-geometry.js?v=219";
 
 // Owns 2 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){
