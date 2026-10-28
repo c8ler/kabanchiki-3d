@@ -14,7 +14,7 @@ function depenetratePlayer(){
  // Never leave Timur trapped inside a rock/tree after a level change, jump or knockback.
  for(let pass=0;pass<(runtime.mountedFriend?14:6);pass++){
   let changed=false;
-  if(runtime.level===3&&!runtime.mountedFriend&&runtime.boarFormTime<=0)for(const wall of runtime.wallGeometry()){if(runtime.py>=wall.box.max.y-.015)continue;const hit=polygonContact(wall.polygon,runtime.boy.position.x,runtime.boy.position.z,runtime.PLAYER_RADIUS);if(hit){runtime.boy.position.x+=hit.nx*(hit.depth+.004);runtime.boy.position.z+=hit.nz*(hit.depth+.004);changed=true}}
+  if(!runtime.mountedFriend&&runtime.boarFormTime<=0)for(const wall of [...runtime.wallGeometry(),...runtime.craftWorld.walls()]){const feet=runtime.py+runtime.terrainHeightAt(runtime.boy.position.x,runtime.boy.position.z);if(feet>=wall.box.max.y-.015||feet+runtime.playerPhysicalHeight()<=wall.box.min.y+.01)continue;const hit=polygonContact(wall.polygon,runtime.boy.position.x,runtime.boy.position.z,runtime.PLAYER_RADIUS);if(hit){runtime.boy.position.x+=hit.nx*(hit.depth+.004);runtime.boy.position.z+=hit.nz*(hit.depth+.004);changed=true}}
   for(const q of runtime.openingDebrisCapsules()){if((runtime.mountedFriend?runtime.rideHop.height:runtime.py)+runtime.terrainHeightAt(runtime.boy.position.x,runtime.boy.position.z)>=q.top-.02)continue;const hit=capsuleCircleContact(q.body,runtime.boy.position.x,runtime.boy.position.z,runtime.mountedFriend?runtime.MOUNTED_ROCK_RADIUS:runtime.PLAYER_RADIUS);if(hit){runtime.boy.position.x+=hit.nx*(hit.depth+.004);runtime.boy.position.z+=hit.nz*(hit.depth+.004);changed=true;}}
   for(const o of runtime.logObstacles)if(runtime.pushOutOfLog(o))changed=true;
   for(const [, , ,m] of runtime.rockPositions)if(runtime.pushOutOfRock(m))changed=true;
@@ -83,10 +83,9 @@ function movePlayerCollisionStep(mx,mz){
 }
 
 function playerCrossesHouseWall(ax,az,bx,bz){
- if(runtime.level!==3)return false;
- for(const w of runtime.wallGeometry()){
+ for(const w of [...runtime.wallGeometry(),...runtime.craftWorld.walls()]){
   if(w.furniture)continue;const top=w.shell&&w.root.userData.enterable?Math.max(w.box.max.y,w.roofTop):w.box.max.y;
-  if(runtime.py+runtime.terrainHeightAt(ax,az)>=top-.015)continue;
+  const feet=runtime.py+runtime.terrainHeightAt(ax,az);if(feet>=top-.015||feet+runtime.playerPhysicalHeight()<=w.box.min.y+.01)continue;
   const y=(w.box.min.y+w.box.max.y)/2;
   if(segmentHitsBox({x:ax,y,z:az},{x:bx,y,z:bz},w.box))return true;
  }
