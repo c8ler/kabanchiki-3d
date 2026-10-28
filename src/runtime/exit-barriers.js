@@ -38,10 +38,10 @@ function animateBreakableExit(props,p){
 }
 
 function updateExitBreaker(props,dt,z){
- const d=props.userData;if(d.breakerDone)return true;
+ const d=props.userData,approachZ=z+(props.userData.exitBarrier?.kind==='rocks'?4.8:3.6);if(d.breakerDone)return true;
  if(runtime.boarFormTime>0){if(!runtime.questsComplete())return false;
   if(d.breaker){d.breaker.exitBreaking=false;if(d.breaker!==runtime.friend){runtime.exitHelpers.delete(d.breaker);runtime.scene.remove(d.breaker.g)}d.breaker=null;}
-  if(Math.abs(runtime.boy.position.x)>3.6||Math.abs(runtime.boy.position.z-(z+3.6))>2.8)return false;
+  if(Math.abs(runtime.boy.position.x)>3.6||Math.abs(runtime.boy.position.z-approachZ)>2.8)return false;
   if(!d.breakerHit){d.breakerHit=true;runtime.bossBattleImpact(runtime.boy.position.x,z+1.8);runtime.effect('woodBreak');runtime.notice('🐗 Ты сам открываешь дорогу!')}
   d.breakerTime+=dt;animateBreakableExit(props,d.breakerTime/.85);if(d.breakerTime>=.85){d.breakerDone=true;if(d.breaker)d.breaker.exitBreaking=false;}return !!d.breakerDone;
  }
@@ -57,10 +57,10 @@ function updateExitBreaker(props,dt,z){
  }
  const f=d.breaker;
  if(!d.breakerHit){
-  d.approachCooldown=Math.max(0,(d.approachCooldown||0)-dt);const progress=Math.hypot(f.g.position.x-(d.approachX??0),f.g.position.z-(z+3.6));d.approachStall=d.lastApproachDistance!==undefined&&d.lastApproachDistance-progress<.005*dt?(d.approachStall||0)+dt:0;d.lastApproachDistance=progress;if(d.approachStall>2&&d.approachCooldown<=0&&Math.hypot((d.approachX??0)-runtime.boy.position.x,z+3.6-runtime.boy.position.z)<3.2){d.approachX=-(d.approachX||2.5);d.approachCooldown=4;f.route=null;}
-  const moved=runtime.moveBoarToward(f,d.approachX??0,z+3.6,5.5,dt);f.breakStride=(f.breakStride||0)+(moved?dt:0);
+  d.approachCooldown=Math.max(0,(d.approachCooldown||0)-dt);const progress=Math.hypot(f.g.position.x-(d.approachX??0),f.g.position.z-approachZ);d.approachStall=d.lastApproachDistance!==undefined&&d.lastApproachDistance-progress<.005*dt?(d.approachStall||0)+dt:0;d.lastApproachDistance=progress;if(d.approachStall>2&&d.approachCooldown<=0&&Math.hypot((d.approachX??0)-runtime.boy.position.x,approachZ-runtime.boy.position.z)<3.2){d.approachX=-(d.approachX||2.5);d.approachCooldown=4;f.route=null;}
+  const moved=runtime.moveBoarToward(f,d.approachX??0,approachZ,5.5,dt);f.breakStride=(f.breakStride||0)+(moved?dt:0);
   f.b.position.y=moved?Math.abs(Math.sin(f.breakStride*16))*.08:0;
-  if(Math.abs(f.g.position.x)>3.3||f.g.position.z>z+4.3||f.g.position.z<z+2.4)return false;
+  if(Math.abs(f.g.position.x)>3.3||f.g.position.z>approachZ+.7||f.g.position.z<approachZ-1.2)return false;
   d.breakerHit=true;f.b.rotation.x=-.3;runtime.bossBattleImpact(f.g.position.x,z+1.8);runtime.effect('woodBreak');
   runtime.notice(({gate:'Друг распахнул ворота',bridge:'Мост опускается',rocks:'Камни освободили дорогу'})[props.userData.exitBarrier?.kind]||'Друг разбил ствол');
  }
