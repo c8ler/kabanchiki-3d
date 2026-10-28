@@ -1,4 +1,5 @@
 import * as THREE from '../../vendor/three/three.module.min.js';
+import {polygonContact} from '../movement-geometry.js?v=219';
 import {cinematicShot} from '../cinematic-support.js?v=219';
 export function createQaPart(runtime){return {
  v219Exit(n=3,done=false,only='both'){
@@ -33,5 +34,30 @@ export function createQaPart(runtime){return {
   runtime.paused=false;return this.v219CatsInspect();
  },
  v219CatsInspect(){const cats=[...runtime.catLife.cats,...runtime.craftWorld.items.filter(i=>i.catActor&&i.g.visible).map(i=>i.catActor)];return{mounted:runtime.mountedFriend,cats:cats.map(c=>({state:c.state,jump:c.jump?.then,boar:c.boar===runtime.friend,x:c.g.position.x,y:c.g.position.y,z:c.g.position.z}))}},
+ v219Walls(n=3,form='human',open=false){
+  this.v212Setup(n);runtime.craftWorld.clear();for(const f of runtime.foes)f.flee=true;if(runtime.friend){runtime.scene.remove(runtime.friend.g);runtime.friend=null}
+  for(const t of runtime.treeObjects)t.visible=false;for(const[,,,m]of runtime.rockPositions)if(m)m.visible=false;for(const o of runtime.logObstacles)o.g.visible=false;for(const[,,,m]of [...runtime.mountainObstacles,...runtime.lairObstacles])if(m)m.visible=false;runtime.catLife.root.visible=false;
+  runtime.levelBoarsDone=runtime.levelBoarsTotal;runtime.levelFamilyDone=runtime.levelFamilyTotal;
+  const props=n===2?runtime.lakeExitProps:runtime.locationExitProps.get(n);
+  if(props?.userData.exitBarrier){props.userData.breakerTime=open?.85:0;runtime.animateBreakableExit(props,open?1:0);if(n===2)props.userData.gateProgress=open?1:0;else runtime.locationExit.progress=open?1:0}
+  if(n===1){runtime.opening.passageOpen=runtime.opening.passageBroken=open;runtime.openingProps.userData.trunk.visible=!open;runtime.openingProps.userData.debris.visible=open}
+  runtime.craftWorld.create('wall',0,0,12,n);runtime.worldEpoch++;runtime.wallCacheEpoch=-1;runtime.keys={};runtime.boarFormTime=form==='boar'?30:0;runtime.catFormTime=form==='cat'?30:0;runtime.mountedFriend=form==='mounted';
+  if(runtime.mountedFriend){runtime.friend=runtime.makeBoar(0,20,true);runtime.setRiderPose(true)}
+  const walls=[...runtime.wallGeometry().filter(w=>!w.furniture&&w.box.min.y<1.4&&w.box.max.y>.4).slice(0,6),...runtime.craftWorld.walls()],issues=[];let tested=0;
+  for(const w of walls)for(const side of [0,1,2,3]){
+   const b=w.box,cx=(b.min.x+b.max.x)/2,cz=(b.min.z+b.max.z)/2,reach=form==='mounted'?1.75:form==='boar'?1.5:.48;
+   const x=side===0?b.min.x-reach-.2:side===1?b.max.x+reach+.2:cx,z=side===2?b.min.z-reach-.2:side===3?b.max.z+reach+.2:cz;
+   runtime.py=runtime.mountedFriend?runtime.riderSeatHeight():0;runtime.vy=0;runtime.boy.position.set(x,runtime.terrainHeightAt(x,z)+runtime.py,z);runtime.boy.rotation.y=Math.atan2(cx-x,cz-z);runtime.yaw=runtime.boy.rotation.y;
+   if(runtime.friend)runtime.friend.g.position.set(x,runtime.terrainHeightAt(x,z),z);
+   if(runtime.playerWorldBlocked(x,z))continue;tested++;
+   const dx=cx-x,dz=cz-z,d=Math.hypot(dx,dz),length=d+reach+.6;
+   runtime.movePlayerCollision(dx/d*length,dz/d*length);const px=runtime.boy.position.x,pz=runtime.boy.position.z,feet=runtime.py+runtime.terrainHeightAt(px,pz);
+   const crossed=side===0?px>b.max.x+.01&&pz>b.min.z&&pz<b.max.z:side===1?px<b.min.x-.01&&pz>b.min.z&&pz<b.max.z:side===2?pz>b.max.z+.01&&px>b.min.x&&px<b.max.x:pz<b.min.z-.01&&px>b.min.x&&px<b.max.x;if(crossed)issues.push({side,kind:'crossed',x:px,z:pz});
+   const body=form==='mounted'||form==='boar'?runtime.boarWallContacts(runtime.playerBoarBody()):[];
+   if(body.length)issues.push({side,kind:'body',x:px,z:pz});
+   if(form==='human'||form==='cat'){const hit=[...runtime.wallGeometry(),...runtime.craftWorld.walls()].find(q=>feet<q.box.max.y-.015&&feet+runtime.playerPhysicalHeight()>q.box.min.y+.01&&polygonContact(q.polygon,px,pz,runtime.PLAYER_RADIUS-.005));if(hit)issues.push({side,kind:'foot',x:px,z:pz})}
+  }
+  runtime.mountedFriend=false;runtime.boarFormTime=runtime.catFormTime=0;runtime.setRiderPose(false);return{level:n,form,open,tested,issues};
+ },
  v219DeathPreview(cause='boar',n=5){this.v212Setup(n);runtime.boy.position.set(12,runtime.terrainHeightAt(12,15),15);runtime.playCinematic('death',()=>{},{cause});runtime.movie.elapsedOverride=3.5;runtime.updateCinematic(performance.now(),new THREE.Vector3());return true}
 };}
