@@ -1,5 +1,5 @@
-import {StableRoute} from './navigation.js?v=218';
-import {capsuleAt,capsuleCircleContact,capsuleCapsuleContact} from './boar-physics.js?v=218';
+import {StableRoute} from './navigation.js?v=219';
+import {capsuleAt,capsuleCircleContact,capsuleCapsuleContact} from './boar-physics.js?v=219';
 const distance=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
 export class CatLife{
  constructor(T,scene,mobile=false,empty=false){this.T=T;this.mobile=mobile;this.root=new T.Group();scene.add(this.root);this.root.visible=false;this.cats=empty?[]:[this.model(0),this.model(1)];this.time=0;this.stats={chases:0,scratches:0,roofVisits:0,boarGames:0,escapes:0,repairs:0}}
@@ -14,15 +14,34 @@ export class CatLife{
   const waypoint=c.navigation.next(p,to,this.blocked,dt,{step:.8,bound:42,epoch:this.epoch||0});c.path=c.navigation.path;if(!waypoint)return false;
   const dx=waypoint.x-p.x,dz=waypoint.z-p.z,d=Math.hypot(dx,dz);if(d<.01)return false;
   const step=Math.min(speed*dt,d),x=p.x+dx/d*step,z=p.z+dz/d*step;
-  if(this.blocked(x,z)||this.blocksBoars(c,x,z)||(this.player&&Math.abs(this.terrain(x,z)-this.player.y)<1&&capsuleCircleContact(capsuleAt(x,z,Math.atan2(dx,dz),.4),this.player.x,this.player.z,.43))){c.navigation.record(0,dt);return false}
+  if(this.blocked(x,z)||this.blocksBoars(c,x,z)||this.blocksCats(c,x,z)||(this.player&&Math.abs(this.terrain(x,z)-this.player.y)<1&&capsuleCircleContact(capsuleAt(x,z,Math.atan2(dx,dz),.4),this.player.x,this.player.z,.43))){c.navigation.record(0,dt);return false}
   c.g.position.set(x,this.terrain(x,z),z);c.g.rotation.y=Math.atan2(dx,dz);c.steps+=step*7;c.navigation.record(step,dt);return true;
  }
  roofMove(c,to,dt,speed=1.6){const h=this.houses[c.home],p=this.point(c);to={x:Math.max(h.x-h.w*.3,Math.min(h.x+h.w*.3,to.x)),z:Math.max(h.z-h.d*.3,Math.min(h.z+h.d*.3,to.z))};const d=distance(p,to),k=Math.min(1,speed*dt/Math.max(.001,d));c.g.position.set(p.x+(to.x-p.x)*k,h.y,p.z+(to.z-p.z)*k);c.g.rotation.y=Math.atan2(to.x-p.x,to.z-p.z);c.steps+=dt*speed*7;return d>.1}
  boarTop(b){return {x:b.g.position.x,y:b.g.position.y+1.17*Math.abs(b.g.scale.y),z:b.g.position.z}}
- beginBoarGame(c,boars){if(c.gameTimer>0||c.jump||['roof','hide','scratch','ride','boarPlay'].includes(c.state))return;const p=this.point(c),b=boars.filter(b=>b.friendly&&!b.flee&&!b.attackLeap&&!b.exitBreaking&&b.g.position.y>-.2&&distance(p,{x:b.g.position.x,z:b.g.position.z})<12).sort((a,b)=>distance(p,a.g.position)-distance(p,b.g.position))[0];if(b){c.boar=b;c.fleeUntil=0;c.state='boarPlay';c.path=[];c.target=null;c.timer=9;c.gameTimer=18+c.index*7}else c.gameTimer=3}
+ catVisible(c){for(let o=c?.g;o;o=o.parent)if(!o.visible)return false;return !!c?.g?.parent}
+ canPlayWith(c,b){const other=b?.catPlaymate;return !!b&&b!==this.occupiedBoar&&b.friendly&&!b.flee&&!b.attackLeap&&!b.exitBreaking&&(!other||other===c||!this.catVisible(other)||other.boar!==b)}
+ releaseBoar(c){if(c.boar?.catPlaymate===c)c.boar.catPlaymate=null;c.boar=null}
+ leaveOccupiedBoar(c){
+  const b=c.boar;if(!b)return;
+  const p=this.point(c),a=Math.atan2(p.x-b.g.position.x,p.z-b.g.position.z)+(c.index%2?.4:-.4),ground=this.safeGround({x:b.g.position.x+Math.sin(a)*4,z:b.g.position.z+Math.cos(a)*4});
+  const airborne=c.state==='ride'||c.jump?.then==='ride';this.releaseBoar(c);c.gameTimer=8;c.fleeUntil=0;c.target=null;c.timer=0;c.path=[];c.navigation=null;
+  if(airborne)this.leap(c,ground,c.index?'play':'travel',.65);else c.state=c.index?'play':'travel';
+ }
+ blocksCats(c,x,z){const body=capsuleAt(x,z,c.g.rotation.y,.4);return (this.peers||this.cats).some(other=>other!==c&&this.catVisible(other)&&!other.jump&&other.state!=='ride'&&Math.abs(other.g.position.y-c.g.position.y)<.65&&capsuleCapsuleContact(body,capsuleAt(other.g.position.x,other.g.position.z,other.g.rotation.y,.4)))}
+ separateCats(dt){
+  for(const c of this.cats){if(!this.catVisible(c)||c.jump||['roof','hide','ride'].includes(c.state))continue;
+   for(const other of this.peers){if(other===c||!this.catVisible(other)||other.jump||other.state==='ride'||Math.abs(other.g.position.y-c.g.position.y)>.65)continue;
+    const q=capsuleCapsuleContact(capsuleAt(c.g.position.x,c.g.position.z,c.g.rotation.y,.4),capsuleAt(other.g.position.x,other.g.position.z,other.g.rotation.y,.4));if(!q)continue;
+    const step=Math.min(q.depth+.005,dt*3),x=c.g.position.x+q.nx*step,z=c.g.position.z+q.nz*step;
+    if(!this.blocked(x,z)&&!this.blocksBoars(c,x,z)){c.g.position.set(x,this.terrain(x,z),z);c.navigation=null;c.path=[]}
+   }
+  }
+ }
+ beginBoarGame(c,boars){if(c.gameTimer>0||c.jump||['roof','hide','scratch','ride','boarPlay'].includes(c.state))return;const p=this.point(c),b=boars.filter(b=>this.canPlayWith(c,b)&&b.g.position.y>-.2&&distance(p,{x:b.g.position.x,z:b.g.position.z})<12).sort((a,b)=>distance(p,a.g.position)-distance(p,b.g.position))[0];if(b){c.boar=b;b.catPlaymate=c;c.fleeUntil=0;c.state='boarPlay';c.path=[];c.target=null;c.timer=9;c.gameTimer=18+c.index*7}else c.gameTimer=3}
  avoidPlayer(x,z,y,dt){if(!this.root.visible)return;for(const c of this.cats){if(c.jump||['hide','ride'].includes(c.state)||Math.abs(c.g.position.y-y)>1)continue;const p=this.point(c),d=Math.hypot(p.x-x,p.z-z);if(d>2.0)continue;const a=Math.atan2(p.x-x,p.z-z);if(c.state==='roof'){c.target=null;this.roofMove(c,{x:p.x+Math.sin(a)*2,z:p.z+Math.cos(a)*2},dt,4.5);continue}for(const turn of [0,.6,-.6,1.2,-1.2,Math.PI]){const step=Math.min(.2,dt*4.5),nx=p.x+Math.sin(a+turn)*step,nz=p.z+Math.cos(a+turn)*step;if(!this.blocked(nx,nz)&&Math.hypot(nx-x,nz-z)>d+.001){c.g.position.set(nx,this.terrain(nx,nz),nz);c.g.rotation.y=a+turn;c.steps+=step*7;c.routeAge=0;break}}}}
  blocks(x,z,y,radius=.43){return this.root.visible&&this.cats.some(c=>c.g.visible&&Math.abs(c.g.position.y-y)<.7&&capsuleCircleContact(capsuleAt(c.g.position.x,c.g.position.z,c.g.rotation.y,.4),x,z,radius))}
- update(dt,birds,boars=[],player=null){if(!this.root.visible||!this.houses?.length)return;dt=Math.max(0,Math.min(.05,dt));this.time+=dt;this.player=player;this.boars=boars;for(const c of this.cats)this.beginBoarGame(c,boars);this.avoidBoars(boars,dt);for(const c of this.cats){if(c.tornadoUntil>this.time){c.g.visible=false;continue}c.timer-=dt;c.gameTimer-=dt;c.g.visible=true;c.body.scale.y=c.state==='hide'?.65:1;const p=this.point(c);let moving=false;
+ update(dt,birds,boars=[],player=null,occupiedBoar=null,peers=[]){if(!this.root.visible||!this.houses?.length)return;dt=Math.max(0,Math.min(.05,dt));this.time+=dt;this.player=player;this.boars=boars;this.occupiedBoar=occupiedBoar;this.peers=[...new Set([...this.cats,...peers])];for(const c of this.cats){if(c.boar&&!this.canPlayWith(c,c.boar))this.leaveOccupiedBoar(c);this.beginBoarGame(c,boars)}this.avoidBoars(boars,dt);for(const c of this.cats){if(c.tornadoUntil>this.time){c.g.visible=false;continue}c.timer-=dt;c.gameTimer-=dt;c.g.visible=true;c.body.scale.y=c.state==='hide'?.65:1;const p=this.point(c);let moving=false;
  if(c.fleeUntil>this.time&&!c.jump&&!['roof','hide','ride'].includes(c.state)){moving=this.move(c,c.escapeTarget,dt,5.4);}
  else if(c.jump){const j=c.jump;if(j.then==='ride'&&c.boar?.g)j.to=this.boarTop(c.boar);j.t+=dt/j.duration;const t=Math.min(1,j.t),k=t*t*(3-2*t);c.g.position.set(j.from.x+(j.to.x-j.from.x)*k,j.from.y+(j.to.y-j.from.y)*k+Math.sin(t*Math.PI)*1.6,j.from.z+(j.to.z-j.from.z)*k);c.g.rotation.y=Math.atan2(j.to.x-j.from.x,j.to.z-j.from.z);if(t>=1){c.jump=null;c.state=j.then;c.timer=c.state==='roof'?8:c.state==='ride'?2.3:5;c.target=null;c.routeAge=0}moving=true}
  else if(c.state==='boarPlay'){if(!c.boar?.g||c.boar.flee||c.timer<=0){c.boar=null;c.state=c.index?'play':'travel';c.target=null}else{const b=this.boarTop(c.boar);if(distance(this.point(c),b)<2.8){this.leap(c,b,'ride',.7);this.stats.boarGames++}else moving=this.move(c,b,dt,4);if(!c.jump&&distance(this.point(c),b)<1.25){this.leap(c,b,'ride',.7);this.stats.boarGames++}}}
@@ -31,7 +50,7 @@ export class CatLife{
  else{const bird=birds.nearest?.(p.x,p.z,8,1.4);if(bird&&!['approach','scratch'].includes(c.state)){c.state='hunt';c.target={x:bird.x,z:bird.z};moving=this.move(c,c.target,dt,4.2);if(distance(p,bird)<1.1){birds.scare(bird.index);c.chaseCount++;this.stats.chases++;this.leap(c,this.safeGround({x:p.x+Math.sin(c.g.rotation.y)*.7,z:p.z+Math.cos(c.g.rotation.y)*.7}),'play',.45)}}else if(c.state==='scratch'){c.legs[1].rotation.x=Math.sin(this.time*15)*.9;c.legs[3].rotation.x=-Math.sin(this.time*15)*.9;c.body.rotation.x=-.2;if(c.timer<=0){c.state='play';c.timer=0;c.body.rotation.x=0}}
  else{if(c.timer<=0||!c.target){const i=Math.floor(this.time/5)%Math.max(1,this.objects.length),o=this.objects[i];if(o&&Math.floor(this.time/7)%3!==0){c.target=this.safeGround({x:o.x+o.r+.45,z:o.z});c.object=o;c.state='approach'}else{c.state='play';c.target=this.safeGround({x:Math.sin(this.time*.4)*32,z:Math.cos(this.time*.31)*32})}c.timer=c.state==='approach'?30:7}moving=this.move(c,c.target,dt,c.state==='play'?3.6:2.6);if(distance(this.point(c),c.target)<.95){if(c.state==='approach'){c.state='scratch';c.timer=2.5;c.g.rotation.y=Math.atan2(c.object.x-c.g.position.x,c.object.z-c.g.position.z);c.scratchCount++;this.stats.scratches++}else{c.timer=0;c.state='play'}}if(c.state==='hunt'){c.state='play';c.timer=0}}}
  this.validateSupport(c);c.tail.rotation.y=Math.sin(this.time*2+c.index)*.4;for(let i=0;i<c.legs.length;i++)if(!['scratch','ride'].includes(c.state)&&!(c.state==='roof'&&c.timer<2))c.legs[i].rotation.x=moving?Math.sin(c.steps+i%2*Math.PI)*.65:0;c.head.rotation.y=c.state==='hide'?.35:Math.sin(this.time*.7)*.1}
- if(player)this.avoidPlayer(player.x,player.z,player.y,dt)}
+ if(player)this.avoidPlayer(player.x,player.z,player.y,dt);this.separateCats(dt)}
  validateSupport(c){if(c.jump||c.state==='ride')return;const p=this.point(c);if(!Number.isFinite(p.x+p.y+p.z)){const h=this.houses[c.home];c.g.position.set(h.x,h.y,h.z);c.state='roof';c.timer=5;this.stats.repairs++;return}if(['roof','hide'].includes(c.state)){const h=this.houses[c.home];c.g.position.x=Math.max(h.x-h.w*.3,Math.min(h.x+h.w*.3,p.x));c.g.position.z=Math.max(h.z-h.d*.3,Math.min(h.z+h.d*.3,p.z));c.g.position.y=h.y}else{c.g.position.y=this.terrain(p.x,p.z);if(this.blocked(p.x,p.z)){const q=this.safeGround(p);c.g.position.set(q.x,q.y,q.z);c.path=[];c.routeAge=0;this.stats.repairs++}}}
 
  blocksBoars(c,x,z){const body=capsuleAt(x,z,c.g.rotation.y,.4);return (this.boars||[]).some(b=>Math.abs(c.g.position.y-b.g.position.y)<1.1&&capsuleCapsuleContact(body,capsuleAt(b.g.position.x,b.g.position.z,b.g.rotation.y,b.bodyScale??Math.abs(b.g.scale.x))))}
@@ -39,7 +58,7 @@ export class CatLife{
  avoidBoars(boars,dt){
  if(!this.root.visible)return;this.boars=boars;
  for(const c of this.cats){if(c.jump||['roof','hide','ride'].includes(c.state))continue;
- if(c.state==='boarPlay'&&c.boar?.friendly)continue;
+ if(c.state==='boarPlay'&&this.canPlayWith(c,c.boar))continue;
  const p=this.point(c),threat=boars.filter(b=>!b.flee&&Math.abs(p.y-b.g.position.y)<1.1).map(b=>({b,d:Math.hypot(p.x-b.g.position.x,p.z-b.g.position.z)})).sort((a,b)=>a.d-b.d)[0];
  if(!threat||threat.d>4.5)continue;
  const b=threat.b,body=capsuleAt(b.g.position.x,b.g.position.z,b.g.rotation.y,b.bodyScale??Math.abs(b.g.scale.x)),contact=capsuleCircleContact(body,p.x,p.z,.65);
