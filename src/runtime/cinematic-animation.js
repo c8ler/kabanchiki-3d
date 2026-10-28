@@ -1,13 +1,15 @@
-import {fitFamilyFrame} from '../family-framing.js?v=218';
+import {liftAboveSurface} from "../cinematic-support.js?v=219";
+import {fitFamilyFrame} from '../family-framing.js?v=219';
 import * as THREE from "../../vendor/three/three.module.min.js";
-import { introStagingAt, outroStagingAt } from "../cinematic-staging.js?v=218";
+import { introStagingAt, outroStagingAt } from "../cinematic-staging.js?v=219";
 
 // Owns 2 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){
 
 function updateCinematic(now,look){if(!runtime.movie)return;const m=runtime.movie,t=m.elapsedOverride??(now-m.start)/1000;m.elapsed=t;const ease=runtime.movieEase;
  const world=(x,y,z)=>new THREE.Vector3(x,y,z).add(runtime.movieRoot.position);let from,to,target,k;
- if(m.kind==='death'){const k=ease((t-.6)/2);if(m.deathCause==='bomb'){m.hero.position.set(-k*1.4,Math.sin(k*Math.PI)*1.8,-k*.8);m.hero.rotation.z=-k*1.2;if(m.deathFlash){m.deathFlash.scale.setScalar(.3+Math.min(1,t/.8)*5);m.deathFlash.material.opacity=Math.max(0,.65-t*.65)}}else if(m.deathCause==='water'){m.hero.position.y=-k*1.8;if(m.heroForm==='human')m.hero.children[5].rotation.x=Math.sin(t*6)*.35-1;if(m.deathRing)m.deathRing.scale.setScalar(1+t*.25)}else{m.hero.rotation.z=-k*Math.PI/2;m.hero.position.y=-k*.25;if(m.heroForm==='human')m.hero.children[5].rotation.x=-.8*k}if(m.deathBoar){const jump=ease(t/.7);m.deathBoar.position.x=-2+jump*.8;m.deathBoar.position.y=Math.sin(jump*Math.PI)*.55}from=world(4,3.2,5);to=world(3,2.4,4);target=world(0,.4,0);runtime.camera.position.lerpVectors(from,to,ease(t/4));runtime.camera.up.set(0,1,0);runtime.camera.lookAt(target);updateCinematicLamp(m);runtime.protectCinematicAction(m);return
+ if(m.kind==='death'){const k=ease((t-.6)/2);if(m.deathCause==='bomb'){m.hero.position.set(-k*1.4,Math.sin(k*Math.PI)*1.8,-k*.8);m.hero.rotation.z=-k*1.2;if(m.deathFlash){m.deathFlash.scale.setScalar(.3+Math.min(1,t/.8)*5);m.deathFlash.material.opacity=Math.max(0,.65-t*.65)}}else if(m.deathCause==='water'){m.hero.position.y=-k*.3;if(m.heroForm==='human')m.hero.children[5].rotation.x=Math.sin(t*6)*.35-1;if(m.deathRing)m.deathRing.scale.setScalar(1+t*.25)}else{m.hero.rotation.z=-k*Math.PI/2;m.hero.position.y=-k*.25;if(m.heroForm==='human')m.hero.children[5].rotation.x=-.8*k}if(m.deathBoar){const jump=ease(t/.7);m.deathBoar.position.x=-2+jump*.8;m.deathBoar.position.y=Math.sin(jump*Math.PI)*.55}if(m.deathCause!=='water')liftAboveSurface(THREE,m.hero,(x,z)=>runtime.terrainHeightAt(x,z)+runtime.playerSupportHeightAt(x,z));
+ from=world(4,3.2,5);to=world(3,2.4,4);target=world(0,.4,0);runtime.camera.position.lerpVectors(from,to,ease(t/4));runtime.camera.up.set(0,1,0);runtime.camera.lookAt(target);updateCinematicLamp(m);runtime.protectCinematicAction(m);return
  }else if(m.kind==='storm'){const k=ease(t/6),a=t*4,r=2+k*2;m.hero.position.set(Math.cos(a)*r,k*12+.2,Math.sin(a)*r);m.hero.rotation.set(.18,a+Math.PI/2,Math.sin(t*2)*.35);from=world(-13,8,18);to=world(-15,11,19);target=world(0,6,0);runtime.camera.position.lerpVectors(from,to,ease(t/6));runtime.camera.up.set(0,1,0);runtime.camera.lookAt(target);updateCinematicLamp(m);runtime.protectCinematicAction(m);return
  }else if(m.kind==='intro'){
   runtime.camera.fov=t>=12&&t<15?65:48;runtime.camera.updateProjectionMatrix();const stage=introStagingAt(t);m.car.position.z=stage.carZ;for(const light of m.car.userData.headlights)light.intensity=stage.headlights?32:0;for(const lens of m.car.userData.headlightLenses){lens.material.color.set(stage.headlights?0xffefcb:0x8e9a97);if(lens.material.emissive)lens.material.emissiveIntensity=stage.headlights?1:0}
