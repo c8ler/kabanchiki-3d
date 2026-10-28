@@ -1,5 +1,5 @@
-import { cinematicLines, INTRO_LESSONS } from "../campaign-progress.js?v=218";
-import { reunionProfile } from "../family-reunion.js?v=218";
+import { cinematicLines, INTRO_LESSONS } from "../campaign-progress.js?v=219";
+import { reunionProfile } from "../family-reunion.js?v=219";
 
 // Owns 3 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){
