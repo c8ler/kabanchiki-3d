@@ -66,9 +66,9 @@ function updateFamilyHouseReveal(){
 }
 
 function houseBlockAt(x,z,pad=.45,allowJump=false){
- if(runtime.level!==3)return false;
  if(allowJump)for(const box of runtime.houseLintelContacts(x,z,pad)){const ground=runtime.terrainHeightAt(x,z);if(runtime.py<box.max.y-ground&&runtime.py+runtime.playerPhysicalHeight()>box.min.y-ground+.01)return true;}
  for(const wall of runtime.wallGeometry()){
+  const feet=runtime.py+runtime.terrainHeightAt(x,z);if(wall.exit&&(feet>=wall.box.max.y-.015||feet+runtime.playerPhysicalHeight()<=wall.box.min.y+.01))continue;
   const top=wall.shell&&wall.root.userData.enterable?Math.max(wall.box.max.y,wall.roofTop):wall.box.max.y;
   if(allowJump&&!runtime.mountedFriend&&runtime.py>=top-.015)continue;
   if(polygonContact(wall.polygon,x,z,pad))return true;
