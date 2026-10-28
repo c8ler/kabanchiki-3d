@@ -1,6 +1,6 @@
 import * as THREE from "../../vendor/three/three.module.min.js";
-import { polygonContact } from "../movement-geometry.js?v=218";
-import { segmentHitsBox } from "../navigation.js?v=218";
+import { polygonContact } from "../movement-geometry.js?v=219";
+import { segmentHitsBox } from "../navigation.js?v=219";
 
 // Owns 7 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){
