@@ -63,7 +63,12 @@ function runRobotCollisionTest(){
   }else samples.push({label:`rock${ri}-crowded`,moved:0,blocked:true,skipped:true});
   // Above the real top, crossing the footprint is intentionally allowed.
   runtime.boy.position.set(sx,q.top+.18,sz);runtime.py=q.top+.18;runtime.vy=0;
-  const bx=runtime.boy.position.x,bz=runtime.boy.position.z,want=edge*2+.20;runtime.movePlayerCollision(-ux*want,-uz*want);
+  const bx=runtime.boy.position.x,bz=runtime.boy.position.z,want=edge*2+.20;
+  // Check other scenery along the whole flight before expecting a free crossing of this rock.
+  const visible=m.visible;let corridorClear=true;m.visible=false;
+  try{const count=Math.ceil(want/.1);for(let i=0;i<=count;i++)if(runtime.playerWorldBlocked(sx-ux*want*i/count,sz-uz*want*i/count)){corridorClear=false;break}}finally{m.visible=visible}
+  if(!corridorClear){samples.push({label:`rock${ri}-jump-crowded`,moved:0,blocked:true,skipped:true});ri++;continue}
+  runtime.movePlayerCollision(-ux*want,-uz*want);
   const jumpMoved=Math.hypot(runtime.boy.position.x-bx,runtime.boy.position.z-bz),jumpBlocked=jumpMoved<want*.65;
   samples.push({label:`rock${ri}-jump`,moved:+jumpMoved.toFixed(3),blocked:jumpBlocked});if(jumpBlocked)issues.push(`robot-jump-blocked:rock${ri}`);ri++
  }

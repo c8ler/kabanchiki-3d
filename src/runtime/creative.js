@@ -1,7 +1,7 @@
 import * as THREE from '../../vendor/three/three.module.min.js';
-import {parseCheatCode} from '../cheat-codes.js?v=218';
-import {createIsland,islandDepth,SECRET_LEVEL} from '../creative-island.js?v=218';
-import {SecretEntry} from '../secret-entry.js?v=218';
+import {parseCheatCode} from '../cheat-codes.js?v=219';
+import {createIsland,islandDepth,SECRET_LEVEL} from '../creative-island.js?v=219';
+import {SecretEntry} from '../secret-entry.js?v=219';
 export function createModule(runtime){
  let secretEntry=new SecretEntry(),secretMenuOpen=false;
  function openSecretMenu(){

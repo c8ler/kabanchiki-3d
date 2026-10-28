@@ -1,9 +1,9 @@
-import { forestEdgeLimit, forestEdgeBlocked } from "../world-interactions.js?v=218";
-import { BOAR_WADING_DEPTH } from "../boar-water.js?v=218";
-import { capsuleCircleContact, capsuleCapsuleContact } from "../boar-physics.js?v=218";
-import { polygonContact } from "../movement-geometry.js?v=218";
-import { onRiverBridge } from "../world-surface.js?v=218";
-import { forestExitBlocked } from "../opening-adventure.js?v=218";
+import { forestEdgeLimit, forestEdgeBlocked } from "../world-interactions.js?v=219";
+import { BOAR_WADING_DEPTH } from "../boar-water.js?v=219";
+import { capsuleCircleContact, capsuleCapsuleContact } from "../boar-physics.js?v=219";
+import { polygonContact } from "../movement-geometry.js?v=219";
+import { onRiverBridge } from "../world-surface.js?v=219";
+import { forestExitBlocked } from "../opening-adventure.js?v=219";
 
 // Owns 8 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){
@@ -28,7 +28,7 @@ function companionNavBlocked(f){
  const scale=runtime.boarScale(f),radius=1.65*scale+.05,
  trees=runtime.treeObjects.filter(t=>t.visible).map(t=>{const m=t.children.find(m=>m.userData.treeSolid);if(!m)return null;const q=runtime.treeTrunkShape(m);return {...q,r2:(q.r+1.65*scale)**2}}).filter(Boolean),
  rocks=runtime.rockPositions.filter(q=>q[3]?.visible!==false&&q[3]?.parent?.visible!==false).map(q=>{const s=runtime.rockShape(q[3]);return {...s,c:Math.cos(s.yaw),sn:Math.sin(s.yaw),ix:1/(s.ax+radius)**2,iz:1/(s.az+radius)**2}}),
- walls=runtime.wallGeometry(),mountains=runtime.level===5?runtime.mountainObstacles.filter(q=>q[3]?.parent?.visible!==false).map(q=>{const polygon=runtime.mountainFootprint(q[3]);return {polygon,minX:Math.min(...polygon.map(p=>p.x)),maxX:Math.max(...polygon.map(p=>p.x)),minZ:Math.min(...polygon.map(p=>p.z)),maxZ:Math.max(...polygon.map(p=>p.z))}}):[],
+ walls=runtime.wallGeometry().filter(w=>!w.exit||f.g.position.y<w.box.max.y-.015&&f.g.position.y+1.6*scale>w.box.min.y+.01),mountains=runtime.level===5?runtime.mountainObstacles.filter(q=>q[3]?.parent?.visible!==false).map(q=>{const polygon=runtime.mountainFootprint(q[3]);return {polygon,minX:Math.min(...polygon.map(p=>p.x)),maxX:Math.max(...polygon.map(p=>p.x)),minZ:Math.min(...polygon.map(p=>p.z)),maxZ:Math.max(...polygon.map(p=>p.z))}}):[],
  debris=runtime.openingDebrisCapsules().filter(q=>!q.closed||!f.exitBreaking),
  exitReady=runtime.locationExit?runtime.locationExitReady():false,lakeReady=runtime.level===2?runtime.lakeExitReady():false,
  avoidsWater=!runtime.controlledSwimmer(f)&&!f.waterEscaping;

@@ -52,7 +52,7 @@ function makeFamily(x,z,forcedRole=null){const g=runtime.group(x,z);g.position.y
  if(role===0){person=makeMother();person.scale.setScalar(.72)}
  else if(role===3){person=makeGrandmother();person.scale.setScalar(.70)}
  else{person=runtime.makeBoy();person.scale.setScalar([1,.46][role-1]);person.children[2].material=[runtime.mats.leaf,runtime.mats.gold][role-1]}
- g.add(person);const familyMarker=runtime.sphere(g,runtime.mats.gold,0,role===1?3.15:2.5,0,.2);familyMarker.userData.familyMarker=true;runtime.familyMembers.push({g,x,z,done:false,role,person,familyMarker})}
+ g.add(person);runtime.familyMembers.push({g,x,z,done:false,role,person})}
  return {
   bindings:{
 "makeMother":{get:()=>makeMother},

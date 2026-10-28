@@ -1,5 +1,5 @@
-import { buildExitLandscape, makeExitFence } from "../exit-scenery.js?v=218";
-import { forestEdgeAt } from "../world-interactions.js?v=218";
+import { buildExitLandscape, makeExitFence } from "../exit-scenery.js?v=219";
+import { forestEdgeAt } from "../world-interactions.js?v=219";
 import * as THREE from "../../vendor/three/three.module.min.js";
 
 // Owns 7 bindings. See docs/architecture.md for startup order.

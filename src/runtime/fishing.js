@@ -1,7 +1,7 @@
-import {findFishingWater,fishingCatchPosition} from '../fishing-rules.js?v=218';
-import { HomeConstruction } from "../home-construction.js?v=218";
+import {findFishingWater,fishingCatchPosition} from '../fishing-rules.js?v=219';
+import { HomeConstruction } from "../home-construction.js?v=219";
 import * as THREE from "../../vendor/three/three.module.min.js";
-import { onRiverBridge } from "../world-surface.js?v=218";
+import { onRiverBridge } from "../world-surface.js?v=219";
 
 // Owns 25 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){

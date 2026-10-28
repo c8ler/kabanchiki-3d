@@ -1,9 +1,9 @@
-import { PLAYER_HEIGHTS } from "../player-house-physics.js?v=218";
-import { forestEdgeBlocked } from "../world-interactions.js?v=218";
-import { HOME_SITE } from "../home-construction.js?v=218";
+import { PLAYER_HEIGHTS } from "../player-house-physics.js?v=219";
+import { forestEdgeBlocked } from "../world-interactions.js?v=219";
+import { HOME_SITE } from "../home-construction.js?v=219";
 import * as THREE from "../../vendor/three/three.module.min.js";
-import { bridgeRailBlocked } from "../world-surface.js?v=218";
-import { forestExitBlocked } from "../opening-adventure.js?v=218";
+import { bridgeRailBlocked } from "../world-surface.js?v=219";
+import { forestExitBlocked } from "../opening-adventure.js?v=219";
 
 // Owns 8 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){
@@ -17,7 +17,7 @@ function playerWorldBlocked(x,z,pad=0){
  // v165: on foot the bridge rail blocks at deck height, but a normal jump can clear it.
  if(runtime.level===4&&(runtime.mountedFriend||runtime.py<.62)&&bridgeRailBlocked(x,z,runtime.mountedFriend?.86:rr))return true;
  if(runtime.craftWorld.blocked(x,z,runtime.terrainHeightAt(x,z)+runtime.py,rr,playerPhysicalHeight()))return true;if(runtime.catLife.blocks(x,z,runtime.py,rr))return true;if(runtime.circleHitsTreeGeometry(x,z,rr))return true;
- if((runtime.mountedFriend||runtime.boarFormTime>0)&&(runtime.boarTreeContacts(runtime.playerBoarBody(),x,z).length||!runtime.boarLakeStepAllowed(runtime.playerBoarBody(),x,z)))return true;
+ if((runtime.mountedFriend||runtime.boarFormTime>0)&&(runtime.boarTreeContacts(runtime.playerBoarBody(),x,z).length||runtime.boarWallContacts(runtime.playerBoarBody(),x,z).length||!runtime.boarLakeStepAllowed(runtime.playerBoarBody(),x,z)))return true;
  if(runtime.mountainBlockedAt(x,z,runtime.mountedFriend?runtime.MOUNTED_ROCK_RADIUS:rr))return true;
  if(runtime.logObstacles.some(o=>runtime.logFootprintHit(o,x,z,rr,true)))return true;
  if(runtime.rockPositions.some(([, , ,m])=>runtime.rockFootprintHit(m,x,z,runtime.ROCK_PLAYER_RADIUS+pad,true)))return true;
@@ -48,7 +48,7 @@ function houseLintelContacts(x,z,pad){
 
 
 function houseCeilingAt(x,z){
- if(runtime.level!==3)return Infinity;let ceiling=Infinity;
+ let ceiling=Infinity;const feet=runtime.py+runtime.terrainHeightAt(x,z);for(const w of runtime.wallGeometry())if(w.exit&&x>w.box.min.x-runtime.PLAYER_RADIUS*.7&&x<w.box.max.x+runtime.PLAYER_RADIUS*.7&&z>w.box.min.z-runtime.PLAYER_RADIUS*.7&&z<w.box.max.z+runtime.PLAYER_RADIUS*.7&&w.box.min.y>feet+.03)ceiling=Math.min(ceiling,w.box.min.y-runtime.terrainHeightAt(x,z));if(runtime.level!==3)return ceiling;
  for(const h of runtime.houseObjects){
   if(!h.visible||!h.userData.enterable||(h===runtime.personalHouse&&runtime.home.stage<3))continue;
   const roof=h.userData.cutawayWalls?.roof;if(!roof)continue;

@@ -1,7 +1,7 @@
-import {CatLife} from "../cat-life.js?v=218";
-import { candidateBoxes, placementHeight, placementProblem } from "../craft-placement.js?v=218";
-import { PROP_FOOTPRINTS } from "../craft-world.js?v=218";
-import { RECIPES, craftResult } from "../crafting-rules.js?v=218";
+import {CatLife} from "../cat-life.js?v=219";
+import { candidateBoxes, placementHeight, placementProblem } from "../craft-placement.js?v=219";
+import { PROP_FOOTPRINTS } from "../craft-world.js?v=219";
+import { RECIPES, craftResult } from "../crafting-rules.js?v=219";
 import * as THREE from "../../vendor/three/three.module.min.js";
 
 // Owns 18 bindings. See docs/architecture.md for startup order.
@@ -132,7 +132,7 @@ function updateCraftCreatures(dt,now){
   craftedCats??=new CatLife(THREE,runtime.scene,runtime.mobile,true);craftedCats.root.visible=true;craftedCats.cats=cats;craftedCats.epoch=runtime.worldEpoch;
   craftedCats.houses=runtime.catLife.houses?.length?runtime.catLife.houses:[{x:0,z:0,y:0,w:3,d:3,exit:{x:2,z:2}}];craftedCats.objects=runtime.catLife.objects||[];
   craftedCats.terrain=(x,z)=>terrain(x,z);craftedCats.blocked=(x,z)=>blocked(x,z,terrain(x,z),.22,.95);
-  craftedCats.update(dt,runtime.birdLife,runtime.boarBodies(),runtime.boy.position);
+  craftedCats.update(dt,runtime.birdLife,runtime.boarBodies(),runtime.boy.position,runtime.mountedFriend?runtime.friend:null,runtime.catLife.root.visible?runtime.catLife.cats:[]);
  }
  runtime.craftWorld.update(dt,now/1000,runtime.level,terrain,blocked,runtime.boy.position);
 }

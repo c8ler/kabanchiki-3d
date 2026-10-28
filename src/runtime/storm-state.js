@@ -1,9 +1,9 @@
-import {islandDepth} from '../creative-island.js?v=218';
-import { TornadoState } from "../tornado-rules.js?v=218";
-import { TornadoVisual } from "../tornado-visual.js?v=218";
+import {islandDepth} from '../creative-island.js?v=219';
+import { TornadoState } from "../tornado-rules.js?v=219";
+import { TornadoVisual } from "../tornado-visual.js?v=219";
 import * as THREE from "../../vendor/three/three.module.min.js";
-import { riverDepthAt, lakeInletDepthAt, lakeRadiusAt, lakeDepth } from "../world-surface.js?v=218";
-import { openingStreamDepth } from "../opening-adventure.js?v=218";
+import { riverDepthAt, lakeInletDepthAt, lakeRadiusAt, lakeDepth } from "../world-surface.js?v=219";
+import { openingStreamDepth } from "../opening-adventure.js?v=219";
 
 // Owns 29 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){

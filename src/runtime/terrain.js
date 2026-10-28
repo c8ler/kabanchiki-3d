@@ -1,7 +1,7 @@
-import {islandHeight,islandDepth} from '../creative-island.js?v=218';
+import {islandHeight,islandDepth} from '../creative-island.js?v=219';
 import * as THREE from "../../vendor/three/three.module.min.js";
-import { riverCenterAt, riverDepthAt, lakeInletCenterAt, lakeInletDepthAt, rainFillLimit, rainFillRate, WorldSurface, lakeRadiusAt, lakeDepth } from "../world-surface.js?v=218";
-import { openingStreamDepth } from "../opening-adventure.js?v=218";
+import { riverCenterAt, riverDepthAt, lakeInletCenterAt, lakeInletDepthAt, rainFillLimit, rainFillRate, WorldSurface, lakeRadiusAt, lakeDepth } from "../world-surface.js?v=219";
+import { openingStreamDepth } from "../opening-adventure.js?v=219";
 
 // Owns 8 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){
