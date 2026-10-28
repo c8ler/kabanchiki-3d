@@ -22,7 +22,7 @@ export function animateExitBarrier(barrier,progress){
  else{q.mesh.position.set(q.x+(q.side*(6.4+q.index*.2)-q.x)*k,q.y+(.65-q.y)*k+Math.sin(k*Math.PI)*.5,q.z-k*(1+q.index*.12));q.mesh.rotation.z=q.side*k*.8;q.mesh.rotation.y=k*(q.index+1)}
  barrier.root.userData.open=t>=1;
 }
-export function makeExitFence(parent,z,mats){const items=[];parent.userData.fenceExtent={left:-48,right:48,opening:11};for(const side of [-1,1]){for(const y of [.65,1.55])items.push([side*26.75,y,z,42.5,.22,.22]);for(let x=5.5;x<=48;x+=2.5)items.push([side*x,1.05,z,.2,2.1,.2]);}return boxes(parent,mats.wood,items)}
+export function makeExitFence(parent,z,mats){const items=[];parent.userData.fenceExtent={left:-48,right:48,opening:11};for(const side of [-1,1]){for(const y of [.65,1.55])items.push([side*26.75,y,z,42.5,.22,.22]);for(let x=5.5;x<=48;x+=2.5)items.push([side*x,1.05,z,.2,2.1,.2]);}const mesh=boxes(parent,mats.wood,items);parent.userData.exitFence=mesh;return mesh}
 export function refreshExitLandscape(root,heightAt){for(const {mesh,lift} of root.userData.surfaces||[]){const pos=mesh.geometry.attributes.position;for(let i=0;i<pos.count;i++)pos.setY(i,heightAt(Math.max(-42,Math.min(42,pos.getX(i))),Math.max(-43,Math.min(42,pos.getZ(i))))+lift);pos.needsUpdate=true;mesh.geometry.computeVertexNormals();mesh.geometry.computeBoundingSphere();}}
 export function buildExitLandscape(parent,level,mats,heightAt=()=>0){
  const root=new THREE.Group();root.userData.surfaces=[];root.userData.destination=['','lake','village','river','mountains','lair'][level];root.userData.trailRange={near:-46,far:-72};parent.add(root);
