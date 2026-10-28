@@ -1,6 +1,6 @@
 import * as THREE from "../../vendor/three/three.module.min.js";
-import { riverDepthAt, onRiverBridge, lakeInletDepthAt, lakeDepth } from "../world-surface.js?v=218";
-import { AdaptiveQuality } from "../adaptive-quality.js?v=218";
+import { riverDepthAt, onRiverBridge, lakeInletDepthAt, lakeDepth } from "../world-surface.js?v=219";
+import { AdaptiveQuality } from "../adaptive-quality.js?v=219";
 
 // Owns 36 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){
