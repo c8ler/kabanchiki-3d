@@ -8,3 +8,6 @@ test('an opened gate has a clear middle and solid moving leaves and posts',()=>{
 test('lowered bridge decking supports passage while its rails remain solid',()=>{const props=fixture('bridge');animateExitBarrier(props.userData.exitBarrier,1);assert.equal(hits(props,0,-40,.37),false);assert.ok(hits(props,5.2,-40,.37));assert.equal(hits(props,0,-37.2,.37),false)});
 
 test('the upright bridge does not turn side rails into a wall across the helper approach',()=>{const props=fixture('bridge');animateExitBarrier(props.userData.exitBarrier,0);assert.equal(hits(props,0,-36.1),false);assert.equal(hits(props,0,-34.8,0,1.65,1.7),false)});
+
+import {capsuleAt,capsuleCircleContact,capsuleCapsuleContact} from '../src/boar-physics.js';
+test('vertical or point-sized obstacle footprints never block the entire map',()=>{const point={ax:0,az:0,bx:0,bz:0,r:.7};assert.equal(capsuleCircleContact(point,20,20,.43),null);assert.equal(capsuleCapsuleContact(point,capsuleAt(20,20)),null);assert.equal(capsuleCapsuleContact(capsuleAt(20,20),point),null);for(const hit of [capsuleCircleContact(point,0,0,.43),capsuleCapsuleContact(point,capsuleAt(0,0)),capsuleCapsuleContact(capsuleAt(0,0),point)])assert.ok(hit&&Number.isFinite(hit.nx+hit.nz+hit.depth))});
