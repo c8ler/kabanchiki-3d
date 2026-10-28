@@ -2541,6 +2541,7 @@ export const GAME_MODULES=[
       "boarFormTime",
       "boarLakeStepAllowed",
       "boarTreeContacts",
+      "boarWallContacts",
       "catFormTime",
       "catLife",
       "circleHitsTreeGeometry",
@@ -2571,7 +2572,8 @@ export const GAME_MODULES=[
       "rockPositions",
       "seasonBaseMaterials",
       "solidCircles",
-      "terrainHeightAt"
+      "terrainHeightAt",
+      "wallGeometry"
     ]
   },
   {
@@ -2656,6 +2658,7 @@ export const GAME_MODULES=[
       "boarPlayerContact",
       "boy",
       "catLife",
+      "craftWorld",
       "exitHelpers",
       "friend",
       "jump",
@@ -2669,6 +2672,7 @@ export const GAME_MODULES=[
       "opening",
       "openingDebrisCapsules",
       "playerBoarBody",
+      "playerPhysicalHeight",
       "playerWorldBlocked",
       "pushOutOfLog",
       "pushOutOfRock",
@@ -2998,6 +3002,8 @@ export const GAME_MODULES=[
     "dependencies": [
       "boarBody",
       "boarCollisionEpoch",
+      "boarScale",
+      "boy",
       "craftWorld",
       "familyDoor",
       "familyHideout",
@@ -3005,8 +3011,13 @@ export const GAME_MODULES=[
       "homeParts",
       "houseFurnishings",
       "houseObjects",
+      "lakeExitProps",
       "level",
+      "locationExitProps",
+      "mountedFriend",
       "personalHouse",
+      "rideHop",
+      "terrainHeightAt",
       "worldEpoch"
     ]
   },
