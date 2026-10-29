@@ -1,0 +1,20 @@
+import {chromium,webkit} from 'playwright';import assert from 'node:assert/strict';import {mkdir} from 'node:fs/promises';
+await mkdir('screenshots',{recursive:true});const failures=[];
+for(const engine of [chromium,webkit]){
+ const mobile=engine===webkit,browser=await engine.launch(),page=await browser.newPage({viewport:mobile?{width:390,height:844}:{width:1024,height:720},isMobile:mobile,hasTouch:mobile}),errors=[];
+ page.on('pageerror',e=>errors.push(e.message));const qa=(method,...args)=>page.evaluate(({method,args})=>window.__KABANCHIKI_QA__[method](...args),{method,args}),check=async(name,fn)=>{try{await fn();console.log('PASS220',engine.name(),name)}catch(e){failures.push(engine.name()+' '+name+': '+e.stack);console.log('FAIL220',engine.name(),name,e.stack)}};
+ const shot=async name=>{const b=await page.screenshot({path:'screenshots/v220-'+engine.name()+'-'+name+'.jpg',type:'jpeg',quality:55});if(!mobile){const d=b.toString('base64');for(let i=0;i<d.length;i+=6000)console.log('REVIEW_IMAGE:v220-'+name+':'+i/6000+':'+d.slice(i,i+6000))}};
+ try{
+  await page.goto('http://127.0.0.1:8080/?autotest=1&level=3');await page.waitForFunction(()=>window.__KABANCHIKI_TEST__?.ready,null,{timeout:120000});
+  await check('the secret button spawns spiders, while ordinary play starts empty',async()=>{let r=await qa('v220Setup');assert.equal(r.total,0);await qa('v214Menu','pauseMenu');for(let i=0;i<5;i++)await page.locator('#versionSecret').click();await page.locator('[data-cheat="SPIDERS"]').click();r=await qa('v220Inspect');assert.equal(r.count,3);assert.match(await page.locator('#cheatResult').textContent(),/Выпущено пауков/);await page.locator('#secretResume').click();});
+  await check('spiders crawl and weave automatically',async()=>{let r=await qa('v220WebPreview');console.log('SPIDERS220',JSON.stringify(r));assert.ok(r.count===3&&r.webs>0);assert.ok(r.spiders.every(s=>s.position.every(Number.isFinite)));await shot('spiders-and-webs')});
+  await check('spiders can be released inside the family home',async()=>{const r=await qa('v220Indoor');assert.ok(r.count>0);const moved=await qa('v220Advance',8);assert.ok(moved.spiders.every(s=>s.position.every(Number.isFinite)));console.log('INDOOR220',JSON.stringify(moved))});
+  await check('a real jump shakes a spider off before the bite',async()=>{await qa('v220BiteSetup');await qa('v220HostNow');await page.keyboard.press('Space');const r=await qa('v220Inspect');assert.ok(r.spiders.every(s=>!s.host));assert.equal(r.venom,0)});
+  await check('bites and poison can kill and use the grounded spider death scene',async()=>{await qa('v220BiteSetup');const r=await qa('v220Advance',12);console.log('VENOM220',JSON.stringify(r));assert.equal(r.life,0);assert.equal(r.death,'spider');assert.equal(r.movie,'death');assert.equal(r.cause,'spider');assert.equal(r.root,false);await shot('spider-death')});
+  await check('the companion runs from a visible spider',async()=>{const before=await qa('v220FearSetup');await page.waitForFunction(p=>{const r=window.__KABANCHIKI_QA__.v220FearInspect();return r.fear>0&&Math.hypot(r.position[0]-p[0],r.position[2]-p[2])>.4},before.position,{timeout:20000});const after=await qa('v220FearInspect');console.log('FEAR220',JSON.stringify(after))});
+  await check('spider and web rendering stays bounded and clearing removes both',async()=>{const r=await qa('v220Budget');assert.equal(r.count,12);assert.equal(r.meshes,12);assert.ok(r.lines<=(mobile?18:24));await qa('v217Cheat','CLEAR');const cleared=await qa('v220Inspect');assert.equal(cleared.total,0);assert.equal(cleared.webs,0);assert.equal(cleared.venom,0)});
+  await check('all campaign locations support spiders and level changes restore the correct population',async()=>{for(let n=1;n<=6;n++){await qa('v220Setup',n);await qa('v217Cheat','SPIDERS');assert.equal((await qa('v220Inspect')).count,3);let r=await qa('v220ChangeLevel',n===6?1:n+1);assert.equal(r.count,0);r=await qa('v220ChangeLevel',n);assert.equal(r.count,3)}});
+  assert.deepEqual(errors,[]);console.log('v220 spiders PASS',engine.name());
+ }finally{await browser.close()}
+}
+assert.deepEqual(failures,[]);
