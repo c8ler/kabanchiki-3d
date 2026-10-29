@@ -1,5 +1,5 @@
 import * as THREE from '../../vendor/three/three.module.min.js';
-import {lakePointAt,riverCenterAt,lakeInletCenterAt} from '../world-surface.js?v=219';
+import {lakePointAt,riverCenterAt,lakeInletCenterAt} from '../world-surface.js?v=220';
 export function createQaPart(runtime){return {
  v217Fresh(){this.v212Setup(3);runtime.resetNewRun();runtime.loadLevel(3);runtime.paused=true;runtime.$('pauseMenu').style.display='grid';runtime.syncCraftUI();return this.v217Inspect()},
  v217Inspect(){return {secretOpen:runtime.secretMenuOpen,bombs:runtime.adventureInventory.bombs,pickupBombs:runtime.adventurePickups.filter(p=>p.kind==="bomb").length,level:runtime.level,sandbox:runtime.sandboxMode,craft:runtime.craftUnlocked,home:runtime.homeUnlocked,homeVisible:runtime.personalHouse.visible,yard:runtime.homeYard.visible,craftHidden:runtime.$('craftPanel').hidden,stock:{...runtime.craftWorld.stock},items:runtime.craftWorld.items.map(i=>({kind:i.kind,position:i.g.position.toArray(),cat:!!i.catActor,dog:!!i.dog,legs:i.g.companionRig?.legs.map(l=>l.rotation.x)})),position:runtime.boy.position.toArray(),time:runtime.levelTime,tornado:runtime.tornadoState.active,foes:runtime.foes.length,life:runtime.life,food:runtime.food,version:runtime.GAME_VERSION}},
