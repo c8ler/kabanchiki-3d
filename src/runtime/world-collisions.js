@@ -1,6 +1,6 @@
 import * as THREE from "../../vendor/three/three.module.min.js";
-import { capsuleCircleContact } from "../boar-physics.js?v=219";
-import { convexHull, polygonContact } from "../movement-geometry.js?v=219";
+import { capsuleCircleContact } from "../boar-physics.js?v=220";
+import { convexHull, polygonContact } from "../movement-geometry.js?v=220";
 
 // Owns 15 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){

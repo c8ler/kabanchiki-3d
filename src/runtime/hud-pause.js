@@ -1,6 +1,6 @@
-import { stormClock } from "../tornado-rules.js?v=219";
-import { briefNotice } from "../adventure-hud.js?v=219";
-import { parseCheatCode } from "../cheat-codes.js?v=219";
+import { stormClock } from "../tornado-rules.js?v=220";
+import { briefNotice } from "../adventure-hud.js?v=220";
+import { parseCheatCode } from "../cheat-codes.js?v=220";
 
 // Owns 5 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){

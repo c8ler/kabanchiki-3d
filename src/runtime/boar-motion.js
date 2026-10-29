@@ -1,6 +1,6 @@
-import { BOAR_WADING_DEPTH, updateBoarBreath, shoreGoal } from "../boar-water.js?v=219";
+import { BOAR_WADING_DEPTH, updateBoarBreath, shoreGoal } from "../boar-water.js?v=220";
 import * as THREE from "../../vendor/three/three.module.min.js";
-import { findGridPath, StableRoute, smoothHeading, findClearEscape } from "../navigation.js?v=219";
+import { findGridPath, StableRoute, smoothHeading, findClearEscape } from "../navigation.js?v=220";
 
 // Owns 6 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){
@@ -26,6 +26,7 @@ function minionSpawnPoint(f,angle){
 }
 
 function moveBoarToward(f,tx,tz,speed,dt){
+ if(f.spiderFear>0&&f.spiderEscape&&!f.flee&&!f.exitBreaking){if(f.spiderMovedFrame===runtime.boarCollisionEpoch)return false;f.spiderMovedFrame=runtime.boarCollisionEpoch;tx=f.spiderEscape.x;tz=f.spiderEscape.z;speed=Math.max(speed,4.8)}
  const ox=f.g.position.x,oz=f.g.position.z,dx=tx-ox,dz=tz-oz,d=Math.hypot(dx,dz);if(d<.001)return false;
  const step=Math.min(speed*dt,d),ux=dx/d,uz=dz/d;
  // Fleeing boars ignore trees and stones, but always respect house walls.

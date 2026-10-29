@@ -1,16 +1,16 @@
-import { BOAR_JUMP_SPEED } from "../tornado-rules.js?v=219";
-import { ceilingMotion } from "../player-house-physics.js?v=219";
-import { capsuleCircleContact } from "../boar-physics.js?v=219";
-import { polygonContact } from "../movement-geometry.js?v=219";
-import { riverDepthAt, onRiverBridge, lakeInletDepthAt, lakeDepth } from "../world-surface.js?v=219";
-import { CAT_JUMP_SPEED } from "../form-rules.js?v=219";
+import { BOAR_JUMP_SPEED } from "../tornado-rules.js?v=220";
+import { ceilingMotion } from "../player-house-physics.js?v=220";
+import { capsuleCircleContact } from "../boar-physics.js?v=220";
+import { polygonContact } from "../movement-geometry.js?v=220";
+import { riverDepthAt, onRiverBridge, lakeInletDepthAt, lakeDepth } from "../world-surface.js?v=220";
+import { CAT_JUMP_SPEED } from "../form-rules.js?v=220";
 
 // Owns 6 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){
 
 function queuePlayerJump(){
  if(!runtime.started||runtime.paused||runtime.cinematicRunning||runtime.endShown||runtime.win||runtime.life<=0)return false;
- runtime.jump=true;runtime.boy.userData.jumpQueuedAt=performance.now();runtime.boy.userData.jumpFresh=true;return true;
+ runtime.shakeOffSpiders();runtime.jump=true;runtime.boy.userData.jumpQueuedAt=performance.now();runtime.boy.userData.jumpFresh=true;return true;
 }
 
 function tryPlayerJump(now,supported){

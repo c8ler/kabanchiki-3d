@@ -1,6 +1,6 @@
 import * as THREE from "../../vendor/three/three.module.min.js";
-import { polygonContact } from "../movement-geometry.js?v=219";
-import { riverCenterAt, lakeInletDepthAt, lakeRadiusAt } from "../world-surface.js?v=219";
+import { polygonContact } from "../movement-geometry.js?v=220";
+import { riverCenterAt, lakeInletDepthAt, lakeRadiusAt } from "../world-surface.js?v=220";
 
 // Owns 29 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){

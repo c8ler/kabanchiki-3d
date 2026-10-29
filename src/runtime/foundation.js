@@ -1,9 +1,9 @@
-import { CampaignProgress } from "../campaign-progress.js?v=219";
-import { DismountLatch } from "../mount-transition.js?v=219";
-import { installMenuViewport } from "../menu-viewport.js?v=219";
-import { FirstPersonFood } from "../first-person-food.js?v=219";
+import { CampaignProgress } from "../campaign-progress.js?v=220";
+import { DismountLatch } from "../mount-transition.js?v=220";
+import { installMenuViewport } from "../menu-viewport.js?v=220";
+import { FirstPersonFood } from "../first-person-food.js?v=220";
 import * as THREE from "../../vendor/three/three.module.min.js";
-import { AttemptProgress } from "../seasons.js?v=219";
+import { AttemptProgress } from "../seasons.js?v=220";
 
 // Owns 37 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){
@@ -60,7 +60,7 @@ window.__gameLoadProgress?.(84);
 
 /* init:let */ __loadFinished = false;
 
-/* init:const */ GAME_VERSION = 'v219';
+/* init:const */ GAME_VERSION = 'v220';
 
 /* init:const */ campaignProgress = new CampaignProgress(window.localStorage);
 

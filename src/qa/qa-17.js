@@ -1,0 +1,16 @@
+import * as THREE from '../../vendor/three/three.module.min.js';
+export function createQaPart(runtime){return{
+ v220Setup(n=3){this.v212Setup(n);runtime.resetSpiders();for(const f of runtime.foes)f.flee=true;runtime.invuln=0;runtime.endShown=runtime.win=false;return runtime.spiderLife.inspect()},
+ v220Inspect(){return{...runtime.spiderLife.inspect(),life:runtime.life,death:runtime.lastDeathCause,movie:runtime.movie?.kind,cause:runtime.movie?.detail?.cause,version:runtime.GAME_VERSION,root:runtime.spiderLife.root.visible}},
+ v220Advance(seconds=10){runtime.paused=false;for(let i=0;i<seconds*20&&!runtime.cinematicRunning;i++){runtime.invuln=Math.max(0,runtime.invuln-.05);runtime.boarCollisionEpoch++;runtime.updateSpiders(.05,.05)}if(runtime.movie?.detail?.cause==='spider'){runtime.movie.elapsedOverride=3.5;runtime.updateCinematic(performance.now(),new THREE.Vector3())}runtime.paused=true;return this.v220Inspect()},
+ v220BiteSetup(){this.v220Setup(3);runtime.boy.position.set(0,runtime.terrainHeightAt(0,20),20);runtime.life=3;const s=runtime.visualOnly(()=>runtime.spiderLife.spawn(0,runtime.boy.position.y,20,3));s.immune=0;runtime.paused=false;return this.v220Inspect()},
+ v220HostNow(){const s=runtime.spiderLife.spiders[0];runtime.spiderLife.attach(s,runtime.boy);s.bite=1.8;return this.v220Inspect()},
+ v220FearSetup(){this.v220Setup(3);if(runtime.friend)runtime.scene.remove(runtime.friend.g);runtime.friend=runtime.makeBoar(0,20,true);runtime.friendHP=runtime.diffCfg().friendHP;runtime.boy.position.set(10,0,20);runtime.visualOnly(()=>{const s=runtime.spiderLife.spawn(0,0,18,3);s.immune=999;s.wait=999;s.direction.set(0,0,-1)});runtime.paused=false;return{position:runtime.friend.g.position.toArray()}},
+ v220WildFearSetup(){this.v220FearSetup();runtime.scene.remove(runtime.friend.g);runtime.friend=null;const wild=runtime.makeBoar(0,20,false);wild.qaSpiderFear=true;runtime.foes.push(wild);return{position:wild.g.position.toArray()}},
+ v220WildFearInspect(){const b=runtime.foes.find(f=>f.qaSpiderFear);return{fear:b?.spiderFear||0,position:b?.g.position.toArray()}},
+ v220FearInspect(){return{fear:runtime.friend?.spiderFear||0,position:runtime.friend?.g.position.toArray(),navigation:runtime.friend?.route?.plans||0}},
+ v220Indoor(){this.v220Setup(3);const p=runtime.familyHideout.localToWorld(new THREE.Vector3(0,0,-.8));runtime.boy.position.set(p.x,runtime.terrainHeightAt(p.x,p.z)+.16,p.z);runtime.paused=true;runtime.spawnCheatSpiders(3);return{...this.v220Inspect(),home:runtime.familyHideout.position.toArray()}},
+ v220WebPreview(){this.v220Setup(3);runtime.boy.position.set(0,0,12);runtime.yaw=Math.PI;runtime.camMode=2;runtime.spawnCheatSpiders(3);for(const s of runtime.spiderLife.spiders)s.immune=999;for(let i=0;i<250;i++){runtime.boarCollisionEpoch++;runtime.paused=false;runtime.updateSpiders(.05,.05)}runtime.paused=true;return this.v220Inspect()},
+ v220Budget(){this.v220Setup(3);runtime.spawnCheatSpiders(12);for(const s of runtime.spiderLife.spiders)for(let i=0;i<3;i++)runtime.visualOnly(()=>runtime.spiderLife.weave(s));let meshes=0,lines=0;runtime.spiderLife.root.traverse(o=>{if(o.isMesh)meshes++;if(o.isLineSegments)lines++});return{meshes,lines,...this.v220Inspect()}},
+ v220ChangeLevel(n){runtime.loadLevel(n);runtime.spiderLife.visit(n);return this.v220Inspect()}
+};}

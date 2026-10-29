@@ -1,9 +1,9 @@
-import { forestEdgeLimit, forestEdgeBlocked } from "../world-interactions.js?v=219";
-import { BOAR_WADING_DEPTH } from "../boar-water.js?v=219";
-import { capsuleCircleContact, capsuleCapsuleContact } from "../boar-physics.js?v=219";
-import { polygonContact } from "../movement-geometry.js?v=219";
-import { onRiverBridge } from "../world-surface.js?v=219";
-import { forestExitBlocked } from "../opening-adventure.js?v=219";
+import { forestEdgeLimit, forestEdgeBlocked } from "../world-interactions.js?v=220";
+import { BOAR_WADING_DEPTH } from "../boar-water.js?v=220";
+import { capsuleCircleContact, capsuleCapsuleContact } from "../boar-physics.js?v=220";
+import { polygonContact } from "../movement-geometry.js?v=220";
+import { onRiverBridge } from "../world-surface.js?v=220";
+import { forestExitBlocked } from "../opening-adventure.js?v=220";
 
 // Owns 8 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){
