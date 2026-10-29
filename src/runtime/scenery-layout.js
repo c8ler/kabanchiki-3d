@@ -1,5 +1,5 @@
 import * as THREE from "../../vendor/three/three.module.min.js";
-import { GRAPHICS_TIERS } from "../adaptive-quality.js?v=219";
+import { GRAPHICS_TIERS } from "../adaptive-quality.js?v=220";
 
 // Owns 24 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){
