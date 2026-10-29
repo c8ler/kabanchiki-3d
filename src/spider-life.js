@@ -36,6 +36,8 @@ export class SpiderLife{
   const g=new T.LineSegments(this.assets.web,this.assets.thread);g.position.copy(s.p).addScaledVector(s.normal,.014);g.quaternion.setFromUnitVectors(UP,s.normal);g.scale.setScalar(radius);this.root.add(g);g.visible=s.level===this.level;this.webs.push({g,level:s.level,left:90,anchor:s.surface?.root||null,normal:s.normal.clone()});this.stats.webs++;return true;
  }
  attach(s,host){s.host=host;s.mode='host';s.surface=null;s.bite=1.8;s.lastGround=s.p.clone();this.stats.attachments++}
+ hostPose(s){const a=Math.sin(this.time*.7+s.id)*2.1,y=.6+(Math.sin(this.time*.9+s.id)+1)*.75,local=new T.Vector3(Math.sin(a)*.4,y,Math.cos(a)*.29);s.host.updateWorldMatrix(true,true);s.p.copy(s.host.localToWorld(local));s.normal.set(Math.sin(a),0,Math.cos(a)).transformDirection(s.host.matrixWorld);s.direction.set(0,1,0)}
+ syncHosts(){if(!this.root.visible)return;for(const s of this.spiders)if(s.host&&s.level===this.level){this.hostPose(s);this.pose(s,0)}}
  detach(s,env){const host=s.host;if(!host)return;host.updateWorldMatrix(true,false);const p=host.getWorldPosition(new T.Vector3()),a=s.id*2.4;s.p.set(clamp(p.x+Math.sin(a)*1.8,-41,41),0,clamp(p.z+Math.cos(a)*1.8,-41,41));if(env.wet?.(s.p.x,s.p.z)&&s.lastGround)s.p.copy(s.lastGround);s.p.y=env.ground(s.p.x,s.p.z)+.035;s.host=null;s.mode='ground';s.surface=null;s.normal.copy(UP);s.direction.set(Math.sin(a),0,Math.cos(a));s.immune=4;s.wait=3}
  shake(host,env){let count=0;for(const s of this.spiders)if(s.host===host){this.detach(s,env);count++}return count}
  update(elapsed,env){if(!this.spiders.length&&!this.venom)return;const total=clamp(elapsed,0,.5),steps=Math.max(1,Math.ceil(total/.05));for(let n=0;n<steps;n++)this.step(total/steps,env)}
@@ -45,7 +47,7 @@ export class SpiderLife{
   for(const s of this.spiders){s.g.visible=s.level===this.level&&(!s.surface||visible(s.surface.root));if(!s.g.visible)continue;s.immune=Math.max(0,s.immune-dt);s.steps+=dt*8;s.webClock-=dt;
    if(s.mode==='host'){
     if(!env.player||s.host!==env.player||env.animal){this.detach(s,env);continue}
-    const a=Math.sin(this.time*.7+s.id)*2.1,y=.6+(Math.sin(this.time*.9+s.id)+1)*.75,local=new T.Vector3(Math.sin(a)*.4,y,Math.cos(a)*.29);s.host.updateWorldMatrix(true,true);s.p.copy(s.host.localToWorld(local));s.normal.set(Math.sin(a),0,Math.cos(a)).transformDirection(s.host.matrixWorld);s.direction.set(0,1,0);s.bite-=dt;
+    this.hostPose(s);s.bite-=dt;
     if(s.bite<=0&&this.biteCooldown<=0){s.bite=3.5;this.biteCooldown=2.5;if(env.damage?.('bite')!==false){this.venom=8;this.poisonClock=2.5;this.stats.bites++}}
    }else{
     if(env.player&&!env.animal&&s.immune<=0&&!this.spiders.some(o=>o.host===env.player)){const p=env.player.getWorldPosition(new T.Vector3());if(Math.hypot(s.p.x-p.x,s.p.z-p.z)<.62&&s.p.y>p.y-.15&&s.p.y<p.y+1.8&&env.clear?.(s.p,p)!==false){this.attach(s,env.player);env.attached?.();continue}}
