@@ -1,4 +1,4 @@
-import {createDog,DogCompanion} from './companion-dog.js?v=219';
+import {createDog,DogCompanion} from './companion-dog.js?v=220';
 import * as T from '../vendor/three/three.module.min.js';
 export const PROP_FOOTPRINTS={house:[4.8,4.8],wall:[3,.25],floor:[3,3],roof:[3.5,3.5],block:[1,1],bed:[1.6,2.2],chair:[.7,.7],table:[1.8,1.2],standingLamp:[.5,.5],wardrobe:[1.5,.7],stove:[1.2,1.2],palm:[.7,.7]};
 export class CraftWorld{
