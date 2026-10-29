@@ -1,5 +1,5 @@
-import { onRiverBridge } from "../world-surface.js?v=219";
-import { findGridPath } from "../navigation.js?v=219";
+import { onRiverBridge } from "../world-surface.js?v=220";
+import { findGridPath } from "../navigation.js?v=220";
 
 export function createQaPart(runtime){
  return {
