@@ -1,4 +1,4 @@
-import { Soundscape } from "../soundscape.js?v=219";
+import { Soundscape } from "../soundscape.js?v=220";
 
 // Owns 64 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){
