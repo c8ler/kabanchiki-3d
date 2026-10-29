@@ -1,5 +1,5 @@
-import { stormClock } from "../tornado-rules.js?v=219";
-import { StableRoute } from "../navigation.js?v=219";
+import { stormClock } from "../tornado-rules.js?v=220";
+import { StableRoute } from "../navigation.js?v=220";
 
 export function createQaPart(runtime){
  return {
