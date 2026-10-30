@@ -1,7 +1,7 @@
-import {CatLife} from "../cat-life.js?v=221";
-import { candidateBoxes, placementHeight, placementProblem } from "../craft-placement.js?v=221";
-import { PROP_FOOTPRINTS } from "../craft-world.js?v=221";
-import { RECIPES, craftResult } from "../crafting-rules.js?v=221";
+import {CatLife} from "../cat-life.js?v=222";
+import { candidateBoxes, placementHeight, placementProblem } from "../craft-placement.js?v=222";
+import { PROP_FOOTPRINTS } from "../craft-world.js?v=222";
+import { RECIPES, craftResult } from "../crafting-rules.js?v=222";
 import * as THREE from "../../vendor/three/three.module.min.js";
 
 // Owns 18 bindings. See docs/architecture.md for startup order.
