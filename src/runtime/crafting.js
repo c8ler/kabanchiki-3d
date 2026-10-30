@@ -159,7 +159,6 @@ function craftAdventure(kind){
  if(!runtime.craftUnlocked||!runtime.started||runtime.endShown||runtime.cinematicRunning||runtime.life<=0)return false;
  if(kind==='lamp'&&runtime.hasFlashlight||kind==='aid'&&runtime.life>=runtime.diffCfg().playerHP||kind==='backpack'&&runtime.adventureInventory.backpack||kind==='wool'&&!woolAnimalNearby())return false;
  if((kind==='cat'||kind==='dog')&&runtime.craftWorld.petCount()>=2){runtime.$('craftResult').textContent='🐾 Можно иметь только двух читерских котиков и собак вместе.';return false}
- if(runtime.sandboxMode)runtime.refillCreative();
  const next=craftResult(kind,{...runtime.adventureInventory,food: runtime.food});if(!next){runtime.$('craftResult').textContent='Не хватает припасов.';return false}
  runtime.adventureInventory.wood=next.wood;runtime.adventureInventory.bombs=next.bombs;runtime.adventureInventory.wool=next.wool||0;runtime.food=next.food;if(kind==='backpack')runtime.adventureInventory.backpack=true;else if(!['bomb','lamp','aid','wool'].includes(kind))runtime.craftWorld.addStock(kind);
  if(kind==='lamp')runtime.hasFlashlight=true;if(kind==='aid')runtime.life=Math.min(runtime.diffCfg().playerHP,runtime.life+2);
