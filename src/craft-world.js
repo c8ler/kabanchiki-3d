@@ -1,20 +1,21 @@
 import {createDog,DogCompanion} from './companion-dog.js?v=221';
 import * as T from '../vendor/three/three.module.min.js';
-export const PROP_FOOTPRINTS={house:[4.8,4.8],wall:[3,.25],floor:[3,3],roof:[3.5,3.5],block:[1,1],bed:[1.6,2.2],chair:[.7,.7],table:[1.8,1.2],standingLamp:[.5,.5],wardrobe:[1.5,.7],stove:[1.2,1.2],palm:[.7,.7]};
+export const PROP_FOOTPRINTS={flower:[.6,.6],house:[4.8,4.8],wall:[3,.25],floor:[3,3],roof:[3.5,3.5],block:[1,1],bed:[1.6,2.2],chair:[.7,.7],table:[1.8,1.2],standingLamp:[.5,.5],wardrobe:[1.5,.7],stove:[1.2,1.2],palm:[.7,.7]};
 export class CraftWorld{
  constructor(scene,materials,builders){this.scene=scene;this.materials=materials;this.builders=builders;this.items=[];this.stock={};this.selected='';this.epoch=0}
  petCount(){return this.items.filter(i=>i.kind==='cat'||i.kind==='dog').length+(this.stock.cat||0)+(this.stock.dog||0)}
  addStock(kind){if((kind==='cat'||kind==='dog')&&this.petCount()>=2)return false;this.stock[kind]=(this.stock[kind]||0)+1;this.selected=kind;return true}
  clear(){for(const item of [...this.items])this.remove(item);this.stock={};this.selected=''}
  remove(item){item.g.removeFromParent();item.g.traverse(mesh=>{if(mesh.isMesh&&!mesh.userData.sharedCraftGeometry)mesh.geometry.dispose()});const i=this.items.indexOf(item);if(i>=0)this.items.splice(i,1);this.epoch++}
- create(kind,x,y,z,level,rotation=0,preview=false){if(!preview&&(kind==='cat'||kind==='dog')&&this.items.filter(i=>i.kind==='cat'||i.kind==='dog').length>=2)return null;let g=new T.Group();const m=this.materials,solids=[],supports=[];let living=false,light=null;
+ create(kind,x,y,z,level,rotation=0,preview=false){if(!preview&&['cat','dog','human','worm','snail'].includes(kind)&&this.canCreateCreature&&!this.canCreateCreature(kind,level))return null;if(!preview&&(kind==='cat'||kind==='dog')&&this.items.filter(i=>i.kind==='cat'||i.kind==='dog').length>=2)return null;let g=new T.Group();const m=this.materials,solids=[],supports=[];let living=false,light=null,doorRig=null;
  const box=(material,bx,by,bz,w,h,d,solid=true,support=true)=>{const mesh=new T.Mesh(new T.BoxGeometry(w,h,d),material);mesh.position.set(bx,by,bz);mesh.castShadow=false;mesh.receiveShadow=true;g.add(mesh);if(solid)solids.push(mesh);if(support)supports.push(mesh);return mesh};
  const legs=(w,d,h)=>{for(const a of [-1,1])for(const b of [-1,1])box(m.wood,a*w*.4,h/2,b*d*.4,.1,h,.1)};
  if(kind==='cat'||kind==='human'){const actor=this.builders[kind]();if(kind==='cat')g=actor;else g.add(actor);living=true}
  else if(kind==='dog'){g=createDog(m);living=true}
  else if(kind==='worm'){for(let i=0;i<7;i++)box(m.pink,Math.sin(i)*.04,.09,(i-3)*.12,.14,.14,.14,false,false);living=true}
  else if(kind==='snail'){box(m.gold,0,.1,0,.25,.15,.6,false,false);const shell=new T.Mesh(new T.SphereGeometry(.24,8,6),m.wood);shell.position.y=.3;g.add(shell);for(const a of [-1,1]){box(m.gold,a*.1,.27,.26,.04,.25,.04,false,false);box(m.black,a*.1,.4,.26,.06,.05,.05,false,false)}living=true}
- else if(kind==='house'){box(m.wood,0,.08,0,4.8,.16,4.8,false);box(m.wood,-1.7,1.4,2.3,1.4,2.6,.2);box(m.wood,1.7,1.4,2.3,1.4,2.6,.2);box(m.wood,0,1.4,-2.3,4.8,2.6,.2);for(const side of [-1,1])box(m.wood,side*2.3,1.4,0,.2,2.6,4.6);box(m.roof,0,2.9,0,5.2,.35,5.2);}
+ else if(kind==='house'){box(m.wood,0,.08,0,4.8,.16,4.8,false);box(m.wood,-1.7,1.4,2.3,1.4,2.6,.2);box(m.wood,1.7,1.4,2.3,1.4,2.6,.2);box(m.wood,0,1.4,-2.3,4.8,2.6,.2);for(const side of [-1,1])box(m.wood,side*2.3,1.4,0,.2,2.6,4.6);box(m.roof,0,2.9,0,5.2,.35,5.2);const hinge=new T.Group();hinge.position.set(-1,.16,2.42);g.add(hinge);const slab=new T.Mesh(new T.BoxGeometry(2,2.3,.12),m.wood);slab.position.set(1,1.15,0);hinge.add(slab);const knob=new T.Mesh(new T.SphereGeometry(.065,6,4),m.gold);knob.position.set(1.72,1.15,.11);hinge.add(knob);doorRig={hinge,slab,closed:true};}
+ else if(kind==='flower'){for(let k=0;k<3;k++){const x=(k-1)*.18,z=k%2*.14,h=.3+k*.055;box(m.leaf,x,h/2,z,.035,h,.035,false,false);box(m.gold,x,h,z,.08,.06,.08,false,false);for(let i=0;i<4;i++){const a=i*Math.PI/2;box(m.pink,x+Math.cos(a)*.09,h,z+Math.sin(a)*.09,.12,.035,.12,false,false)}}}
  else if(kind==='block')box(m.wood,0,.5,0,1,1,1);
  else if(kind==='wall')box(m.wood,0,1.35,0,3,2.7,.25);
  else if(kind==='floor')box(m.wood,0,.08,0,3,.16,3,false);
@@ -26,7 +27,7 @@ export class CraftWorld{
  else if(kind==='standingLamp'){box(m.stone,0,.05,0,.5,.1,.5);box(m.wood,0,.9,0,.08,1.7,.08);box(m.gold,0,1.85,0,.6,.35,.6,false,false);light=preview?new T.PointLight(0,0):this.builders.light();light.position.set(0,1.8,0);g.add(light)}
  else if(kind==='stove'){box(m.stone,0,.6,0,1.2,1.2,1.2);box(m.black,0,.45,.62,.8,.6,.04,false,false);box(m.gold,0,.4,.65,.5,.3,.02,false,false);box(m.stone,.3,1.8,-.3,.35,1.6,.35);light=preview?new T.PointLight(0,0):this.builders.light();light.position.set(0,.5,1);g.add(light)}
  else if(kind==='palm'){box(m.wood,0,2,0,.45,4,.45);for(let i=0;i<6;i++){const leaf=box(m.leaf,Math.sin(i*Math.PI/3)*1.2,4,Math.cos(i*Math.PI/3)*1.2,.6,.18,2.7,false,false);leaf.rotation.y=i*Math.PI/3;leaf.rotation.x=.2}}
- g.position.set(x,y,z);g.rotation.y=rotation;this.scene.add(g);g.updateWorldMatrix(true,true);const bounds=solids.map(mesh=>new T.Box3().setFromObject(mesh)),platforms=supports.map(mesh=>new T.Box3().setFromObject(mesh)),item={g,kind,level,living,solids:bounds,supports:platforms,home:{x,y,z},phase:this.items.length*2.4,light};if(kind==='dog')item.dog=new DogCompanion(g,item.home);if(kind==='cat')item.catActor=g.craftedCatActor;
+ g.position.set(x,y,z);g.rotation.y=rotation;this.scene.add(g);g.updateWorldMatrix(true,true);const bounds=solids.map(mesh=>new T.Box3().setFromObject(mesh)),platforms=supports.map(mesh=>new T.Box3().setFromObject(mesh)),item={g,kind,level,living,solids:bounds,supports:platforms,home:{x,y,z},phase:this.items.length*2.4,light,doorRig};if(doorRig){doorRig.box=new T.Box3().setFromObject(doorRig.slab);item.solids.push(doorRig.box)}if(kind==='dog')item.dog=new DogCompanion(g,item.home);if(kind==='cat')item.catActor=g.craftedCatActor;
  if(!preview){this.items.push(item);this.epoch++}return item;
  }
  visible(level){for(const item of this.items)item.g.visible=item.level===level}
@@ -35,6 +36,7 @@ export class CraftWorld{
  walls(){return this.items.filter(item=>item.g.visible&&!item.living).flatMap(item=>item.solids.map(box=>({root:item.g,box,polygon:[{x:box.min.x,z:box.min.z},{x:box.max.x,z:box.min.z},{x:box.max.x,z:box.max.z},{x:box.min.x,z:box.max.z}]})))}
  update(dt,now,level,terrain,blocked,player){
   for(const item of this.items){
+   if(item.doorRig&&item.level===level&&item.g.visible&&player){const p=item.g.worldToLocal(new T.Vector3(player.x,player.y||0,player.z)),near=Math.abs(p.x)<2.3&&p.z>-.5&&p.z<5,inside=Math.abs(p.x)<2.25&&Math.abs(p.z)<2.25,closed=!(near||inside);if(item.doorRig.closed!==closed){item.doorRig.closed=closed;item.doorRig.hinge.rotation.y=closed?0:-Math.PI*.48;item.g.updateWorldMatrix(true,true);item.doorRig.box.setFromObject(item.doorRig.slab);this.epoch++}}
    if(item.level!==level||!item.g.visible||!item.living||item.airborne||item.catActor)continue;
    if(item.dog){const cat=this.items.find(i=>i.catActor&&i.level===level&&i.g.visible),playing=cat&&Math.floor(now/8)%3===0&&Math.hypot(item.g.position.x-cat.g.position.x,item.g.position.z-cat.g.position.z)<14;item.dog.update(dt,terrain,blocked,playing?cat.g.position:player,this.epoch);continue}
    const p=item.g.position,small=item.kind==='worm'||item.kind==='snail',speed=item.kind==='worm'?.3:item.kind==='snail'?.16:item.kind==='dog'?2.6:1.1;
