@@ -4061,7 +4061,9 @@ export const GAME_MODULES=[
     "dependencies": [
       "adventureInventory",
       "armedBombs",
+      "boarFormTime",
       "boy",
+      "catFormTime",
       "craftUnlocked",
       "craftWorld",
       "diffCfg",
@@ -4093,6 +4095,8 @@ export const GAME_MODULES=[
       "setRiderPose",
       "settleBoarOnGround",
       "spiderLife",
+      "startBoarForm",
+      "startCatForm",
       "syncCraftUI",
       "syncHomeLocation",
       "syncHomeVisual",
