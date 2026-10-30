@@ -1,7 +1,7 @@
-import {exitObstacleShapes} from "../exit-collisions.js?v=221";
+import {exitObstacleShapes} from "../exit-collisions.js?v=222";
 import * as THREE from "../../vendor/three/three.module.min.js";
-import { polygonContact } from "../movement-geometry.js?v=221";
-import { segmentHitsBox } from "../navigation.js?v=221";
+import { polygonContact } from "../movement-geometry.js?v=222";
+import { segmentHitsBox } from "../navigation.js?v=222";
 
 // Owns 7 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){
