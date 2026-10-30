@@ -1,5 +1,5 @@
 import * as THREE from '../vendor/three/three.module.min.js';
-import {convexHull} from './movement-geometry.js?v=221';
+import {convexHull} from './movement-geometry.js?v=222';
 function shape(box,matrix,root){
  const points=[],world=new THREE.Box3();for(const x of [box.min.x,box.max.x])for(const y of [box.min.y,box.max.y])for(const z of [box.min.z,box.max.z]){const p=new THREE.Vector3(x,y,z).applyMatrix4(matrix);world.expandByPoint(p);points.push({x:p.x,z:p.z})}
  return{root,box:world,polygon:convexHull(points),exit:true};
