@@ -13,7 +13,7 @@ for(const engine of [chromium,webkit]){
   await page.locator('[data-cheat="BOMB"]').click();assert.equal((await qa('v217Inspect')).bombs,1);
   await page.keyboard.press('Escape');assert.deepEqual(await qa('v218SecretState'),{open:false,paused:true,visible:false,version:'v222'});
   await reveal();await page.locator('#secretResume').click();assert.equal((await qa('v218SecretState')).paused,false);
-  await page.keyboard.press('KeyG');assert.equal((await qa('v217Inspect')).bombs,0);
+  await page.keyboard.press('KeyG');await page.waitForFunction(()=>window.__KABANCHIKI_QA__.v217Inspect().armed>0);assert.equal((await qa('v217Inspect')).bombs,1);
   await qa('v217Fresh');assert.equal((await qa('v217Inspect')).bombs,0);assert.equal((await qa('v218SecretState')).visible,false);
   await qa('v218FishingApproach');await page.keyboard.press('KeyH');assert.equal((await qa('v217FishInspect')).active,false);
   await qa('v218MoveToBank');await page.waitForFunction(()=>window.__KABANCHIKI_QA__.v217FishInspect().active,null,{timeout:30000});
