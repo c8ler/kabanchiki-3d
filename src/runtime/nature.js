@@ -15,6 +15,7 @@ export function createModule(runtime){
  flyingInsects.visit(runtime.level);const key=runtime.worldEpoch+':'+runtime.level+':'+runtime.currentSeason;if(key!==flowerKey){flowerKey=key;flowerField.reset(runtime.level,ground,(x,z)=>pointClear(x,z,.7),runtime.currentSeason)}
  flowerField.mesh.visible=runtime.started&&!runtime.cinematicRunning&&runtime.currentSeason!=='winter'&&runtime.level!==6;
  const p=runtime.boy.position;still=Math.hypot(p.x-lastPosition.x,p.z-lastPosition.z)<.025?still+active:0;lastPosition.x=p.x;lastPosition.z=p.z;
+ if(runtime.currentSeason==='winter')for(const i of [...flyingInsects.items])if(!i.cheat)flyingInsects.remove(i);
  const natural=runtime.started&&!runtime.cinematicRunning&&runtime.currentSeason!=='winter'&&runtime.level!==6&&runtime.familyFloorAt(p.x,p.z)<.05;
  if(natural){insectClock-=active;groundClock-=active;spiderClock-=active;
  if(insectClock<=0){insectClock=55+flyingInsects.random()*20;if([2,4,5].includes(runtime.level))spawnFlying('mosquito',2,false);else{spawnFlying('bee',1,false);spawnFlying('butterfly',1,false)}}
