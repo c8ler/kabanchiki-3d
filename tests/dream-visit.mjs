@@ -1,0 +1,3 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {DreamVisit} from '../src/dream-visit.js';
+test('a bed dream lasts two active minutes and retains its return snapshot',()=>{const dream=new DreamVisit(),saved={level:3};assert.ok(dream.enter(saved));assert.equal(dream.enter({}),false);assert.equal(dream.step(119.9),false);assert.ok(dream.remaining>0);assert.equal(dream.step(.11),true);assert.equal(dream.leave(),saved);assert.equal(dream.active,false);assert.equal(dream.step(999),false)});
+test('paused and cinematic time cannot advance a dream',()=>{const dream=new DreamVisit();dream.enter({});for(let i=0;i<100;i++)dream.step(0);assert.equal(dream.remaining,120);dream.step(-10);assert.equal(dream.remaining,120)});
