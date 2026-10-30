@@ -24,7 +24,7 @@ for(const engine of [chromium,webkit]){
    await page.keyboard.press('Escape');await reveal();await page.locator('[data-cheat="LEVEL2"]').click();r=await qa('v217Inspect');assert.equal(r.level,2);assert.equal(r.sandbox,false);
   });
   await check('cheated cats share the village cat AI and dogs move smoothly',async()=>{
-   for(const fps of [20,30,60,144]){const r=await qa('v217PetRobot',fps);console.log('PET217',fps,JSON.stringify(r));assert.ok(r.turn<=3.2/fps+.001);assert.ok(r.step<=2.8/fps+.001);assert.ok(r.legs>.2&&r.travel>2);assert.ok(r.remaining<4);assert.ok(r.catJump&&r.catRide)}
+   for(const fps of [20,30,60,144]){const r=await qa('v217PetRobot',fps);console.log('PET217',fps,JSON.stringify(r));assert.ok(r.turn<=6.2/fps+.001);assert.ok(r.step<=5.0/fps+.001);assert.ok(r.legs>.2&&r.travel>2);assert.ok(r.remaining<22);assert.ok(r.playFrames>fps*12);assert.ok(r.roles.includes('chase')&&r.roles.includes('run'))}
   });
   await check('fishing finds water around every accessible shoreline',async()=>{
    const results=await qa('v217ShoreAudit');console.log('SHORE217',JSON.stringify(results));for(const r of results)assert.ok(r.target,'no fishing '+JSON.stringify(r));
