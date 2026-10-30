@@ -129,7 +129,7 @@ function updateCraftCreatures(dt,now){
  const cats=runtime.craftWorld.items.filter(i=>i.g.visible&&i.catActor).map(i=>i.catActor);
  if(!cats.length&&craftedCats){craftedCats.cats=[];craftedCats.root.visible=false}
  if(cats.length){
-  craftedCats??=new CatLife(THREE,runtime.scene,runtime.mobile,true);craftedCats.root.visible=true;craftedCats.cats=cats;craftedCats.epoch=runtime.worldEpoch;craftedCats.jumpBlocked=(x,z,y,r)=>blocked(x,z,y,r,.95);
+  craftedCats??=new CatLife(THREE,runtime.scene,runtime.mobile,true);craftedCats.root.visible=true;craftedCats.cats=cats;craftedCats.epoch=runtime.worldEpoch;craftedCats.jumpBlocked=(x,z,y,r)=>blocked(x,z,y,r,1.05);
   craftedCats.houses=runtime.catLife.houses?.length?runtime.catLife.houses:[{x:0,z:0,y:0,w:3,d:3,exit:{x:2,z:2}}];craftedCats.objects=runtime.catLife.objects||[];
   craftedCats.terrain=(x,z)=>terrain(x,z);craftedCats.blocked=(x,z)=>blocked(x,z,terrain(x,z),.22,.95);
   const dog=runtime.craftWorld.items.find(i=>i.kind==='dog'&&i.level===runtime.level&&i.g.visible);for(const c of cats){c.petChaseTarget=dog&&Math.floor(now/1000/8)%3===1&&c.g.position.distanceTo(dog.g.position)<14?dog.g.position:null}
