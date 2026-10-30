@@ -14,6 +14,6 @@ await check('family conversation waits for Next',async()=>{await qa('v222Setup',
 await check('early doors and wall shelter',async()=>{await qa('v222Setup',3);const r=await qa('v222Door');for(const [key,value]of Object.entries(r))assert.equal(value,true,key)});
 await check('monster scenarios, boars and bombs',async()=>{await qa('v222Setup',3);const r=await qa('v222Monsters');console.log('MONSTERS222',r);assert.equal(r.hp,3);for(const key of ['rejected','killed','hidden','revealed','bombKilled'])assert.equal(r[key],true,key)});
 await check('flowers are sparse, craftable and butterflies peaceful',async()=>{await qa('v222Setup',3);const r=await qa('v222Bloom');assert.ok(r.flowers>0&&r.flowers<=30);assert.equal(r.decor,true);assert.equal(r.after,r.before+2);assert.equal(r.draws,2)});
-await qa('v222Setup',3);await qa('v222Preview');await shot('wildlife');await qa('v214Menu','pauseMenu');for(let i=0;i<5;i++)await page.locator('#versionSecret').click();await shot('cheat-groups');assert.equal(errors.length,0,errors.join('\n'));
+await qa('v222MonsterPreview');await shot('monsters');await qa('v222Setup',3);await qa('v222Preview');await shot('wildlife');await qa('v214Menu','pauseMenu');for(let i=0;i<5;i++)await page.locator('#versionSecret').click();await shot('cheat-groups');assert.equal(errors.length,0,errors.join('\n'));
 }finally{await browser.close()}}
 assert.equal(failures,0,failures+' v222 browser scenarios failed');
