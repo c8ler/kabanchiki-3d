@@ -4031,7 +4031,7 @@ export const GAME_MODULES=[
       "moveBoarToward",
       "notice",
       "playerHitFeedback",
-      "rockFootprintHit",
+      "rockEllipse",
       "rockPositions",
       "sandboxMode",
       "scene",
