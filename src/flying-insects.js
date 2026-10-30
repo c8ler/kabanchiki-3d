@@ -21,7 +21,7 @@ export class FlyingInsects{
  const provoked=i.kind==='bee'?(distance<.55&&i.touch>.8||env.disturbed&&distance<1.6):i.kind==='mosquito'&&env.still>10&&i.touch>10;
  if(i.eligible&&!i.spent&&provoked&&this.time>=this.nextBite&&env.clear(i.p,{x:player.x,y:player.y+.9,z:player.z})){i.spent=true;if(env.damage?.(i.kind))this.nextBite=this.time+INSECT_HIT_GAP;else this.nextBite=this.time+3}
  }}}
- render(){if(!this.assets)return;for(const kind of INSECT_KINDS){const {body,wings}=this.assets[kind];let n=0;for(const i of this.items){if(i.level!==this.level)continue;const d=this.dummy,s=kind==='mosquito'?.055:kind==='bee'?.095:.065,yaw=i.goal?Math.atan2(i.goal.x-i.p.x,i.goal.z-i.p.z):0;
+ render(){if(!this.assets)return;for(const kind of INSECT_KINDS){const {body,wings}=this.assets[kind];let n=0;for(const i of this.items){if(i.level!==this.level||i.kind!==kind)continue;const d=this.dummy,s=kind==='mosquito'?.055:kind==='bee'?.095:.065,yaw=i.goal?Math.atan2(i.goal.x-i.p.x,i.goal.z-i.p.z):0;
  for(let k=0;k<5;k++){d.position.set(i.p.x+Math.sin(yaw)*(k-2)*s*.75,i.p.y,i.p.z+Math.cos(yaw)*(k-2)*s*.75);d.rotation.set(0,yaw,0);d.scale.set(s*.75,s*.75,s);d.updateMatrix();body.setMatrixAt(n*5+k,d.matrix)}
  for(let k=0;k<4;k++){const side=k%2?1:-1,rear=k>1?-.07:.03;d.position.set(i.p.x+Math.cos(yaw)*side*s,i.p.y+.03,i.p.z-Math.sin(yaw)*side*s+rear);d.rotation.set(0,yaw,side*Math.sin(this.time*(kind==='butterfly'?10:42)+i.phase)*.85);d.scale.set(kind==='butterfly'?.22:.15,.015,kind==='butterfly'?.19:.08);d.updateMatrix();wings.setMatrixAt(n*4+k,d.matrix)}n++}
  body.count=n*5;wings.count=n*4;body.instanceMatrix.needsUpdate=wings.instanceMatrix.needsUpdate=true}}
