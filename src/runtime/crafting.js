@@ -126,13 +126,14 @@ function updateCraftCreatures(dt,now){
  const geometry=placementGeometry();
  const terrain=(x,z,feet=runtime.terrainHeightAt(x,z))=>placementHeight(x,z,feet,runtime.terrainHeightAt(x,z)+runtime.familyFloorAt(x,z),geometry.surfaces,.2);
  const blocked=(x,z,y,r=.22,height=1)=>!!placementProblem([new THREE.Box3(new THREE.Vector3(x-r,y+.04,z-r),new THREE.Vector3(x+r,y+height,z+r))],{...geometry,wet:(px,pz)=>runtime.lakeDepthAt(px,pz)>.08});
+ runtime.craftWorld.preparePetPlay(dt,now/1000,runtime.level,terrain,blocked,runtime.boy.position,runtime.catLife.root.visible?runtime.catLife.cats:[]);
  const cats=runtime.craftWorld.items.filter(i=>i.g.visible&&i.catActor).map(i=>i.catActor);
  if(!cats.length&&craftedCats){craftedCats.cats=[];craftedCats.root.visible=false}
  if(cats.length){
   craftedCats??=new CatLife(THREE,runtime.scene,runtime.mobile,true);craftedCats.root.visible=true;craftedCats.cats=cats;craftedCats.epoch=runtime.worldEpoch;craftedCats.jumpBlocked=(x,z,y,r)=>blocked(x,z,y,r,1.05);
   craftedCats.houses=runtime.catLife.houses?.length?runtime.catLife.houses:[{x:0,z:0,y:0,w:3,d:3,exit:{x:2,z:2}}];craftedCats.objects=runtime.catLife.objects||[];
   craftedCats.terrain=(x,z)=>terrain(x,z);craftedCats.blocked=(x,z)=>blocked(x,z,terrain(x,z),.22,.95);
-  const dog=runtime.craftWorld.items.find(i=>i.kind==='dog'&&i.level===runtime.level&&i.g.visible);for(const c of cats){c.petChaseTarget=dog&&Math.floor(now/1000/8)%3===1&&c.g.position.distanceTo(dog.g.position)<14?dog.g.position:null}
+  
   craftedCats.update(dt,runtime.birdLife,runtime.boarBodies(),runtime.boy.position,runtime.mountedFriend?runtime.friend:null,runtime.catLife.root.visible?runtime.catLife.cats:[]);
  }
  runtime.craftWorld.update(dt,now/1000,runtime.level,terrain,blocked,runtime.boy.position);
