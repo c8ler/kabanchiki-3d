@@ -1,4 +1,4 @@
-import { HOME_SITE } from "../home-construction.js?v=221";
+import { HOME_SITE } from "../home-construction.js?v=222";
 import * as THREE from "../../vendor/three/three.module.min.js";
 
 // Owns 12 bindings. See docs/architecture.md for startup order.
