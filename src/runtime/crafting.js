@@ -1,7 +1,7 @@
-import {CatLife} from "../cat-life.js?v=221";
-import { candidateBoxes, placementHeight, placementProblem } from "../craft-placement.js?v=221";
-import { PROP_FOOTPRINTS } from "../craft-world.js?v=221";
-import { RECIPES, craftResult } from "../crafting-rules.js?v=221";
+import {CatLife} from "../cat-life.js?v=222";
+import { candidateBoxes, placementHeight, placementProblem } from "../craft-placement.js?v=222";
+import { PROP_FOOTPRINTS } from "../craft-world.js?v=222";
+import { RECIPES, craftResult } from "../crafting-rules.js?v=222";
 import * as THREE from "../../vendor/three/three.module.min.js";
 
 // Owns 18 bindings. See docs/architecture.md for startup order.
@@ -122,17 +122,18 @@ function updateCraftPreview(){
 
 function updateCraftCreatures(dt,now){
  if(runtime.cinematicRunning||runtime.paused)return;
- if(!runtime.craftWorld.items.some(item=>item.g.visible&&item.living))return;
+ if(!runtime.craftWorld.items.some(item=>item.g.visible&&(item.living||item.doorRig)))return;
  const geometry=placementGeometry();
  const terrain=(x,z,feet=runtime.terrainHeightAt(x,z))=>placementHeight(x,z,feet,runtime.terrainHeightAt(x,z)+runtime.familyFloorAt(x,z),geometry.surfaces,.2);
  const blocked=(x,z,y,r=.22,height=1)=>!!placementProblem([new THREE.Box3(new THREE.Vector3(x-r,y+.04,z-r),new THREE.Vector3(x+r,y+height,z+r))],{...geometry,wet:(px,pz)=>runtime.lakeDepthAt(px,pz)>.08});
+ runtime.craftWorld.preparePetPlay(dt,now/1000,runtime.level,terrain,blocked,runtime.boy.position,runtime.catLife.root.visible?runtime.catLife.cats:[]);
  const cats=runtime.craftWorld.items.filter(i=>i.g.visible&&i.catActor).map(i=>i.catActor);
  if(!cats.length&&craftedCats){craftedCats.cats=[];craftedCats.root.visible=false}
  if(cats.length){
   craftedCats??=new CatLife(THREE,runtime.scene,runtime.mobile,true);craftedCats.root.visible=true;craftedCats.cats=cats;craftedCats.epoch=runtime.worldEpoch;craftedCats.jumpBlocked=(x,z,y,r)=>blocked(x,z,y,r,1.05);
   craftedCats.houses=runtime.catLife.houses?.length?runtime.catLife.houses:[{x:0,z:0,y:0,w:3,d:3,exit:{x:2,z:2}}];craftedCats.objects=runtime.catLife.objects||[];
   craftedCats.terrain=(x,z)=>terrain(x,z);craftedCats.blocked=(x,z)=>blocked(x,z,terrain(x,z),.22,.95);
-  const dog=runtime.craftWorld.items.find(i=>i.kind==='dog'&&i.level===runtime.level&&i.g.visible);for(const c of cats){c.petChaseTarget=dog&&Math.floor(now/1000/8)%3===1&&c.g.position.distanceTo(dog.g.position)<14?dog.g.position:null}
+  
   craftedCats.update(dt,runtime.birdLife,runtime.boarBodies(),runtime.boy.position,runtime.mountedFriend?runtime.friend:null,runtime.catLife.root.visible?runtime.catLife.cats:[]);
  }
  runtime.craftWorld.update(dt,now/1000,runtime.level,terrain,blocked,runtime.boy.position);
@@ -143,7 +144,7 @@ function placeCraftItem(){
  const target=craftPlacementTarget(true);if(!target)return false;
  if(!target.valid){runtime.notice(target.reason);return false}
  const {kind,x,y,z,rotation}=target,item=runtime.craftWorld.create(kind,x,y,z,runtime.level,rotation);
- if(!item){runtime.notice('🐾 Лимит: два котика и собаки вместе.');return false}if(item.living)item.g.userData.craftedCreature=true;
+ if(!item){runtime.notice('🐾 Лимит: 16 существ на карте; котиков и собак вместе — не больше двух.');return false}if(item.living)item.g.userData.craftedCreature=true;
  runtime.craftWorld.stock[kind]--;runtime.worldEpoch++;runtime.wallCacheEpoch=-1;
  runtime.tagStormTargetsForCurrentLocation();runtime.notice('Готово: '+RECIPES[kind].name);syncCraftPlacement();updateCraftPreview();return true;
 }

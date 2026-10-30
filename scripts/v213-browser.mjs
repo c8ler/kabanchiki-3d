@@ -4,14 +4,14 @@ for(const [engine,mobile] of [[chromium,false],[webkit,true]]){
  const browser=await engine.launch({headless:true}),page=await browser.newPage({viewport:mobile?{width:390,height:844}:{width:960,height:640},isMobile:mobile,hasTouch:mobile}),errors=[];
  page.on('pageerror',e=>errors.push(e.message));
  try{
- await page.goto('http://127.0.0.1:8080/?autotest=1&level=3');await page.waitForFunction(()=>window.__KABANCHIKI_TEST__?.ready,null,{timeout:120000});
+ await page.goto('http://127.0.0.1:8080/?autotest=1&level=3');await page.waitForFunction(()=>(window.__KABANCHIKI_TEST__?.ready&&window.__KABANCHIKI_TEST__.auditsComplete!==false),null,{timeout:120000});
  const qa=(method,...args)=>page.evaluate(({method,args})=>window.__KABANCHIKI_QA__[method](...args),{method,args});
  const check=async(name,fn)=>{try{await fn();console.log('PASS',mobile?'webkit':'chromium',name)}catch(e){failures.push(name+': '+e.message);console.log('CHECK_FAILED',name,e.stack)}};
  const shot=async(name)=>{const b=await page.screenshot({path:'screenshots/v213-'+(mobile?'mobile-':'desktop-')+name+'.jpg',type:'jpeg',quality:45});const s=b.toString('base64');for(let i=0;i<s.length;i+=6000)console.log('REVIEW_IMAGE:'+(mobile?'mobile-':'desktop-')+name+':'+Math.floor(i/6000)+':'+s.slice(i,i+6000));};
  for(const n of [1,2,3,4,5,6])await check('real '+(mobile?'button':'Q')+' dismount level '+n,async()=>{
  const start=await qa('v214Mounted',n);assert.ok(start.ok&&start.mounted);
  if(mobile)await page.locator('#dismountAction').tap();else await page.keyboard.press('q');
- await page.waitForTimeout(1600);await page.waitForFunction(()=>{const r=window.__KABANCHIKI_QA__.v214MountInspect();return !r.mounted&&r.py<.1&&Math.abs(r.vy)<.1},null,{timeout:10000});const r=await qa('v214MountInspect');console.log('DISMOUNT',n,r);assert.equal(r.mounted,false);assert.ok(r.py<.1&&Math.abs(r.vy)<.1);assert.ok(r.distance>1.25&&!r.blocked);});
+ await page.waitForTimeout(1600);await page.waitForFunction(()=>{const r=window.__KABANCHIKI_QA__.v214MountInspect();return !r.mounted&&r.py<.1&&Math.abs(r.vy)<.1},null,{timeout:10000}).catch(async e=>{throw new Error(e.message+' '+JSON.stringify(await qa('v214MountInspect')))});const r=await qa('v214MountInspect');console.log('DISMOUNT',n,r);assert.equal(r.mounted,false);assert.ok(r.py<.1&&Math.abs(r.vy)<.1);assert.ok(r.distance>1.25&&!r.blocked);});
  await check('fresh intentional jump mounts again',async()=>{await page.keyboard.press('Space');await page.waitForTimeout(150);const r=await qa('v214MountInspect');assert.equal(r.mounted,true)});
  await check('countdown DOM survives active update',async()=>{for(const t of [0,54.9,55,59.9,60,115,120,175,180,235,240,284.9,285,299.9,300,301]){const r=await qa('v214Clock',t);assert.equal(r.hidden,!r.clock.shown,'DOM at '+t)}});
  await check('minions traverse arena from all directions',async()=>{for(const fps of [15,60])for(let k=0;k<8;k++){const r=await qa('v214MinionRobot',k*Math.PI/4,fps);console.log('MINION',fps,k,r);assert.ok(r.spawn&&r.remaining<8);assert.equal(r.penetrations,0);assert.ok(r.maxStep<=2.1/fps+.01&&r.reversals<8)}});

@@ -1,4 +1,4 @@
-import { Soundscape } from "../soundscape.js?v=221";
+import { Soundscape } from "../soundscape.js?v=222";
 
 // Owns 64 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){
@@ -39,7 +39,7 @@ function bonusSound(){[[520,0],[780,.10],[1040,.20],[390,.32]].forEach(([f,d])=>
   bindings:{
 "level":{get:()=>level,set:value=>{level=value}},
 "food":{get:()=>food,set:value=>{food=value}},
-"score":{get:()=>score,set:value=>{score=value}},
+"score":{get:()=>score,set:value=>{if(!runtime.cheatSession?.active)score=value}},
 "familyFound":{get:()=>familyFound,set:value=>{familyFound=value}},
 "friend":{get:()=>friend,set:value=>{friend=value}},
 "friendHP":{get:()=>friendHP,set:value=>{friendHP=value}},

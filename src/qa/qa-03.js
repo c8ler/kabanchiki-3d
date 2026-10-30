@@ -1,10 +1,10 @@
-import { stormClock } from "../tornado-rules.js?v=221";
-import { HOME_SITE } from "../home-construction.js?v=221";
+import { stormClock } from "../tornado-rules.js?v=222";
+import { HOME_SITE } from "../home-construction.js?v=222";
 import * as THREE from "../../vendor/three/three.module.min.js";
 
 export function createQaPart(runtime){
  return {
-v212Setup(n=3){runtime.closeSecretMenu(false);runtime.craftUnlocked=runtime.homeUnlocked=true;
+v212Setup(n=3){runtime.resetCheatMode();runtime.resetNature();runtime.resetMonsters();runtime.closeSecretMenu(false);runtime.craftUnlocked=runtime.homeUnlocked=true;
   runtime.cineClear();runtime.cinematicRunning=false;runtime.cinematicFinish=null;runtime.$('cinematic').style.display='none';runtime.$('pauseMenu').style.display='none';runtime.endShown=runtime.win=false;runtime.started=true;runtime.paused=true;runtime.boarFormTime=runtime.catFormTime=0;runtime.mountedFriend=false;runtime.py=runtime.vy=0;runtime.keys={};runtime.stick.x=runtime.stick.y=0;runtime.jump=runtime.act=false;runtime.invuln=999;runtime.resetAdventureItems(true);this.season(0);this.load(n);runtime.paused=true;runtime.life=runtime.diffCfg().playerHP;runtime.food=4;runtime.stopFishing();runtime.boy.position.set(0,0,20);return true;
  },
 v212Tornado(seconds=300,near=false,season=0,n=3){

@@ -1,5 +1,5 @@
-import {leaderboardRequest,leaderboardError} from '../leaderboard-client.js?v=221';
-import { AdventureHud } from "../adventure-hud.js?v=221";
+import {leaderboardRequest,leaderboardError} from '../leaderboard-client.js?v=222';
+import { AdventureHud } from "../adventure-hud.js?v=222";
 
 // Owns 7 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){

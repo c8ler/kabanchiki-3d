@@ -18,6 +18,7 @@ jobs:
         run: |
           node scripts/serve.mjs 8080 > /tmp/game-server.log 2>&1 &
           node scripts/leaderboard-check.mjs
+          node scripts/v222-browser.mjs
           node scripts/v221-browser.mjs
           node scripts/v220-browser.mjs
           node scripts/v219-browser.mjs

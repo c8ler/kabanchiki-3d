@@ -1,6 +1,6 @@
-import { BlastTerrain } from "../blast-terrain.js?v=221";
+import { BlastTerrain } from "../blast-terrain.js?v=222";
 import * as THREE from "../../vendor/three/three.module.min.js";
-import { riverCenterAt, riverDepthAt, lakeInletCenterAt, lakeInletHalfWidthAt, lakeInletDepthAt, WorldSurface, lakePointAt, lakeDepth } from "../world-surface.js?v=221";
+import { riverCenterAt, riverDepthAt, lakeInletCenterAt, lakeInletHalfWidthAt, lakeInletDepthAt, WorldSurface, lakePointAt, lakeDepth } from "../world-surface.js?v=222";
 
 // Owns 41 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){
@@ -14,7 +14,7 @@ function deformLakeDisk(geometry){const p=geometry.attributes.position;for(let i
 
 function lakeSurfaceGeometry(bed=false){const vertices=[],indices=[],segments=80,rings=16;for(let j=0;j<=rings;j++)for(let i=0;i<=segments;i++){const p=lakePointAt(i/segments*Math.PI*2,13.6*j/rings);vertices.push(p.x+18,bed?-Math.max(lakeDepth(p.x,p.z),lakeInletDepthAt(p.x,p.z))+.022:0,p.z+17);if(j<rings&&i<segments){const a=j*(segments+1)+i,b=a+segments+1;indices.push(a,b,a+1,a+1,b,b+1)}}const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(vertices.flatMap((v,i)=>i%3===0?[v*.15,vertices[i+2]*.15]:[]),2));g.setIndex(indices);g.computeVertexNormals();return g}
 
-function updateAquaticLife(dt,now){for(const f of aquaticFish){if(f.level!==runtime.level)continue;f.phase+=dt*f.speed;let x,z,nx,nz;if(runtime.level===2&&f.tributary){f.x+=dt*1.1;if(f.x<-45||f.x>-27)f.x=-45;x=f.x;z=lakeInletCenterAt(x)+Math.sin(f.phase)*1.4;nx=x+.2;nz=lakeInletCenterAt(nx)+Math.sin(f.phase+.01)*1.4}else if(runtime.level===2){const p=lakePointAt(f.phase,f.radius),n=lakePointAt(f.phase+.02,f.radius);x=p.x;z=p.z;nx=n.x;nz=n.z}else{f.x+=dt*(1.0+(f.radius-5)*.15);if(f.x>42)f.x=-42;x=f.x;z=riverCenterAt(x)+Math.sin(f.phase)*1.4;nx=x+.2;nz=riverCenterAt(nx)+Math.sin(f.phase+.01)*1.4}const d=runtime.level===2?Math.max(lakeDepth(x,z),lakeInletDepthAt(x,z)):riverDepthAt(x,z);f.g.position.set(x,-Math.min(.72,d*.58),z);f.g.visible=d>.25;f.g.rotation.y=Math.atan2(nx-x,nz-z);f.tail.rotation.z=Math.sin(now*.012+f.phase)*.22}for(const w of aquaticWeeds)if(w.level===runtime.level)w.g.rotation.z=Math.sin(now*.0015+w.phase)*.13}
+function updateAquaticLife(dt,now){for(const f of aquaticFish){if(f.level!==runtime.level)continue;f.phase+=dt*f.speed;let x,z,nx,nz;if(runtime.level===2&&f.tributary){f.x+=dt*1.1;if(f.x<-45||f.x>-27)f.x=-45;x=f.x;z=lakeInletCenterAt(x)+Math.sin(f.phase)*1.4;nx=x+.2;nz=lakeInletCenterAt(nx)+Math.sin(f.phase+.01)*1.4}else if(runtime.level===2){const p=lakePointAt(f.phase,f.radius),n=lakePointAt(f.phase+.02,f.radius);x=p.x;z=p.z;nx=n.x;nz=n.z}else{f.x+=dt*(1.0+(f.radius-5)*.15);if(f.x>42)f.x=-42;x=f.x;z=riverCenterAt(x)+Math.sin(f.phase)*1.4;nx=x+.2;nz=riverCenterAt(nx)+Math.sin(f.phase+.01)*1.4}const d=runtime.level===2?Math.max(lakeDepth(x,z),lakeInletDepthAt(x,z)):riverDepthAt(x,z);f.g.position.set(x,-Math.min(.72,d*.58),z);f.wetVisible=d>.25;f.g.visible=f.wetVisible;f.g.rotation.y=Math.atan2(nx-x,nz-z);f.tail.rotation.z=Math.sin(now*.012+f.phase)*.22}for(const w of aquaticWeeds)if(w.level===runtime.level)w.g.rotation.z=Math.sin(now*.0015+w.phase)*.13}
  return {
   bindings:{
 "tributaryGeometry":{get:()=>tributaryGeometry},

@@ -11,7 +11,7 @@ try{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.addInitScript(()=>{let seed=208;Math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296};const schedule=window.setTimeout;window.setTimeout=function(fn,...args){if(typeof fn==='function'&&fn.toString().includes('const __v156=runV156Audit()'))return 0;return schedule.call(this,fn,...args)};const raf=window.requestAnimationFrame;window.__FRAME_CPU__=[];window.requestAnimationFrame=function(fn){return raf.call(this,now=>{const start=performance.now();try{return fn(now)}finally{if(fn.name==='loop')window.__FRAME_CPU__.push(performance.now()-start)}})}});
  await page.goto('http://127.0.0.1:'+port+'/?autotest=1&level=1');
- await page.waitForFunction(()=>window.__KABANCHIKI_TEST__?.ready,null,{timeout:60000});
+ await page.waitForFunction(()=>(window.__KABANCHIKI_TEST__?.ready&&window.__KABANCHIKI_TEST__.auditsComplete!==false),null,{timeout:60000});
  for(const level of [1,2,3,4,5,6]){
  console.log('Profiling',label,'location',level);
  await page.evaluate(n=>{const q=window.__KABANCHIKI_QA__;q.performanceScenario();if(n!==6)q.load(n);const c=window.__KABANCHIKI_ADAPTIVE__.controller;c.setTier(0,performance.now());c.sample=()=>{}},level);

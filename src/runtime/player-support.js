@@ -1,12 +1,12 @@
-import { PLAYER_HEIGHTS } from "../player-house-physics.js?v=221";
-import { forestEdgeBlocked } from "../world-interactions.js?v=221";
-import { HOME_SITE } from "../home-construction.js?v=221";
+import { PLAYER_HEIGHTS } from "../player-house-physics.js?v=222";
+import { forestEdgeBlocked } from "../world-interactions.js?v=222";
+import { HOME_SITE } from "../home-construction.js?v=222";
 import * as THREE from "../../vendor/three/three.module.min.js";
-import { bridgeRailBlocked } from "../world-surface.js?v=221";
-import { forestExitBlocked } from "../opening-adventure.js?v=221";
+import { bridgeRailBlocked } from "../world-surface.js?v=222";
+import { forestExitBlocked } from "../opening-adventure.js?v=222";
 
 // Owns 8 bindings. See docs/architecture.md for startup order.
-import {islandMushroomTop} from '../creative-island.js?v=221';
+import {islandMushroomTop} from '../creative-island.js?v=222';
 export function createModule(runtime){
 
 function playerWorldBlocked(x,z,pad=0){
