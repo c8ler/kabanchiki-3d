@@ -1,4 +1,4 @@
-import {blockedExitHint} from "../exit-hints.js?v=221";
+import {blockedExitHint} from "../exit-hints.js?v=222";
 import * as THREE from "../../vendor/three/three.module.min.js";
 
 // Owns 2 bindings. See docs/architecture.md for startup order.
