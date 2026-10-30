@@ -1,6 +1,6 @@
 import {chromium} from 'playwright';import assert from 'node:assert/strict';
 const browser=await chromium.launch({headless:true});const page=await browser.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
-try{await page.goto('http://127.0.0.1:8080/?autotest=1&level=3');await page.waitForFunction(()=>window.__KABANCHIKI_TEST__?.ready,null,{timeout:60000});
+try{await page.goto('http://127.0.0.1:8080/?autotest=1&level=3');await page.waitForFunction(()=>(window.__KABANCHIKI_TEST__?.ready&&window.__KABANCHIKI_TEST__.auditsComplete!==false),null,{timeout:60000});
 const qa=(method,...args)=>page.evaluate(({method,args})=>window.__KABANCHIKI_QA__[method](...args),{method,args});
 const m=await qa('v207Mechanics');assert.equal(m.piles,4);assert.equal(m.door.width,1.6);assert.equal(m.door.height,1.9);assert.equal(m.familyDoor.width,1.6);assert.equal(m.familyDoor.height,1.9);assert.equal(m.lake,2.4);assert.equal(m.river,1.35);
 const house=await qa('v207BuildDoor');console.log('Built door',house);assert.equal(house.stage,4);assert.equal(house.wood,0);assert.ok(house.doorVisible&&house.inside);
