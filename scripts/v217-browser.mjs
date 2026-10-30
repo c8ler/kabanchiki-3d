@@ -12,12 +12,12 @@ for(const engine of [chromium,webkit]){
   await check('ordinary campaign gates all creation until a cheat button is pressed',async()=>{
    const r=await qa('v217Fresh');assert.ok(!r.craft&&!r.home&&!r.homeVisible&&!r.yard&&r.craftHidden);
    assert.equal(r.bombs,0);assert.equal(r.pickupBombs,0);assert.equal(await page.locator('#cheatPanel').isVisible(),false);await reveal();assert.equal(await page.locator('#cheatCode').isVisible(),false);
-   await page.locator('[data-cheat="CRAFT"]').click();let p=await qa('v217Inspect');assert.ok(p.craft&&!p.craftHidden);
+   assert.equal(await page.locator('[data-cheat="CRAFT"]').count(),0);let p=await qa('v217Inspect');assert.ok(p.craft&&!p.craftHidden);
    await page.locator('[data-cheat="HOME"]').click();p=await qa('v217Inspect');assert.ok(p.home&&p.homeVisible&&p.yard);await shot('cheat-buttons');
   });
   await check('secret island can be entered, played and left through buttons',async()=>{
    await page.locator('[data-cheat="SANDBOX"]').click();let r=await qa('v217Inspect');assert.equal(r.level,7);assert.ok(r.sandbox&&r.craft&&r.home&&r.foes===0);
-   await page.locator('#craftPanel').evaluate(el=>el.open=true);await page.locator('#craft-block').click();assert.equal((await qa('v217Inspect')).stock.block,1);
+   await qa('v221Collect','wood');await page.locator('#craftPanel').evaluate(el=>el.open=true);await page.locator('#craft-block').click();assert.equal((await qa('v217Inspect')).stock.block,1);
    await page.locator('#secretResume').click();await page.keyboard.press('KeyT');await page.waitForFunction(()=>window.__KABANCHIKI_QA__.v217Inspect().items.some(item=>item.kind==='block'),null,{timeout:10000});
    const before=(await qa('v217Inspect')).position;await page.keyboard.down('KeyW');await page.waitForFunction(([x,z])=>{const p=window.__KABANCHIKI_QA__.v217Inspect().position;return Math.hypot(p[0]-x,p[2]-z)>.2},[before[0],before[2]],{timeout:10000});await page.keyboard.up('KeyW');await shot('island');
    r=await qa('v217SandboxClock');assert.ok(r.sandbox&&!r.tornado&&!r.ended&&r.life>0);assert.equal(r.time,900);
