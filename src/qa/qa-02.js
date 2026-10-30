@@ -1,6 +1,6 @@
-import { RECIPES } from "../crafting-rules.js?v=220";
+import { RECIPES } from "../crafting-rules.js?v=221";
 import * as THREE from "../../vendor/three/three.module.min.js";
-import { riverCenterAt } from "../world-surface.js?v=220";
+import { riverCenterAt } from "../world-surface.js?v=221";
 
 export function createQaPart(runtime){
  return {
