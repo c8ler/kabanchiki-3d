@@ -1,5 +1,5 @@
-import { bombFlight } from "../blast-terrain.js?v=220";
-import { RECIPES, blastDamage, advanceFuse, BOMB_FUSE, BOMB_RADIUS } from "../crafting-rules.js?v=220";
+import { bombFlight } from "../blast-terrain.js?v=221";
+import { RECIPES, blastDamage, advanceFuse, BOMB_FUSE, BOMB_RADIUS } from "../crafting-rules.js?v=221";
 import * as THREE from "../../vendor/three/three.module.min.js";
 
 // Owns 5 bindings. See docs/architecture.md for startup order.
@@ -17,6 +17,7 @@ function refreshBlastSurface(){const pos=runtime.surfaceGeometry.attributes.posi
 
 function explodeAdventureBomb(b){
  const d=(x,z)=>Math.hypot(x-b.x,z-b.z),wet=runtime.waterAt(b.x,b.z);
+ runtime.spiderLife.blast({x:b.x,y:b.y+.5,z:b.z},BOMB_RADIUS,runtime.level);
  if(wet){for(let i=0;i<7;i++){const angle=i/7*Math.PI*2;runtime.spawnWaterSplash(b.x+Math.cos(angle)*1.5,b.z+Math.sin(angle)*1.5,3.5)}}else{runtime.blastTerrain.add(runtime.level,b.x,b.z);refreshBlastSurface();}
 
  const hit=blastDamage(d(runtime.boy.position.x,runtime.boy.position.z),runtime.diffCfg().playerHP);
