@@ -72,6 +72,10 @@ import {createModule as createWorldHints} from './runtime/world-hints.js?v=221';
 import {createModule as createGameInformation} from './runtime/game-information.js?v=221';
 import {createModule as createGameLoop} from './runtime/game-loop.js?v=221';
 import {createModule as createDream} from './runtime/dream.js?v=221';
+import {createModule as createCreatures} from './runtime/creatures.js?v=222';
+import {createModule as createNature} from './runtime/nature.js?v=222';
+import {createModule as createMonsters} from './runtime/monsters.js?v=222';
+import {createModule as createCheatMode} from './runtime/cheat-mode.js?v=222';
 import {createModule as createSpiders} from './runtime/spiders.js?v=221';
 import {createModule as createFrameSimulation} from './runtime/frame-simulation.js?v=221';
 
@@ -107,6 +111,10 @@ await initializeModules(runtime,[
  createCreative(runtime),
  createDream(runtime),
  createSpiders(runtime),
+ createCreatures(runtime),
+ createNature(runtime),
+ createMonsters(runtime),
+ createCheatMode(runtime),
  createCrafting(runtime),
  createBombs(runtime),
  createLevelLifecycle(runtime),
