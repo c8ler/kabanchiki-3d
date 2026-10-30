@@ -1487,6 +1487,7 @@ export const GAME_MODULES=[
       "friend",
       "ground",
       "hemi",
+      "home",
       "hud",
       "insideBed",
       "leaveSandbox",
