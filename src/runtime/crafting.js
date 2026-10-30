@@ -122,7 +122,7 @@ function updateCraftPreview(){
 
 function updateCraftCreatures(dt,now){
  if(runtime.cinematicRunning||runtime.paused)return;
- if(!runtime.craftWorld.items.some(item=>item.g.visible&&item.living))return;
+ if(!runtime.craftWorld.items.some(item=>item.g.visible&&(item.living||item.doorRig)))return;
  const geometry=placementGeometry();
  const terrain=(x,z,feet=runtime.terrainHeightAt(x,z))=>placementHeight(x,z,feet,runtime.terrainHeightAt(x,z)+runtime.familyFloorAt(x,z),geometry.surfaces,.2);
  const blocked=(x,z,y,r=.22,height=1)=>!!placementProblem([new THREE.Box3(new THREE.Vector3(x-r,y+.04,z-r),new THREE.Vector3(x+r,y+height,z+r))],{...geometry,wet:(px,pz)=>runtime.lakeDepthAt(px,pz)>.08});
@@ -143,7 +143,7 @@ function placeCraftItem(){
  const target=craftPlacementTarget(true);if(!target)return false;
  if(!target.valid){runtime.notice(target.reason);return false}
  const {kind,x,y,z,rotation}=target,item=runtime.craftWorld.create(kind,x,y,z,runtime.level,rotation);
- if(!item){runtime.notice('🐾 Лимит: два котика и собаки вместе.');return false}if(item.living)item.g.userData.craftedCreature=true;
+ if(!item){runtime.notice('🐾 Лимит: 16 существ на карте; котиков и собак вместе — не больше двух.');return false}if(item.living)item.g.userData.craftedCreature=true;
  runtime.craftWorld.stock[kind]--;runtime.worldEpoch++;runtime.wallCacheEpoch=-1;
  runtime.tagStormTargetsForCurrentLocation();runtime.notice('Готово: '+RECIPES[kind].name);syncCraftPlacement();updateCraftPreview();return true;
 }
