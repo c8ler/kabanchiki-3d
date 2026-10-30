@@ -5,7 +5,7 @@ for(const engine of [chromium,webkit]){
  const qa=(method,...args)=>page.evaluate(({method,args})=>window.__KABANCHIKI_QA__[method](...args),{method,args});
  const reveal=async()=>{for(let i=0;i<5;i++)await page.locator('#versionSecret').click();await page.locator('#secretMenu').waitFor({state:'visible'})};
  try{
-  await page.goto('http://127.0.0.1:8080/?autotest=1&level=3');await page.waitForFunction(()=>window.__KABANCHIKI_TEST__?.ready,null,{timeout:120000});
+  await page.goto('http://127.0.0.1:8080/?autotest=1&level=3');await page.waitForFunction(()=>(window.__KABANCHIKI_TEST__?.ready&&window.__KABANCHIKI_TEST__.auditsComplete!==false),null,{timeout:120000});
   for(const r of await qa('v218CampaignAudit')){assert.equal(r.bombs,0);assert.ok(!r.pickups.includes('bomb'));assert.ok(!r.craft&&!r.home&&!r.placed)}
   assert.equal(await page.locator('#pauseMenu [data-cheat]').count(),0);assert.equal(await page.locator('#fishAction').count(),0);
   for(let i=0;i<4;i++){await page.locator('#versionSecret').click();assert.equal((await qa('v218SecretState')).open,false)}
