@@ -1,7 +1,7 @@
 import * as THREE from '../../vendor/three/three.module.min.js';
-import {parseCheatCode} from '../cheat-codes.js?v=221';
-import {createIsland,islandDepth,SECRET_LEVEL} from '../creative-island.js?v=221';
-import {SecretEntry} from '../secret-entry.js?v=221';
+import {parseCheatCode} from '../cheat-codes.js?v=222';
+import {createIsland,islandDepth,SECRET_LEVEL} from '../creative-island.js?v=222';
+import {SecretEntry} from '../secret-entry.js?v=222';
 export function createModule(runtime){
  let secretEntry=new SecretEntry(),secretMenuOpen=false;
  const undoState=new Map();
@@ -65,7 +65,7 @@ export function createModule(runtime){
   else if(code.type==='home'){homeUnlocked=true;supply();if(sandboxMode){runtime.craftWorld.addStock('house');result.textContent='🏠 Домик подготовлен: T — поставить.'}else{runtime.syncHomeVisual();runtime.syncHomeLocation(runtime.level);result.textContent='🏠 Стройка включена. В деревне иди к площадке «Мой домик»; B — строить.'}}
   else if(code.type==='supplies'){supply();result.textContent='🎒 Припасы пополнены.'}
   else if(code.type==='heal'){runtime.spiderLife.cure();runtime.life=runtime.diffCfg().playerHP;result.textContent='💚 Здоровье восстановлено.'}
-  else if(code.type==='clear'){runtime.resetMonsters();runtime.flyingInsects.clear(null,{onlyCheats:true});runtime.resetSpiders();runtime.craftWorld.clear();runtime.worldEpoch++;runtime.wallCacheEpoch=-1;result.textContent='🧹 Созданные предметы и спутники убраны.'}
+  else if(code.type==='clear'){runtime.resetMonsters();runtime.flyingInsects.clear(null,{onlyCheats:true});for(const s of [...runtime.spiderLife.spiders])if(!s.natural)runtime.spiderLife.remove(s);runtime.spiderLife.cure();runtime.craftWorld.clear();runtime.worldEpoch++;runtime.wallCacheEpoch=-1;result.textContent='🧹 Созданные предметы и спутники убраны.'}
   else if(['spawnBee','spawnMosquito','spawnButterfly'].includes(code.type)){const kind={spawnBee:'bee',spawnMosquito:'mosquito',spawnButterfly:'butterfly'}[code.type],n=runtime.spawnFlying(kind,kind==='mosquito'?3:2,true);result.textContent=n?'Выпущено: '+n+'. Бабочки мирные, пчёлы и комарики очень редко жалят и кусают.':'Лимит: не больше 16 существ на карте, либо рядом преграда.'}
   else if(['spawnZombie','spawnScreamer','spawnBrute'].includes(code.type)){const kind={spawnZombie:'zombie',spawnScreamer:'screamer',spawnBrute:'brute'}[code.type],made=runtime.spawnMonster(kind);result.textContent=made?'Монстр появился! Защищайся кабанчиками или бомбами. Зомби преследует, скример поджидает, громила охраняет место.':'Нет свободного места или достигнут лимит 16 существ.'}
   else if(code.type==='spawnSpider'){const n=runtime.spawnCheatSpiders();result.textContent=n?'🕷 Выпущено пауков: '+n+'. Они плетут паутину и опасно кусаются. Прыжок стряхивает паука с Тимура.':'🕷 Не получилось выпустить: лимит 12 пауков или рядом только вода.'}
