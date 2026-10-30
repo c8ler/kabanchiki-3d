@@ -1,4 +1,4 @@
-import { HOME_SITE, WOOD_PILES } from "../home-construction.js?v=220";
+import { HOME_SITE, WOOD_PILES } from "../home-construction.js?v=221";
 import * as THREE from "../../vendor/three/three.module.min.js";
 
 // Owns 7 bindings. See docs/architecture.md for startup order.
