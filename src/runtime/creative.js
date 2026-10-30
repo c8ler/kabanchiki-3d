@@ -84,7 +84,7 @@ export function createModule(runtime){
   else if(code.type==='tornado'){runtime.tornadoState.cancel();runtime.tornadoVisual.reset()}
   else if(code.type==='friend'){if(runtime.mountedFriend){runtime.mountedFriend=false;runtime.setRiderPose(false);runtime.rideHop.reset();runtime.py=runtime.vy=0;runtime.boy.position.y=runtime.terrainHeightAt(runtime.boy.position.x,runtime.boy.position.z);runtime.dismountLatch.leave(performance.now())}if(runtime.friend){runtime.scene.remove(runtime.friend.g);runtime.friend=null}}
   else if(code.type==='bomb'){runtime.adventureInventory.bombs=0;for(const b of runtime.armedBombs){runtime.disposePickupVisual(b.g);b.ring.removeFromParent();b.ring.geometry.dispose()}runtime.armedBombs.length=0}
-  else if(code.type==='form')runtime.endBoarForm();
+  else if(code.type==='form'){if(code.form==='cat'&&runtime.catFormTime>0||code.form==='boar'&&runtime.boarFormTime>0)runtime.endBoarForm()}
   else if(code.type==='craft'){craftUnlocked=false;runtime.$('craftPanel').open=false}
   else if(code.type==='home'){homeUnlocked=false;runtime.syncHomeVisual();runtime.syncHomeLocation(runtime.level)}
   else if(code.type==='supplies'&&saved){runtime.adventureInventory.wood=saved.wood;runtime.adventureInventory.wool=saved.wool;runtime.food=saved.food;runtime.home.wood=saved.homeWood}
