@@ -30,7 +30,7 @@ export class DogCompanion{
   }
   const floor=terrain(p.x,p.z,p.y),hop=play?.hop||0;p.y=!hop||blocked(p.x,p.z,floor+hop,.36,1.25)?floor:floor+hop;
   const rig=this.g.companionRig;if(rig){for(let i=0;i<rig.legs.length;i++)rig.legs[i].rotation.x=moved>0?Math.sin(this.steps+(i===0||i===3?0:Math.PI))*.65:rig.legs[i].rotation.x*Math.max(0,1-dt*12);
-   rig.tail.rotation.y=Math.sin(this.time*(play?17:d<5?9:4))*(play?.65:d<5?.45:.18);rig.head.rotation.x=play?.kind==='spar'?-.2:this.state==='sniff'?.3:Math.sin(this.time*.7)*.04;if(play?.kind==='spar'){rig.legs[0].rotation.x=-.8+play.swipe*.4;rig.legs[2].rotation.x=-.8-play.swipe*.4}rig.body.position.y=.62+(moved?Math.sin(this.steps*2)*(play?.08:.025):0)}
+   rig.tail.rotation.y=Math.sin(this.time*(play?17:d<5?9:4))*(play?.65:d<5?.45:.18);rig.head.rotation.x=play?.kind==='spar'?-.2:this.state==='sniff'?.3:Math.sin(this.time*.7)*.04;if(play?.kind==='spar'){rig.legs[1].rotation.x=-.8+play.swipe*.4;rig.legs[3].rotation.x=-.8-play.swipe*.4}rig.body.position.y=.62+(moved?Math.sin(this.steps*2)*(play?.08:.025):0)}
   this.moving=moved>0;return moved;
  }
 }
