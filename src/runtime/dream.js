@@ -1,0 +1,25 @@
+import * as THREE from '../../vendor/three/three.module.min.js';
+import {DreamVisit} from '../dream-visit.js?v=221';
+export function createModule(runtime){
+ let dreamVisit;
+ const fields=['level','levelTime','worldEpoch','score','familyFound','levelBoarsDone','levelBoarsTotal','levelFamilyDone','levelFamilyTotal','life','food','fishStock','yellowAppleStock','yellowMushroomStock','friend','friendHP','invuln','hasFlashlight','craftUnlocked','homeUnlocked','catFormTime','boarFormTime','weatherStage','weatherBaseSky','nextLightningAt','forageTimer','locationExit','opening','yaw','pitch','camMode'];
+ const lists=['foes','friends','familyMembers','apples','adventurePickups'];
+ function nearBed(){if(runtime.level!==3||!runtime.familyHideout.visible||runtime.mountedFriend||runtime.py>1.2)return false;const p=runtime.insideBed.getWorldPosition(new THREE.Vector3()),q=runtime.familyHideout.worldToLocal(runtime.boy.position.clone());return Math.abs(q.x)<2.35&&Math.abs(q.z)<2.1&&Math.hypot(p.x-runtime.boy.position.x,p.z-runtime.boy.position.z)<1.65}
+ function snapshot(){const nodes=[];runtime.scene.traverse(o=>nodes.push([o,o.visible]));return{state:Object.fromEntries(fields.map(k=>[k,runtime[k]])),lists:Object.fromEntries(lists.map(k=>[k,[...runtime[k]]])),nodes,position:runtime.boy.position.clone(),rotation:runtime.boy.rotation.clone(),inventory:{...runtime.adventureInventory},stats:{...runtime.statsData},tornado:{...runtime.tornadoState},sky:runtime.scene.background.clone(),fog:{color:runtime.scene.fog.color.clone(),near:runtime.scene.fog.near,far:runtime.scene.fog.far},sun:{color:runtime.sun.color.clone(),intensity:runtime.sun.intensity},hemi:runtime.hemi.intensity,ground:runtime.ground.material.color.clone(),exposure:runtime.renderer.toneMappingExposure}}
+ function startBedDream(){
+  if(!runtime.started||runtime.paused||runtime.cinematicRunning||runtime.endShown||runtime.life<=0||dreamVisit.active||!nearBed())return false;
+  const saved=snapshot();dreamVisit.enter(saved);runtime.clearInput();runtime.stopFishing();runtime.$('sleepAction').hidden=true;
+  runtime.playCinematic('sleep',()=>{if(saved.state.friend?.g)saved.state.friend.g.visible=false;runtime.friend=null;runtime.enterSandbox(true);runtime.playCinematic('dream',()=>{runtime.paused=false;runtime.notice('💤 Это сон! На волшебном острове можно провести две минуты.');runtime.hud()},{form:'human'})},{form:runtime.catFormTime>0?'cat':runtime.boarFormTime>0?'boar':'human'});return true;
+ }
+ function wakeFromDream(){
+  if(!dreamVisit.active)return false;const saved=dreamVisit.leave();if(runtime.cinematicRunning){runtime.cinematicRunning=false;runtime.cinematicFinish=null;runtime.cineClear();runtime.$('cinematic').style.display='none';runtime.stopCinematicMusic()}
+  runtime.leaveSandbox();runtime.stopFishing();for(const k of lists){for(const item of runtime[k])item.g?.removeFromParent();runtime[k].length=0;runtime[k].push(...saved.lists[k]);for(const item of runtime[k])if(item.g&&!item.g.parent)runtime.scene.add(item.g)}
+  for(const [k,v]of Object.entries(saved.state)){const descriptor=Object.getOwnPropertyDescriptor(runtime,k);if(descriptor?.set)runtime[k]=v}
+  Object.assign(runtime.adventureInventory,saved.inventory);Object.assign(runtime.statsData,saved.stats);Object.assign(runtime.tornadoState,saved.tornado);runtime.tornadoVisual.reset();
+  for(const [node,visible]of saved.nodes)node.visible=visible;
+  runtime.scene.background.copy(saved.sky);runtime.scene.fog.color.copy(saved.fog.color);runtime.scene.fog.near=saved.fog.near;runtime.scene.fog.far=saved.fog.far;runtime.sun.color.copy(saved.sun.color);runtime.sun.intensity=saved.sun.intensity;runtime.hemi.intensity=saved.hemi;runtime.ground.material.color.copy(saved.ground);runtime.renderer.toneMappingExposure=saved.exposure;
+  runtime.boy.position.copy(saved.position);runtime.boy.rotation.copy(saved.rotation);runtime.py=runtime.familyFloorAt(saved.position.x,saved.position.z);runtime.vy=0;runtime.mountedFriend=false;runtime.setRiderPose(false);runtime.clearInput();runtime.paused=false;runtime.wallCacheEpoch=-1;runtime.sceneryEpoch=-1;runtime.rebuildWorldSurface();runtime.refreshBlastSurface();runtime.craftWorld.visible(runtime.level);runtime.spiderLife.visit(runtime.level);runtime.syncCraftUI();runtime.hud();runtime.notice('🌤 Тимур проснулся у кровати. Вот это приснилось!');return true;
+ }
+ function updateBedDream(seconds=0){const active=runtime.started&&!runtime.paused&&!runtime.cinematicRunning&&!runtime.endShown&&runtime.life>0;runtime.$('sleepAction').hidden=!active||dreamVisit.active||!nearBed();if(dreamVisit.active&&active&&dreamVisit.step(seconds))return wakeFromDream();return false}
+ return{bindings:{dreamVisit:{get:()=>dreamVisit},startBedDream:{get:()=>startBedDream},wakeFromDream:{get:()=>wakeFromDream},updateBedDream:{get:()=>updateBedDream}},initialize(){dreamVisit=new DreamVisit();runtime.$('sleepAction').onclick=startBedDream}}
+}
