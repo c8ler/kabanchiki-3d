@@ -1,12 +1,13 @@
-import {createDog,DogCompanion} from './companion-dog.js?v=220';
+import {createDog,DogCompanion} from './companion-dog.js?v=221';
 import * as T from '../vendor/three/three.module.min.js';
 export const PROP_FOOTPRINTS={house:[4.8,4.8],wall:[3,.25],floor:[3,3],roof:[3.5,3.5],block:[1,1],bed:[1.6,2.2],chair:[.7,.7],table:[1.8,1.2],standingLamp:[.5,.5],wardrobe:[1.5,.7],stove:[1.2,1.2],palm:[.7,.7]};
 export class CraftWorld{
  constructor(scene,materials,builders){this.scene=scene;this.materials=materials;this.builders=builders;this.items=[];this.stock={};this.selected='';this.epoch=0}
- addStock(kind){this.stock[kind]=(this.stock[kind]||0)+1;this.selected=kind}
+ petCount(){return this.items.filter(i=>i.kind==='cat'||i.kind==='dog').length+(this.stock.cat||0)+(this.stock.dog||0)}
+ addStock(kind){if((kind==='cat'||kind==='dog')&&this.petCount()>=2)return false;this.stock[kind]=(this.stock[kind]||0)+1;this.selected=kind;return true}
  clear(){for(const item of [...this.items])this.remove(item);this.stock={};this.selected=''}
  remove(item){item.g.removeFromParent();item.g.traverse(mesh=>{if(mesh.isMesh&&!mesh.userData.sharedCraftGeometry)mesh.geometry.dispose()});const i=this.items.indexOf(item);if(i>=0)this.items.splice(i,1);this.epoch++}
- create(kind,x,y,z,level,rotation=0,preview=false){let g=new T.Group();const m=this.materials,solids=[],supports=[];let living=false,light=null;
+ create(kind,x,y,z,level,rotation=0,preview=false){if(!preview&&(kind==='cat'||kind==='dog')&&this.items.filter(i=>i.kind==='cat'||i.kind==='dog').length>=2)return null;let g=new T.Group();const m=this.materials,solids=[],supports=[];let living=false,light=null;
  const box=(material,bx,by,bz,w,h,d,solid=true,support=true)=>{const mesh=new T.Mesh(new T.BoxGeometry(w,h,d),material);mesh.position.set(bx,by,bz);mesh.castShadow=false;mesh.receiveShadow=true;g.add(mesh);if(solid)solids.push(mesh);if(support)supports.push(mesh);return mesh};
  const legs=(w,d,h)=>{for(const a of [-1,1])for(const b of [-1,1])box(m.wood,a*w*.4,h/2,b*d*.4,.1,h,.1)};
  if(kind==='cat'||kind==='human'){const actor=this.builders[kind]();if(kind==='cat')g=actor;else g.add(actor);living=true}
@@ -35,7 +36,7 @@ export class CraftWorld{
  update(dt,now,level,terrain,blocked,player){
   for(const item of this.items){
    if(item.level!==level||!item.g.visible||!item.living||item.airborne||item.catActor)continue;
-   if(item.dog){item.dog.update(dt,terrain,blocked,player,this.epoch);continue}
+   if(item.dog){const cat=this.items.find(i=>i.catActor&&i.level===level&&i.g.visible),playing=cat&&Math.floor(now/8)%3===0&&Math.hypot(item.g.position.x-cat.g.position.x,item.g.position.z-cat.g.position.z)<14;item.dog.update(dt,terrain,blocked,playing?cat.g.position:player,this.epoch);continue}
    const p=item.g.position,small=item.kind==='worm'||item.kind==='snail',speed=item.kind==='worm'?.3:item.kind==='snail'?.16:item.kind==='dog'?2.6:1.1;
    item.age=(item.age||0)+Math.max(0,dt);
    const t=item.age,following=item.kind==='dog'&&Math.hypot(p.x-player.x,p.z-player.z)>3;
