@@ -1,5 +1,5 @@
 import * as THREE from '../../vendor/three/three.module.min.js';
-import {SpiderLife} from '../spider-life.js?v=221';
+import {SpiderLife} from '../spider-life.js?v=222';
 export function createModule(runtime){
  let spiderLife,surfaceKey='',surfaceAt=-Infinity,lastLevel=1;
  const ground=(x,z)=>runtime.terrainHeightAt(x,z)+runtime.familyFloorAt(x,z);
