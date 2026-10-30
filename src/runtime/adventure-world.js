@@ -81,6 +81,8 @@ function updateTornado(dt,now){
 
 /* init:const */ craftWorld = new CraftWorld(runtime.scene,runtime.mats,{cat:()=>{const actor=runtime.catLife.model(2,new THREE.Group());actor.gameTimer=0;actor.g.craftedCatActor=actor;return actor.g},human:()=>{const g=runtime.makeBoy();g.traverse(m=>{if(m.isMesh)m.geometry=m.geometry.clone()});g.scale.setScalar(.52);return g},light:()=>runtime.makeEffectLight(0xffd59b,7,10)});
 
+craftWorld.canCreateCreature=()=>runtime.creatureRoom();
+
 /* init:const */ adventureInventory = {wood:0,bombs:0,wool:0,backpack:false};
 /* init:const */ adventurePickups = [];
 /* init:const */ armedBombs = [];
