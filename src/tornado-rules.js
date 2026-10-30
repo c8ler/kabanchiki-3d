@@ -9,8 +9,11 @@ export function capturedByTornado(player,eye,sheltered=false){return !sheltered&
 export function orbitPose(eye,age,index=0){const r=1.1+Math.min(6,age*.7)+index%3*.4,a=age*3.8+index*2.399;return {x:eye.x+Math.cos(a)*r,y:Math.max(.2,age*1.8+Math.sin(age*2+index)*.3),z:eye.z+Math.sin(a)*r,angle:a}}
 export class TornadoState{
  constructor(){this.reset()}
- reset(){this.active=false;this.warned=false;this.x=22;this.z=-6;this.age=0;this.sweep=0}
- step(dt,seconds,level,player){const state=stormClock(seconds,level);let warning=false,spawn=false;if(state.visible&&state.warning&&!this.warned){warning=this.warned=true}if(!state.visible){this.active=false;return {warning,spawn}}if(state.active&&!this.active){spawn=this.active=true;this.x=player.x>=0?-22:22;this.z=-6;this.age=0}if(this.active){this.age+=Math.max(0,dt);this.x+=(Math.cos(this.age*.065)*22-this.x)*Math.min(1,dt*.08);this.z+=(Math.sin(this.age*.065)*24-6-this.z)*Math.min(1,dt*.08)}return {warning,spawn}}
+ reset(){this.active=false;this.forcedAt=null;this.suppressed=false;this.warned=false;this.x=22;this.z=-6;this.age=0;this.sweep=0}
+ schedule(seconds){if(this.active||this.forcedAt!==null)return false;this.forcedAt=seconds+15;this.suppressed=false;this.warned=true;return true}
+ cancel(){this.active=false;this.forcedAt=null;this.suppressed=true}
+ clock(seconds,level){if(this.suppressed)return{visible:false,shown:false,remaining:0,warning:false,active:false};if(this.forcedAt!==null)return{visible:true,shown:seconds<this.forcedAt,remaining:Math.max(0,this.forcedAt-seconds),warning:true,active:seconds>=this.forcedAt};return stormClock(seconds,level)}
+ step(dt,seconds,level,player){const state=this.clock(seconds,level);let warning=false,spawn=false;if(state.visible&&state.warning&&!this.warned){warning=this.warned=true}if(!state.visible){this.active=false;return {warning,spawn}}if(state.active&&!this.active){spawn=this.active=true;this.x=player.x>=0?-22:22;this.z=-6;this.age=0}if(this.active){this.age+=Math.max(0,dt);this.x+=(Math.cos(this.age*.065)*22-this.x)*Math.min(1,dt*.08);this.z+=(Math.sin(this.age*.065)*24-6-this.z)*Math.min(1,dt*.08)}return {warning,spawn}}
 }
 
 export function tornadoInfluence(player,eye,sheltered=false){

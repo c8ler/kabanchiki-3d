@@ -211,7 +211,6 @@ export const GAME_MODULES=[
       "buildBoundarySide"
     ],
     "dependencies": [
-      "$",
       "__autoTest",
       "adaptiveGraphics",
       "block",
@@ -503,6 +502,7 @@ export const GAME_MODULES=[
       "stormLeaves",
       "stormRockTargets",
       "terrainHeightAt",
+      "tornadoState",
       "treeObjects",
       "updatePuddles",
       "updateSnow",
@@ -832,7 +832,6 @@ export const GAME_MODULES=[
       "MUSIC_THEMES"
     ],
     "dependencies": [
-      "$",
       "fishingTarget",
       "stopFishing"
     ]
@@ -1029,6 +1028,7 @@ export const GAME_MODULES=[
       "birdLife",
       "boy",
       "catLife",
+      "craftWorld",
       "currentSeason",
       "darkGrassMat",
       "forestGround",
@@ -1075,6 +1075,7 @@ export const GAME_MODULES=[
       "updateStormClouds",
       "updateStormFires",
       "wallGeometry",
+      "waterAt",
       "weatherBaseSky",
       "weatherClouds",
       "weatherGroup",
@@ -1228,7 +1229,6 @@ export const GAME_MODULES=[
       "interactHome"
     ],
     "dependencies": [
-      "$",
       "block",
       "boarFormTime",
       "boy",
@@ -1353,24 +1353,31 @@ export const GAME_MODULES=[
       "applyCheat"
     ],
     "dependencies": [
-      "$",
       "GAME_VERSION",
       "adventureInventory",
       "adventurePickups",
       "apples",
+      "armedBombs",
       "biomeObjects",
       "birdLife",
+      "blastRingMat",
       "block",
+      "boarFormTime",
+      "bombModel",
       "boy",
+      "catFormTime",
       "catLife",
       "cinematicRunning",
       "clearEntities",
       "craftWorld",
       "currentSeason",
       "diffCfg",
+      "dismountLatch",
       "disposePickupVisual",
+      "dreamVisit",
       "endBoarForm",
       "endShown",
+      "explodeAdventureBomb",
       "familyMembers",
       "flashlightDropUntil",
       "flashlightObj",
@@ -1405,6 +1412,7 @@ export const GAME_MODULES=[
       "locationExitProps",
       "makeBoar",
       "mats",
+      "mountedFriend",
       "nearestSafeSpawn",
       "notice",
       "opening",
@@ -1415,6 +1423,7 @@ export const GAME_MODULES=[
       "refreshBlastSurface",
       "requestDesktopMouseLock",
       "resetSpiders",
+      "rideHop",
       "riverVisual",
       "roadEdge",
       "roadSurface",
@@ -1422,6 +1431,7 @@ export const GAME_MODULES=[
       "scene",
       "seasonVisual",
       "setPause",
+      "setRiderPose",
       "shots",
       "spawnCheatSpiders",
       "spiderLife",
@@ -1439,9 +1449,11 @@ export const GAME_MODULES=[
       "throwCooldown",
       "torch",
       "tornadoState",
+      "tornadoVisual",
       "treeObjects",
       "treeSolidMeshes",
       "vy",
+      "wakeFromDream",
       "wallCacheEpoch",
       "weatherBaseSky",
       "weatherGroup",
@@ -1449,6 +1461,67 @@ export const GAME_MODULES=[
       "win",
       "worldEpoch",
       "yaw"
+    ]
+  },
+  {
+    "name": "dream",
+    "path": "src/runtime/dream.js",
+    "owns": [
+      "dreamVisit",
+      "startBedDream",
+      "wakeFromDream",
+      "updateBedDream"
+    ],
+    "dependencies": [
+      "adventureInventory",
+      "armedBombs",
+      "blastEffects",
+      "boarFormTime",
+      "boy",
+      "catFormTime",
+      "cineClear",
+      "cinematicFinish",
+      "cinematicRunning",
+      "clearInput",
+      "craftWorld",
+      "disposePickupVisual",
+      "endBoarForm",
+      "endShown",
+      "enterSandbox",
+      "familyFloorAt",
+      "familyHideout",
+      "friend",
+      "ground",
+      "hemi",
+      "home",
+      "hud",
+      "insideBed",
+      "leaveSandbox",
+      "level",
+      "life",
+      "mountedFriend",
+      "notice",
+      "paused",
+      "playCinematic",
+      "py",
+      "rebuildWorldSurface",
+      "refreshBlastSurface",
+      "renderer",
+      "scene",
+      "sceneryEpoch",
+      "setRiderPose",
+      "shots",
+      "spiderLife",
+      "started",
+      "statsData",
+      "stopCinematicMusic",
+      "stopFishing",
+      "sun",
+      "syncCraftUI",
+      "tornadoState",
+      "tornadoVisual",
+      "vy",
+      "wallCacheEpoch"
     ]
   },
   {
@@ -1530,7 +1603,6 @@ export const GAME_MODULES=[
       "craftAdventure"
     ],
     "dependencies": [
-      "$",
       "adventureCollected",
       "adventureDestroyed",
       "adventureHud",
@@ -1581,9 +1653,7 @@ export const GAME_MODULES=[
       "paused",
       "personalHouse",
       "py",
-      "refillCreative",
       "rockPositions",
-      "sandboxMode",
       "scene",
       "started",
       "tagStormTargetsForCurrentLocation",
@@ -1609,7 +1679,6 @@ export const GAME_MODULES=[
       "resetAdventureItems"
     ],
     "dependencies": [
-      "$",
       "adventureCollected",
       "adventureDestroyed",
       "adventureInventory",
@@ -1657,6 +1726,7 @@ export const GAME_MODULES=[
       "showEnd",
       "softEffectTone",
       "spawnWaterSplash",
+      "spiderLife",
       "started",
       "stopFishing",
       "surfaceGeometry",
@@ -1677,7 +1747,6 @@ export const GAME_MODULES=[
       "loadLevel"
     ],
     "dependencies": [
-      "$",
       "__autoTest",
       "apples",
       "applySeason",
@@ -1965,7 +2034,6 @@ export const GAME_MODULES=[
       "syncOpeningGuide"
     ],
     "dependencies": [
-      "$",
       "block",
       "boy",
       "campaignProgress",
@@ -2017,7 +2085,6 @@ export const GAME_MODULES=[
       "questState"
     ],
     "dependencies": [
-      "$",
       "familyFound",
       "familyPopupOpen",
       "foes",
@@ -2080,7 +2147,6 @@ export const GAME_MODULES=[
       "protectCinematicAction"
     ],
     "dependencies": [
-      "$",
       "apples",
       "block",
       "boarFormTime",
@@ -2099,6 +2165,7 @@ export const GAME_MODULES=[
       "friend",
       "hasFlashlight",
       "hemi",
+      "insideBed",
       "lakeExitProps",
       "lastDeathBoar",
       "locationExitProps",
@@ -2112,6 +2179,7 @@ export const GAME_MODULES=[
       "scene",
       "sceneryBatches",
       "sceneryEpoch",
+      "setDadHouseCutaway",
       "sun",
       "terrainHeightAt",
       "tornadoState",
@@ -2127,7 +2195,6 @@ export const GAME_MODULES=[
       "updateCinematicLamp"
     ],
     "dependencies": [
-      "$",
       "camera",
       "cinemaHug",
       "hemi",
@@ -2150,7 +2217,6 @@ export const GAME_MODULES=[
       "submitGlobalResult"
     ],
     "dependencies": [
-      "$",
       "GAME_VERSION",
       "SUPABASE_KEY",
       "SUPABASE_URL",
@@ -2206,7 +2272,6 @@ export const GAME_MODULES=[
       "restartGame"
     ],
     "dependencies": [
-      "$",
       "GAME_VERSION",
       "__autoParams",
       "__autoTest",
@@ -2231,6 +2296,7 @@ export const GAME_MODULES=[
       "deathSceneActive",
       "deathSceneFinished",
       "diffCfg",
+      "dreamVisit",
       "endShown",
       "familyFound",
       "fishStock",
@@ -2294,6 +2360,7 @@ export const GAME_MODULES=[
       "underwaterTime",
       "unlockedSeasons",
       "vy",
+      "wakeFromDream",
       "weatherBaseSky",
       "win",
       "yellowAppleStock",
@@ -2313,7 +2380,6 @@ export const GAME_MODULES=[
       "adventureHud"
     ],
     "dependencies": [
-      "$",
       "SUPABASE_KEY",
       "SUPABASE_URL",
       "formatTime"
@@ -2330,7 +2396,6 @@ export const GAME_MODULES=[
       "togglePause"
     ],
     "dependencies": [
-      "$",
       "DIFF_NAMES",
       "adventureHud",
       "applyCheat",
@@ -2374,6 +2439,7 @@ export const GAME_MODULES=[
       "started",
       "stopMusic",
       "syncCraftUI",
+      "tornadoState",
       "win",
       "yellowAppleStock",
       "yellowMushroomStock"
@@ -2390,7 +2456,6 @@ export const GAME_MODULES=[
       "startDifficultyRun"
     ],
     "dependencies": [
-      "$",
       "audio",
       "audioBus",
       "chooseSeason",
@@ -2422,7 +2487,6 @@ export const GAME_MODULES=[
       "clearInput"
     ],
     "dependencies": [
-      "$",
       "DIFF_NAMES",
       "__autoTest",
       "act",
@@ -2463,6 +2527,7 @@ export const GAME_MODULES=[
       "resolveMeat",
       "selectedDiff",
       "setPause",
+      "startBedDream",
       "startDifficultyRun",
       "started",
       "stick",
@@ -2631,6 +2696,7 @@ export const GAME_MODULES=[
       "py",
       "rockFootprintHit",
       "rockPositions",
+      "sandboxVisual",
       "seasonBaseMaterials",
       "solidCircles",
       "terrainHeightAt",
@@ -3395,7 +3461,6 @@ export const GAME_MODULES=[
     "path": "src/runtime/qa-startup.js",
     "owns": [],
     "dependencies": [
-      "$",
       "__autoParams",
       "__autoTest",
       "diffCfg",
@@ -3499,7 +3564,6 @@ export const GAME_MODULES=[
       "updateAdventureHints"
     ],
     "dependencies": [
-      "$",
       "adventureHud",
       "adventureInventory",
       "boarScale",
@@ -3507,9 +3571,11 @@ export const GAME_MODULES=[
       "camera",
       "cinematicRunning",
       "diffCfg",
+      "dreamVisit",
       "endShown",
       "familyMembers",
       "foes",
+      "formatTime",
       "friend",
       "friendHP",
       "lakeExitReady",
@@ -3524,7 +3590,8 @@ export const GAME_MODULES=[
       "opening",
       "paused",
       "questsComplete",
-      "started"
+      "started",
+      "updateBedDream"
     ]
   },
   {
@@ -3560,8 +3627,6 @@ export const GAME_MODULES=[
       "cinematicWarmup"
     ],
     "dependencies": [
-      "$",
-      "GAME_VERSION",
       "__autoParams",
       "__autoTest",
       "__loadFinished",
@@ -3793,6 +3858,7 @@ export const GAME_MODULES=[
       "treeObjects",
       "tryPlayerJump",
       "updateAdventureItems",
+      "updateBedDream",
       "updateBoarChewing",
       "updateBoarForm",
       "updateBoarWater",
@@ -3826,7 +3892,7 @@ export const GAME_MODULES=[
     ]
   }
 ];
-export const GAME_SOURCES=[
+export const GAME_SOURCES=["src/runtime/dream.js",
   "src/runtime/foundation.js",
   "src/runtime/renderer.js",
   "src/runtime/materials.js",

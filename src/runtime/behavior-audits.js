@@ -1,7 +1,7 @@
-import { BOAR_WADING_DEPTH } from "../boar-water.js?v=220";
+import { BOAR_WADING_DEPTH } from "../boar-water.js?v=221";
 import * as THREE from "../../vendor/three/three.module.min.js";
-import { attacksPlayer, capsuleCircleContact } from "../boar-physics.js?v=220";
-import { riverCenterAt, weatherDeadline } from "../world-surface.js?v=220";
+import { attacksPlayer, capsuleCircleContact } from "../boar-physics.js?v=221";
+import { riverCenterAt, weatherDeadline } from "../world-surface.js?v=221";
 
 // Owns 4 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){

@@ -1,7 +1,7 @@
-import {CatLife} from "../cat-life.js?v=220";
-import { candidateBoxes, placementHeight, placementProblem } from "../craft-placement.js?v=220";
-import { PROP_FOOTPRINTS } from "../craft-world.js?v=220";
-import { RECIPES, craftResult } from "../crafting-rules.js?v=220";
+import {CatLife} from "../cat-life.js?v=221";
+import { candidateBoxes, placementHeight, placementProblem } from "../craft-placement.js?v=221";
+import { PROP_FOOTPRINTS } from "../craft-world.js?v=221";
+import { RECIPES, craftResult } from "../crafting-rules.js?v=221";
 import * as THREE from "../../vendor/three/three.module.min.js";
 
 // Owns 18 bindings. See docs/architecture.md for startup order.
@@ -129,9 +129,10 @@ function updateCraftCreatures(dt,now){
  const cats=runtime.craftWorld.items.filter(i=>i.g.visible&&i.catActor).map(i=>i.catActor);
  if(!cats.length&&craftedCats){craftedCats.cats=[];craftedCats.root.visible=false}
  if(cats.length){
-  craftedCats??=new CatLife(THREE,runtime.scene,runtime.mobile,true);craftedCats.root.visible=true;craftedCats.cats=cats;craftedCats.epoch=runtime.worldEpoch;
+  craftedCats??=new CatLife(THREE,runtime.scene,runtime.mobile,true);craftedCats.root.visible=true;craftedCats.cats=cats;craftedCats.epoch=runtime.worldEpoch;craftedCats.jumpBlocked=(x,z,y,r)=>blocked(x,z,y,r,1.05);
   craftedCats.houses=runtime.catLife.houses?.length?runtime.catLife.houses:[{x:0,z:0,y:0,w:3,d:3,exit:{x:2,z:2}}];craftedCats.objects=runtime.catLife.objects||[];
   craftedCats.terrain=(x,z)=>terrain(x,z);craftedCats.blocked=(x,z)=>blocked(x,z,terrain(x,z),.22,.95);
+  const dog=runtime.craftWorld.items.find(i=>i.kind==='dog'&&i.level===runtime.level&&i.g.visible);for(const c of cats){c.petChaseTarget=dog&&Math.floor(now/1000/8)%3===1&&c.g.position.distanceTo(dog.g.position)<14?dog.g.position:null}
   craftedCats.update(dt,runtime.birdLife,runtime.boarBodies(),runtime.boy.position,runtime.mountedFriend?runtime.friend:null,runtime.catLife.root.visible?runtime.catLife.cats:[]);
  }
  runtime.craftWorld.update(dt,now/1000,runtime.level,terrain,blocked,runtime.boy.position);
@@ -142,7 +143,7 @@ function placeCraftItem(){
  const target=craftPlacementTarget(true);if(!target)return false;
  if(!target.valid){runtime.notice(target.reason);return false}
  const {kind,x,y,z,rotation}=target,item=runtime.craftWorld.create(kind,x,y,z,runtime.level,rotation);
- if(item.living)item.g.userData.craftedCreature=true;
+ if(!item){runtime.notice('🐾 Лимит: два котика и собаки вместе.');return false}if(item.living)item.g.userData.craftedCreature=true;
  runtime.craftWorld.stock[kind]--;runtime.worldEpoch++;runtime.wallCacheEpoch=-1;
  runtime.tagStormTargetsForCurrentLocation();runtime.notice('Готово: '+RECIPES[kind].name);syncCraftPlacement();updateCraftPreview();return true;
 }
@@ -157,7 +158,7 @@ function syncCraftUI(){
 function craftAdventure(kind){
  if(!runtime.craftUnlocked||!runtime.started||runtime.endShown||runtime.cinematicRunning||runtime.life<=0)return false;
  if(kind==='lamp'&&runtime.hasFlashlight||kind==='aid'&&runtime.life>=runtime.diffCfg().playerHP||kind==='backpack'&&runtime.adventureInventory.backpack||kind==='wool'&&!woolAnimalNearby())return false;
- if(runtime.sandboxMode)runtime.refillCreative();
+ if((kind==='cat'||kind==='dog')&&runtime.craftWorld.petCount()>=2){runtime.$('craftResult').textContent='🐾 Можно иметь только двух читерских котиков и собак вместе.';return false}
  const next=craftResult(kind,{...runtime.adventureInventory,food: runtime.food});if(!next){runtime.$('craftResult').textContent='Не хватает припасов.';return false}
  runtime.adventureInventory.wood=next.wood;runtime.adventureInventory.bombs=next.bombs;runtime.adventureInventory.wool=next.wool||0;runtime.food=next.food;if(kind==='backpack')runtime.adventureInventory.backpack=true;else if(!['bomb','lamp','aid','wool'].includes(kind))runtime.craftWorld.addStock(kind);
  if(kind==='lamp')runtime.hasFlashlight=true;if(kind==='aid')runtime.life=Math.min(runtime.diffCfg().playerHP,runtime.life+2);

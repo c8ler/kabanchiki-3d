@@ -1,5 +1,5 @@
 import * as THREE from "../../vendor/three/three.module.min.js";
-import { BOSS_HITS } from "../world-surface.js?v=220";
+import { BOSS_HITS } from "../world-surface.js?v=221";
 
 // Owns 9 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){
@@ -79,7 +79,7 @@ document.addEventListener('mozfullscreenchange',runtime.syncFullscreenButton);
 
 document.addEventListener('MSFullscreenChange',runtime.syncFullscreenButton);
 
-document.addEventListener('keydown',e=>{if(runtime.gameInformation.isOpen){if(e.code==='Escape')runtime.gameInformation.close();return}if(e.target?.closest?.('input,textarea,select,[contenteditable]:not([contenteditable="false"])'))return;runtime.keys[e.code]=true;if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();if(e.code==='Escape'&&!e.repeat){e.preventDefault();runtime.togglePause()}if(e.code==='KeyV'&&!e.repeat)runtime.$('camera').click();if(e.code==='Space'&&!e.repeat){runtime.queuePlayerJump()};if((e.code==='KeyE'||e.code==='KeyF')&&!e.repeat)runtime.feed();if((e.code==='Enter'||e.code==='NumpadEnter')&&!e.repeat&&runtime.started&&!runtime.paused&&!runtime.win&&!runtime.endShown&&!runtime.cinematicRunning&&!e.target?.closest?.('input,textarea,select,[contenteditable]:not([contenteditable="false"])')){e.preventDefault();runtime.feed()}if(e.code==='KeyB'&&!e.repeat)runtime.interactHome();if(e.code==='KeyQ'&&!e.repeat)runtime.dismountFriendNow();if(e.code==='KeyZ'&&!e.repeat)runtime.$('rotateCraft').click();if(e.code==='KeyR'&&!e.repeat)runtime.gatherCraftMaterial();if(e.code==='KeyT'&&!e.repeat)runtime.placeCraftItem();if(e.code==='KeyG'&&!e.repeat)runtime.placeAdventureBomb();if(e.code==='KeyC'&&!e.repeat&&runtime.craftUnlocked&&runtime.started&&!runtime.cinematicRunning&&!runtime.endShown){runtime.openSecretMenu();runtime.$('craftPanel').open=true;runtime.$('craftPanel').scrollIntoView({block:'center'});}if(e.code==='KeyP'&&!e.repeat)runtime.togglePause()});
+document.addEventListener('keydown',e=>{if(runtime.gameInformation.isOpen){if(e.code==='Escape')runtime.gameInformation.close();return}if(e.target?.closest?.('input,textarea,select,[contenteditable]:not([contenteditable="false"])'))return;if(e.code==='KeyE'&&!e.repeat&&runtime.startBedDream()){e.preventDefault();return}runtime.keys[e.code]=true;if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();if(e.code==='Escape'&&!e.repeat){e.preventDefault();runtime.togglePause()}if(e.code==='KeyV'&&!e.repeat)runtime.$('camera').click();if(e.code==='Space'&&!e.repeat){runtime.queuePlayerJump()};if((e.code==='KeyE'||e.code==='KeyF')&&!e.repeat)runtime.feed();if((e.code==='Enter'||e.code==='NumpadEnter')&&!e.repeat&&runtime.started&&!runtime.paused&&!runtime.win&&!runtime.endShown&&!runtime.cinematicRunning&&!e.target?.closest?.('input,textarea,select,[contenteditable]:not([contenteditable="false"])')){e.preventDefault();runtime.feed()}if(e.code==='KeyB'&&!e.repeat)runtime.interactHome();if(e.code==='KeyQ'&&!e.repeat)runtime.dismountFriendNow();if(e.code==='KeyZ'&&!e.repeat)runtime.$('rotateCraft').click();if(e.code==='KeyR'&&!e.repeat)runtime.gatherCraftMaterial();if(e.code==='KeyT'&&!e.repeat)runtime.placeCraftItem();if(e.code==='KeyG'&&!e.repeat)runtime.placeAdventureBomb();if(e.code==='KeyC'&&!e.repeat&&runtime.craftUnlocked&&runtime.started&&!runtime.cinematicRunning&&!runtime.endShown){runtime.openSecretMenu();runtime.$('craftPanel').open=true;runtime.$('craftPanel').scrollIntoView({block:'center'});}if(e.code==='KeyP'&&!e.repeat)runtime.togglePause()});
 
 document.addEventListener('keyup',e=>runtime.keys[e.code]=false);
 
@@ -113,6 +113,8 @@ stickEl.addEventListener('pointercancel',resetStick);
 
 addEventListener('resize',()=>{runtime.camera.aspect=innerWidth/innerHeight;runtime.camera.updateProjectionMatrix();runtime.renderer.setSize(innerWidth,innerHeight)});
 
+// A second touch must activate an action while the first still holds the joystick.
+ for(const [id,action]of [['bombAction',runtime.placeAdventureBomb],['placeCraftAction',runtime.placeCraftItem]]){const button=runtime.$(id);let pointerAt=-Infinity;button.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'&&e.button!==0)return;e.preventDefault();e.stopPropagation();pointerAt=performance.now();action()});button.onclick=e=>{if(e.detail>0&&performance.now()-pointerAt<700){e.preventDefault();return}action()}}
 runtime.makePortal();
 
 /* init:const */ editable = e=>e.target?.closest?.('input,textarea,[contenteditable="true"]');

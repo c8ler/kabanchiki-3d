@@ -1,9 +1,9 @@
 import * as THREE from '../../vendor/three/three.module.min.js';
-import {SpiderLife} from '../spider-life.js?v=220';
+import {SpiderLife} from '../spider-life.js?v=221';
 export function createModule(runtime){
  let spiderLife,surfaceKey='',surfaceAt=-Infinity,lastLevel=1;
  const ground=(x,z)=>runtime.terrainHeightAt(x,z)+runtime.familyFloorAt(x,z);
- function environment(){return{ground,wet:(x,z)=>(runtime.waterAt(x,z)?.depth||0)>.08,player:runtime.boy,animal:runtime.catFormTime>0||runtime.boarFormTime>0,
+ function environment(){return{ground,water:(x,z)=>runtime.waterAt(x,z),wet:(x,z)=>(runtime.waterAt(x,z)?.depth||0)>.08,player:runtime.boy,animal:runtime.catFormTime>0||runtime.boarFormTime>0,
   clear:(a,b)=>runtime.clearWallLine(a,new THREE.Vector3(b.x,b.y+.45,b.z)),
   attached:()=>runtime.notice('🕷 Паук забрался на Тимура! Прыгни, чтобы его стряхнуть.'),
   damage:kind=>{

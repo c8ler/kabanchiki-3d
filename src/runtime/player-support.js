@@ -1,11 +1,12 @@
-import { PLAYER_HEIGHTS } from "../player-house-physics.js?v=220";
-import { forestEdgeBlocked } from "../world-interactions.js?v=220";
-import { HOME_SITE } from "../home-construction.js?v=220";
+import { PLAYER_HEIGHTS } from "../player-house-physics.js?v=221";
+import { forestEdgeBlocked } from "../world-interactions.js?v=221";
+import { HOME_SITE } from "../home-construction.js?v=221";
 import * as THREE from "../../vendor/three/three.module.min.js";
-import { bridgeRailBlocked } from "../world-surface.js?v=220";
-import { forestExitBlocked } from "../opening-adventure.js?v=220";
+import { bridgeRailBlocked } from "../world-surface.js?v=221";
+import { forestExitBlocked } from "../opening-adventure.js?v=221";
 
 // Owns 8 bindings. See docs/architecture.md for startup order.
+import {islandMushroomTop} from '../creative-island.js?v=221';
 export function createModule(runtime){
 
 function playerWorldBlocked(x,z,pad=0){
@@ -26,7 +27,7 @@ function playerWorldBlocked(x,z,pad=0){
  return false
 }
 
-function roofHeightAt(x,z){let top=0;if(runtime.level!==3)return top;for(const h of runtime.houseObjects){if(!h.visible)continue;h.updateWorldMatrix(true,true);for(const m of h.children){if((!m.visible&&!h.userData.enterable)||!m.isMesh||(!m.userData.dadRoof&&(runtime.seasonBaseMaterials.get(m)||m.material).map!==runtime.mats.roof.map))continue;m.geometry.computeBoundingBox();const q=m.worldToLocal(new THREE.Vector3(x,0,z)),b=m.geometry.boundingBox;if(q.x>b.min.x+runtime.PLAYER_RADIUS*.12&&q.x<b.max.x-runtime.PLAYER_RADIUS*.12&&q.z>b.min.z+runtime.PLAYER_RADIUS*.12&&q.z<b.max.z-runtime.PLAYER_RADIUS*.12){const world=m.localToWorld(new THREE.Vector3(q.x,b.max.y,q.z));top=Math.max(top,world.y)}}}return top}
+function roofHeightAt(x,z){let top=0;if(runtime.level===7)return Math.max(0,islandMushroomTop(runtime.sandboxVisual,x,z)-runtime.terrainHeightAt(x,z));if(runtime.level!==3)return top;for(const h of runtime.houseObjects){if(!h.visible)continue;h.updateWorldMatrix(true,true);for(const m of h.children){if((!m.visible&&!h.userData.enterable)||!m.isMesh||(!m.userData.dadRoof&&(runtime.seasonBaseMaterials.get(m)||m.material).map!==runtime.mats.roof.map))continue;m.geometry.computeBoundingBox();const q=m.worldToLocal(new THREE.Vector3(x,0,z)),b=m.geometry.boundingBox;if(q.x>b.min.x+runtime.PLAYER_RADIUS*.12&&q.x<b.max.x-runtime.PLAYER_RADIUS*.12&&q.z>b.min.z+runtime.PLAYER_RADIUS*.12&&q.z<b.max.z-runtime.PLAYER_RADIUS*.12){const world=m.localToWorld(new THREE.Vector3(q.x,b.max.y,q.z));top=Math.max(top,world.y)}}}return top}
 
 function playerSupportHeightAtNoRock(x,z){return roofHeightAt(x,z)}
 
