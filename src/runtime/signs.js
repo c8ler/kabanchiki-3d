@@ -1,6 +1,6 @@
-import {liftAboveSurface} from "../cinematic-support.js?v=221";
+import {liftAboveSurface} from "../cinematic-support.js?v=222";
 import * as THREE from "../../vendor/three/three.module.min.js";
-import { capsuleCircleContact } from "../boar-physics.js?v=221";
+import { capsuleCircleContact } from "../boar-physics.js?v=222";
 
 // Owns 4 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){
