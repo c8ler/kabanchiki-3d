@@ -52,6 +52,7 @@ export function createModule(runtime){
   const code=parseCheatCode(value),result=runtime.$('cheatResult');
   if(!code){result.textContent='Неизвестный код.';return false}
   if(!runtime.started||runtime.endShown||runtime.win||runtime.life<=0||runtime.cinematicRunning){result.textContent='Открой читы в меню паузы во время игры.';return false}
+  if((code.type==='level'||code.type==='sandbox')&&runtime.dreamVisit?.active){runtime.wakeFromDream();runtime.paused=true}
   runtime.keys={};runtime.stick.x=runtime.stick.y=0;runtime.jump=false;runtime.stopFishing();
   if(!undoState.has(code.type))undoState.set(code.type,{level:runtime.level,life:runtime.life,food:runtime.food,wood:runtime.adventureInventory.wood,wool:runtime.adventureInventory.wool,homeWood:runtime.home.wood});
   const supply=()=>{runtime.adventureInventory.wood=200;runtime.adventureInventory.wool=200;runtime.food=runtime.foodCapacity();runtime.home.wood=Math.max(8,runtime.home.wood)};
