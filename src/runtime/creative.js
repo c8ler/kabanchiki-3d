@@ -7,7 +7,7 @@ export function createModule(runtime){
  const undoState=new Map();
  function openSecretMenu(){
   if(!runtime.started||runtime.cinematicRunning||runtime.endShown||runtime.win||runtime.life<=0)return false;
-  craftUnlocked=true;runtime.syncCraftUI();runtime.$('craftPanel').open=true;runtime.setPause(true);secretMenuOpen=true;runtime.$('pauseMenu').style.display='none';runtime.$('secretMenu').style.display='grid';runtime.$('secretMenu').firstElementChild.scrollTop=0;return true;
+  runtime.enterCheatMode();craftUnlocked=true;runtime.syncCraftUI();runtime.$('craftPanel').open=true;runtime.setPause(true);secretMenuOpen=true;runtime.$('pauseMenu').style.display='none';runtime.$('secretMenu').style.display='grid';runtime.$('secretMenu').firstElementChild.scrollTop=0;return true;
  }
  function closeSecretMenu(backToPause=true){
   secretMenuOpen=false;secretEntry.reset();runtime.$('secretMenu').style.display='none';
@@ -53,7 +53,7 @@ export function createModule(runtime){
   if(!code){result.textContent='Неизвестный код.';return false}
   if(!runtime.started||runtime.endShown||runtime.win||runtime.life<=0||runtime.cinematicRunning){result.textContent='Открой читы в меню паузы во время игры.';return false}
   if((code.type==='level'||code.type==='sandbox')&&runtime.dreamVisit?.active){runtime.wakeFromDream();runtime.paused=true}
-  runtime.keys={};runtime.stick.x=runtime.stick.y=0;runtime.jump=false;runtime.stopFishing();
+  runtime.enterCheatMode();runtime.keys={};runtime.stick.x=runtime.stick.y=0;runtime.jump=false;runtime.stopFishing();
   if(!undoState.has(code.type))undoState.set(code.type,{level:runtime.level,life:runtime.life,food:runtime.food,wood:runtime.adventureInventory.wood,wool:runtime.adventureInventory.wool,homeWood:runtime.home.wood});
   const supply=()=>{runtime.adventureInventory.wood=200;runtime.adventureInventory.wool=200;runtime.food=runtime.foodCapacity();runtime.home.wood=Math.max(8,runtime.home.wood)};
   if(code.type==='sandbox'){enterSandbox();result.textContent='✨ Секретный остров открыт. Нажми «Продолжить».'}
@@ -65,21 +65,25 @@ export function createModule(runtime){
   else if(code.type==='home'){homeUnlocked=true;supply();if(sandboxMode){runtime.craftWorld.addStock('house');result.textContent='🏠 Домик подготовлен: T — поставить.'}else{runtime.syncHomeVisual();runtime.syncHomeLocation(runtime.level);result.textContent='🏠 Стройка включена. В деревне иди к площадке «Мой домик»; B — строить.'}}
   else if(code.type==='supplies'){supply();result.textContent='🎒 Припасы пополнены.'}
   else if(code.type==='heal'){runtime.spiderLife.cure();runtime.life=runtime.diffCfg().playerHP;result.textContent='💚 Здоровье восстановлено.'}
-  else if(code.type==='clear'){runtime.resetSpiders();runtime.craftWorld.clear();runtime.worldEpoch++;runtime.wallCacheEpoch=-1;result.textContent='🧹 Созданные предметы и спутники убраны.'}
+  else if(code.type==='clear'){runtime.resetMonsters();runtime.flyingInsects.clear(null,{onlyCheats:true});runtime.resetSpiders();runtime.craftWorld.clear();runtime.worldEpoch++;runtime.wallCacheEpoch=-1;result.textContent='🧹 Созданные предметы и спутники убраны.'}
+  else if(['spawnBee','spawnMosquito','spawnButterfly'].includes(code.type)){const kind={spawnBee:'bee',spawnMosquito:'mosquito',spawnButterfly:'butterfly'}[code.type],n=runtime.spawnFlying(kind,kind==='mosquito'?3:2,true);result.textContent=n?'Выпущено: '+n+'. Бабочки мирные, пчёлы и комарики очень редко жалят и кусают.':'Лимит: не больше 16 существ на карте, либо рядом преграда.'}
+  else if(['spawnZombie','spawnScreamer','spawnBrute'].includes(code.type)){const kind={spawnZombie:'zombie',spawnScreamer:'screamer',spawnBrute:'brute'}[code.type],made=runtime.spawnMonster(kind);result.textContent=made?'Монстр появился! Защищайся кабанчиками или бомбами. Зомби преследует, скример поджидает, громила охраняет место.':'Нет свободного места или достигнут лимит 16 существ.'}
   else if(code.type==='spawnSpider'){const n=runtime.spawnCheatSpiders();result.textContent=n?'🕷 Выпущено пауков: '+n+'. Они плетут паутину и опасно кусаются. Прыжок стряхивает паука с Тимура.':'🕷 Не получилось выпустить: лимит 12 пауков или рядом только вода.'}
   else if(code.type==='spawnCat'||code.type==='spawnDog'){craftUnlocked=true;const added=runtime.craftWorld.addStock(code.type==='spawnCat'?'cat':'dog');result.textContent=added?'Спутник подготовлен. Вернись в игру: T — выпустить перед собой.':'🐾 Лимит: всего два читерских котика и собаки, включая подготовленных.'}
   else if(code.type==='friend'){
-   if(runtime.friend?.g)runtime.scene.remove(runtime.friend.g);const q=runtime.nearestSafeSpawn(runtime.boy.position.x+3,runtime.boy.position.z,.9,{allowRoad:true})||[0,12];
+   if(!runtime.friend&&!runtime.creatureRoom(1,true)){result.textContent='Лимит: 16 существ на карте.';return false}if(runtime.friend?.g)runtime.scene.remove(runtime.friend.g);const q=runtime.nearestSafeSpawn(runtime.boy.position.x+3,runtime.boy.position.z,.9,{allowRoad:true})||[0,12];
    runtime.friend=runtime.makeBoar(q[0],q[1],true);runtime.friendHP=runtime.diffCfg().friendHP;result.textContent='🐗 Кабанчик-друг рядом.';
   }else if(code.type==='tornado'){const made=runtime.tornadoState.schedule(runtime.levelTime);result.textContent=made?'🌪 Торнадо появится через 15 секунд игры. Нажми «В игру».':'🌪 Торнадо уже вызвано.';if(made)runtime.notice('🌪 До вызванного торнадо 15 секунд!')}
   else if(code.type==='bomb'){runtime.adventureInventory.bombs++;result.textContent='💣 Получена 1 бомбочка. Нажми «Продолжить», затем G или кнопку 💣.'}
   else if(code.type==='light'){runtime.hasFlashlight=!runtime.hasFlashlight;runtime.torch.intensity=runtime.hasFlashlight?42:0;if(runtime.hasFlashlight){if(runtime.flashlightObj){runtime.scene.remove(runtime.flashlightObj);runtime.flashlightObj=null}result.textContent='Фонарик получен.';}else{if(runtime.flashlightObj)runtime.scene.remove(runtime.flashlightObj);const point=runtime.nearestSafeSpawn(runtime.boy.position.x+Math.sin(runtime.yaw)*2.8,runtime.boy.position.z+Math.cos(runtime.yaw)*2.8,.5)||[runtime.boy.position.x,runtime.boy.position.z];runtime.flashlightObj=runtime.group(point[0],point[1]);runtime.flashlightObj.position.y=runtime.terrainHeightAt(point[0],point[1]);runtime.block(runtime.flashlightObj,runtime.mats.gold,0,.45,0,.35,.35,.8);runtime.block(runtime.flashlightObj,runtime.mats.white,0,.45,.55,.28,.28,.28);runtime.flashlightDropUntil=performance.now()+3000;result.textContent='Фонарик выброшен рядом. Его можно подобрать или вернуть кодом LIGHT.';}}
-  else {if(code.form==='boar')runtime.startBoarForm();else if(code.form==='cat')runtime.startCatForm();else runtime.endBoarForm();result.textContent=code.form==='human'?'Тимур снова мальчик.':'Превращение на 30 секунд.'}
-  runtime.hud();return true;
+  else {runtime.cheatSession.mark(code);if(code.form==='boar')runtime.startBoarForm();else if(code.form==='cat')runtime.startCatForm();else runtime.endBoarForm();result.textContent=code.form==='human'?'Тимур снова мальчик.':'Превращение действует, пока не отключишь его кнопкой ×.'}
+  runtime.cheatSession.mark(code);runtime.updateCheatMode();runtime.hud();return true;
  }
  function undoCheat(value){
   const code=parseCheatCode(value);if(!code)return;const saved=undoState.get(code.type);
-  if(code.type==='spawnSpider')runtime.resetSpiders();
+  if(['spawnBee','spawnMosquito','spawnButterfly'].includes(code.type))runtime.flyingInsects.clear({spawnBee:'bee',spawnMosquito:'mosquito',spawnButterfly:'butterfly'}[code.type],{onlyCheats:true});
+  else if(['spawnZombie','spawnScreamer','spawnBrute'].includes(code.type))runtime.monsterLife.clear({spawnZombie:'zombie',spawnScreamer:'screamer',spawnBrute:'brute'}[code.type]);
+  else if(code.type==='spawnSpider'){for(const s of [...runtime.spiderLife.spiders])if(!s.natural)runtime.spiderLife.remove(s);runtime.spiderLife.cure()}
   else if(code.type==='spawnCat'||code.type==='spawnDog'){const kind=code.type==='spawnCat'?'cat':'dog';for(const item of [...runtime.craftWorld.items])if(item.kind===kind)runtime.craftWorld.remove(item);delete runtime.craftWorld.stock[kind];if(runtime.craftWorld.selected===kind)runtime.craftWorld.selected=''}
   else if(code.type==='tornado'){runtime.tornadoState.cancel();runtime.tornadoVisual.reset()}
   else if(code.type==='friend'){if(runtime.mountedFriend){runtime.mountedFriend=false;runtime.setRiderPose(false);runtime.rideHop.reset();runtime.py=runtime.vy=0;runtime.boy.position.y=runtime.terrainHeightAt(runtime.boy.position.x,runtime.boy.position.z);runtime.dismountLatch.leave(performance.now())}if(runtime.friend){runtime.scene.remove(runtime.friend.g);runtime.friend=null}}
@@ -91,7 +95,7 @@ export function createModule(runtime){
   else if(code.type==='heal'&&saved)runtime.life=Math.max(1,Math.min(runtime.diffCfg().playerHP,saved.life));
   else if(code.type==='light'){runtime.hasFlashlight=false;runtime.torch.intensity=0}
   else if(code.type==='sandbox'||code.type==='level'){const n=saved?.level;if(n===7)enterSandbox();else runtime.loadLevel(n||1)}
-  undoState.delete(code.type);runtime.worldEpoch++;runtime.wallCacheEpoch=-1;runtime.syncCraftUI();runtime.hud();runtime.$('cheatResult').textContent='Эффект выбранного чита убран.';
+  runtime.cheatSession.stop(code);runtime.updateCheatMode();undoState.delete(code.type);runtime.worldEpoch++;runtime.wallCacheEpoch=-1;runtime.syncCraftUI();runtime.hud();runtime.$('cheatResult').textContent='Эффект выбранного чита убран.';
  }
  return {bindings:{
  "secretMenuOpen":{get:()=>secretMenuOpen},
@@ -105,9 +109,9 @@ export function createModule(runtime){
  "refillCreative":{get:()=>refillCreative},"leaveSandbox":{get:()=>leaveSandbox},"enterSandbox":{get:()=>enterSandbox},"updateCreative":{get:()=>updateCreative},"applyCheat":{get:()=>applyCheat}
  },initialize(){
  for(const button of runtime.$('cheatButtons').querySelectorAll('[data-cheat]')){const value=button.dataset.cheat;if(value==='CLEAR'||value==='TIMUR')continue;const undo=document.createElement('button');undo.type='button';undo.dataset.undoCheat=value;undo.textContent='×';undo.title='Убрать этот чит';undo.setAttribute('aria-label','Убрать: '+button.textContent);undo.onclick=()=>undoCheat(value);const pair=document.createElement('div');pair.className='cheatPair';button.replaceWith(pair);pair.append(button,undo);button.style.cssText='flex:1;min-width:0';undo.className='cheatUndo'}
- const categories=[['🗺 Локации',['LEVEL1','LEVEL2','LEVEL3','LEVEL4','LEVEL5','LEVEL6','SANDBOX']],['🐾 Животные',['SPAWNCAT','DOG','FRIEND','SPIDERS']],['🧰 Предметы и припасы',['HOME','SUPPLIES','BOMB','LIGHT','HEAL','CLEAR']],['✨ Погода и превращения',['TORNADO','BOAR','CAT','TIMUR']]];
+ const categories=[['🗺 Локации',['LEVEL1','LEVEL2','LEVEL3','LEVEL4','LEVEL5','LEVEL6','SANDBOX']],['🐾 Животные',['SPAWNCAT','DOG','FRIEND','SPIDERS','BEES','MOSQUITOES','BUTTERFLIES']],['👻 Страшилки',['ZOMBIE','SCREAMER','BRUTE']],['🧰 Предметы и припасы',['HOME','SUPPLIES','BOMB','LIGHT','HEAL','CLEAR']],['✨ Погода и превращения',['TORNADO','BOAR','CAT','TIMUR']]];
  const host=runtime.$('cheatButtons');host.className='cheatGroups';
- const labels={SANDBOX:'✨ Остров',SPAWNCAT:'🐈 Котик',DOG:'🐕 Собака',FRIEND:'🐗 Друг',SPIDERS:'🕷 Пауки',HOME:'🏠 Домик',SUPPLIES:'🎒 Припасы',BOMB:'💣 Бомба',LIGHT:'🔦 Фонарик',HEAL:'💚 Здоровье',CLEAR:'🧹 Очистить всё',TORNADO:'🌪 Торнадо · 15 с',BOAR:'🐗 Кабанчик',CAT:'🐱 Кот',TIMUR:'🧍 Тимур'};
+ const labels={BEES:'🐝 Пчёлы',MOSQUITOES:'🦟 Комарики',BUTTERFLIES:'🦋 Бабочки',ZOMBIE:'🧟 Зомби',SCREAMER:'👻 Скример',BRUTE:'👹 Громила',SANDBOX:'✨ Остров',SPAWNCAT:'🐈 Котик',DOG:'🐕 Собака',FRIEND:'🐗 Друг',SPIDERS:'🕷 Пауки',HOME:'🏠 Домик',SUPPLIES:'🎒 Припасы',BOMB:'💣 Бомба',LIGHT:'🔦 Фонарик',HEAL:'💚 Здоровье',CLEAR:'🧹 Очистить всё',TORNADO:'🌪 Торнадо · 15 с',BOAR:'🐗 Кабанчик',CAT:'🐱 Кот',TIMUR:'🧍 Тимур'};
  for(const button of host.querySelectorAll('[data-cheat]'))if(labels[button.dataset.cheat]){button.title=button.textContent;button.textContent=labels[button.dataset.cheat]}
 
  for(const [title,values]of categories){const group=document.createElement('details'),summary=document.createElement('summary'),grid=document.createElement('div');group.className='cheatGroup';group.open=true;summary.textContent=title;grid.className='cheatGroupGrid';group.append(summary,grid);for(const value of values){const button=host.querySelector('[data-cheat="'+value+'"]');if(button)grid.append(button.closest('.cheatPair')||button)}host.append(group)}
