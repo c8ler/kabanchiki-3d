@@ -1,7 +1,7 @@
 import * as THREE from '../../vendor/three/three.module.min.js';
-import {parseCheatCode} from '../cheat-codes.js?v=220';
-import {createIsland,islandDepth,SECRET_LEVEL} from '../creative-island.js?v=220';
-import {SecretEntry} from '../secret-entry.js?v=220';
+import {parseCheatCode} from '../cheat-codes.js?v=221';
+import {createIsland,islandDepth,SECRET_LEVEL} from '../creative-island.js?v=221';
+import {SecretEntry} from '../secret-entry.js?v=221';
 export function createModule(runtime){
  let secretEntry=new SecretEntry(),secretMenuOpen=false;
  function openSecretMenu(){
@@ -33,7 +33,7 @@ export function createModule(runtime){
   for(const o of runtime.biomeObjects)o.visible=false;
   for(const a of runtime.apples)runtime.scene.remove(a.g);runtime.apples.length=0;
   for(const a of runtime.adventurePickups)runtime.disposePickupVisual(a.g);runtime.adventurePickups.length=0;
-  sandboxVisual??=createIsland(THREE,runtime.mats);if(!sandboxVisual.parent)runtime.scene.add(sandboxVisual);sandboxVisual.visible=true;
+  sandboxVisual??=createIsland(THREE,runtime.mats);if(!sandboxVisual.parent)runtime.scene.add(sandboxVisual);sandboxVisual.visible=true;for(const m of sandboxVisual.userData.mushrooms){m.spent=false;m.left=null;for(const part of m.parts)part.visible=true;m.cap.scale.y=.45}
   runtime.treeSolidMeshes.push(...sandboxVisual.userData.solids);runtime.rockPositions.push(...sandboxVisual.userData.rocks);
   for(const [,,,m]of sandboxVisual.userData.rocks)m.visible=true;
   runtime.craftWorld.visible(SECRET_LEVEL);runtime.catLife.root.visible=false;runtime.birdLife.root&&(runtime.birdLife.root.visible=false);
@@ -46,7 +46,7 @@ export function createModule(runtime){
   runtime.notice('✨ Секретный остров. В меню читов создавай зверьков и строй всё, что захочешь. Здесь можно экспериментировать без спешки.');
   return true;
  }
- function updateCreative(dt){if(!sandboxMode)return;refillCreative();runtime.weatherGroup.visible=false;runtime.tornadoState.active=false;if(sandboxVisual?.userData.ring)sandboxVisual.userData.ring.rotation.z+=dt*.08}
+ function updateCreative(dt){if(!sandboxMode)return;for(const m of sandboxVisual.userData.mushrooms){if(m.spent)continue;if(m.left===null&&Math.hypot(runtime.boy.position.x-m.x,runtime.boy.position.z-m.z)<3.6){m.left=1.8;runtime.notice('🍄 Гриб сейчас взорвётся! Отойди!')}if(m.left!==null){m.left-=dt;m.cap.scale.y=.45+Math.sin(m.left*22)*.07;if(m.left<=0){m.spent=true;for(const part of m.parts)part.visible=false;const index=runtime.treeSolidMeshes.indexOf(m.stem);if(index>=0)runtime.treeSolidMeshes.splice(index,1);const g=runtime.bombModel(runtime.scene),ring=new THREE.Mesh(new THREE.RingGeometry(1,1.1,8),runtime.blastRingMat);runtime.scene.add(ring);runtime.explodeAdventureBomb({x:m.x,y:runtime.terrainHeightAt(m.x,m.z),z:m.z,g,ring});runtime.worldEpoch++}}}refillCreative();runtime.weatherGroup.visible=false;runtime.tornadoState.active=false;if(sandboxVisual?.userData.ring)sandboxVisual.userData.ring.rotation.z+=dt*.08}
  function applyCheat(value){
   const code=parseCheatCode(value),result=runtime.$('cheatResult');
   if(!code){result.textContent='Неизвестный код.';return false}
