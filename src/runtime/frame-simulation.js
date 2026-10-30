@@ -1,9 +1,9 @@
-import { windSpeedFactor, tornadoInfluence } from "../tornado-rules.js?v=220";
+import { windSpeedFactor, tornadoInfluence } from "../tornado-rules.js?v=221";
 import * as THREE from "../../vendor/three/three.module.min.js";
-import { BOAR_MAX_WATER_DEPTH, attacksPlayer } from "../boar-physics.js?v=220";
-import { riverCenterAt, onRiverBridge, lakeRadiusAt } from "../world-surface.js?v=220";
-import { distantActorDt } from "../render-budget.js?v=220";
-import { findGridPath } from "../navigation.js?v=220";
+import { BOAR_MAX_WATER_DEPTH, attacksPlayer } from "../boar-physics.js?v=221";
+import { riverCenterAt, onRiverBridge, lakeRadiusAt } from "../world-surface.js?v=221";
+import { distantActorDt } from "../render-budget.js?v=221";
+import { findGridPath } from "../navigation.js?v=221";
 
 // Owns 1 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){
