@@ -1,3 +1,4 @@
+import {PET_PLAY_TURN} from './pet-rivalry.js?v=222';
 import * as T from '../vendor/three/three.module.min.js';
 import {StableRoute} from './navigation.js?v=222';
 const angleDelta=(a,b)=>Math.atan2(Math.sin(b-a),Math.cos(b-a));
@@ -14,21 +15,22 @@ export function createDog(materials){
 export class DogCompanion{
  constructor(g,home){this.g=g;this.home={...home};this.route=new StableRoute({incremental:true});this.time=0;this.steps=0;this.following=false;this.state='idle';this.goal=null;this.goalUntil=0}
  update(dt,terrain,blocked,player,epoch=0){
-  dt=Math.max(0,Math.min(.05,dt));this.time+=dt;const p=this.g.position,d=Math.hypot(p.x-player.x,p.z-player.z);
+  dt=Math.max(0,Math.min(.05,dt));this.time+=dt;const p=this.g.position,play=this.petPlan?.active?this.petPlan:null,turnRate=play?PET_PLAY_TURN:3.2,d=Math.hypot(p.x-player.x,p.z-player.z);
   if(d>4.2)this.following=true;if(d<2.3)this.following=false;
-  if(this.following){this.state='follow';if(!this.goal||Math.hypot(this.goal.x-player.x,this.goal.z-player.z)>1.4){this.goal={x:player.x,z:player.z};this.route.invalidate?.()}}
+  if(play){this.state='rival-'+play.kind;this.goal=play.goal;this.following=false}else if(this.following){this.state='follow';if(!this.goal||Math.hypot(this.goal.x-player.x,this.goal.z-player.z)>1.4){this.goal={x:player.x,z:player.z};this.route.invalidate?.()}}
   else if(this.time>this.goalUntil||!this.goal){this.state='sniff';this.goalUntil=this.time+5;const angle=this.time*.43;this.goal={x:this.home.x+Math.sin(angle)*2,z:this.home.z+Math.cos(angle)*2};if(d<2.5){this.goal={x:p.x,z:p.z};this.state='sit'}}
   let moved=0;
-  if(this.goal&&Math.hypot(p.x-this.goal.x,p.z-this.goal.z)>(this.following?1.8:.25)){
+  if(this.goal&&Math.hypot(p.x-this.goal.x,p.z-this.goal.z)>(play?play.stop:this.following?1.8:.25)){
    const query=(x,z)=>blocked(x,z,terrain(x,z,p.y),.36,1.25),waypoint=this.route.next(p,this.goal,query,dt,{step:.7,bound:41,epoch});
-   if(waypoint){const dx=waypoint.x-p.x,dz=waypoint.z-p.z,length=Math.hypot(dx,dz),desired=Math.atan2(dx,dz),turn=Math.max(-dt*3.2,Math.min(dt*3.2,angleDelta(this.g.rotation.y,desired)));
-    this.g.rotation.y+=turn;const step=Math.min(length,dt*(this.following?2.8:.8))*Math.max(0,Math.cos(angleDelta(this.g.rotation.y,desired)))*Math.min(1,length/.6);
+   if(waypoint){const dx=waypoint.x-p.x,dz=waypoint.z-p.z,length=Math.hypot(dx,dz),desired=Math.atan2(dx,dz),turn=Math.max(-dt*turnRate,Math.min(dt*turnRate,angleDelta(this.g.rotation.y,desired)));
+    this.g.rotation.y+=turn;const step=Math.min(length,dt*(play?play.speed:this.following?2.8:.8))*Math.max(0,Math.cos(angleDelta(this.g.rotation.y,desired)))*Math.min(1,length/.6);
     const x=p.x+Math.sin(this.g.rotation.y)*step,z=p.z+Math.cos(this.g.rotation.y)*step,y=terrain(x,z,p.y),reach=.4;
     if(Math.abs(y-p.y)<.3&&[0,-reach,reach].every(a=>!blocked(x+Math.sin(this.g.rotation.y)*a,z+Math.cos(this.g.rotation.y)*a,y,.28,1.25))){p.set(x,y,z);moved=step;this.steps+=step*9}this.route.record(moved,dt);
    }
   }
+  const floor=terrain(p.x,p.z,p.y),hop=play?.hop||0;p.y=!hop||blocked(p.x,p.z,floor+hop,.36,1.25)?floor:floor+hop;
   const rig=this.g.companionRig;if(rig){for(let i=0;i<rig.legs.length;i++)rig.legs[i].rotation.x=moved>0?Math.sin(this.steps+(i===0||i===3?0:Math.PI))*.65:rig.legs[i].rotation.x*Math.max(0,1-dt*12);
-   rig.tail.rotation.y=Math.sin(this.time*(d<5?9:4))*(d<5?.45:.18);rig.head.rotation.x=this.state==='sniff'?.3:Math.sin(this.time*.7)*.04;rig.body.position.y=.62+(moved?Math.sin(this.steps*2)*.025:0)}
+   rig.tail.rotation.y=Math.sin(this.time*(play?17:d<5?9:4))*(play?.65:d<5?.45:.18);rig.head.rotation.x=play?.kind==='spar'?-.2:this.state==='sniff'?.3:Math.sin(this.time*.7)*.04;if(play?.kind==='spar'){rig.legs[0].rotation.x=-.8+play.swipe*.4;rig.legs[2].rotation.x=-.8-play.swipe*.4}rig.body.position.y=.62+(moved?Math.sin(this.steps*2)*(play?.08:.025):0)}
   this.moving=moved>0;return moved;
  }
 }
