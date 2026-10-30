@@ -1,5 +1,5 @@
-import { installGameInformation } from "../game-information.js?v=220";
-import { cinematicScore } from "../music-player.js?v=220";
+import { installGameInformation } from "../game-information.js?v=221";
+import { cinematicScore } from "../music-player.js?v=221";
 
 // Owns 1 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){
