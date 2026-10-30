@@ -5,7 +5,7 @@ export function createModule(runtime){
  let shapeEpoch='',trunks=[];function shapes(){const key=runtime.worldEpoch+':'+runtime.level;if(key!==shapeEpoch){shapeEpoch=key;trunks=runtime.treeSolidMeshes.filter(m=>m.parent?.visible!==false).map(m=>runtime.treeTrunkShape(m))}return trunks}
  const waist=p=>new T.Vector3(p.x,p.y+.9,p.z);
  const clear=(a,b)=>runtime.clearWallLine(waist(a),waist(b));
- function blocked(x,z,r=.55,height=2.4){if(Math.abs(x)>41||Math.abs(z)>41||(runtime.waterAt(x,z)?.depth||0)>.3)return true;const y=runtime.terrainHeightAt(x,z)+runtime.familyFloorAt(x,z);if(runtime.craftWorld.blocked(x,z,y,r,height))return true;
+ function blocked(x,z,r=.55,height=2.4){if(Math.abs(x)>41||Math.abs(z)>41||(runtime.waterAt(x,z)?.depth||0)>.3)return true;const y=runtime.terrainHeightAt(x,z)+runtime.familyFloorAt(x,z);if(runtime.craftWorld.blocked(x,z,y,r,height))return true;for(const [,,,mesh] of runtime.rockPositions)if(mesh?.visible&&mesh.parent?.visible!==false&&runtime.rockFootprintHit(mesh,x,z,r,false))return true;
  for(const q of runtime.wallGeometry()){const b=q.box;if(x>b.min.x-r&&x<b.max.x+r&&z>b.min.z-r&&z<b.max.z+r&&y+height>b.min.y&&y<b.max.y)return true}
  for(const q of shapes()){if(Math.hypot(x-q.x,z-q.z)<r+q.r)return true}return false}
  function spawnMonster(kind){if(!runtime.creatureRoom())return null;for(let i=0;i<12;i++){const a=runtime.yaw+(i%2?-1:1)*Math.ceil(i/2)*.35,x=runtime.boy.position.x+Math.sin(a)*5,z=runtime.boy.position.z+Math.cos(a)*5;if(blocked(x,z,.8,3))continue;return monsterLife.spawn(kind,x,runtime.terrainHeightAt(x,z)+runtime.familyFloorAt(x,z),z,runtime.level)}return null}
