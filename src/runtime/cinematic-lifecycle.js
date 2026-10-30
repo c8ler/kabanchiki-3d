@@ -1,7 +1,7 @@
 import {familyDialogue,DialogueCursor} from '../family-dialogue.js?v=222';
-import {leaderboardRequest,leaderboardError} from '../leaderboard-client.js?v=221';
-import { cinematicLines, INTRO_LESSONS } from "../campaign-progress.js?v=221";
-import { reunionProfile } from "../family-reunion.js?v=221";
+import {leaderboardRequest,leaderboardError} from '../leaderboard-client.js?v=222';
+import { cinematicLines, INTRO_LESSONS } from "../campaign-progress.js?v=222";
+import { reunionProfile } from "../family-reunion.js?v=222";
 
 // Owns 3 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){
