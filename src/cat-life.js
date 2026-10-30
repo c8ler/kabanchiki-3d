@@ -1,6 +1,6 @@
 import {StableRoute,smoothHeading} from './navigation.js?v=221';
 import {capsuleAt,capsuleCircleContact,capsuleCapsuleContact} from './boar-physics.js?v=221';
-const distance=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
+const distance=(a,b)=>a&&b?Math.hypot(a.x-b.x,a.z-b.z):Infinity;
 export class CatLife{
  constructor(T,scene,mobile=false,empty=false){this.T=T;this.mobile=mobile;this.root=new T.Group();scene.add(this.root);this.root.visible=false;this.cats=empty?[]:[this.model(0),this.model(1)];this.time=0;this.stats={chases:0,scratches:0,roofVisits:0,boarGames:0,escapes:0,repairs:0}}
  model(index,parent=this.root){const T=this.T,g=new T.Group(),fur=new T.MeshLambertMaterial({color:index?0xc98445:0x555b65}),white=new T.MeshLambertMaterial({color:0xe8ded1}),pink=new T.MeshLambertMaterial({color:0xd99898}),black=new T.MeshBasicMaterial({color:0x16261b});parent.add(g);const box=(mat,x,y,z,w,h,d)=>{const m=new T.Mesh(new T.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);g.add(m);return m};const body=box(fur,0,.4,0,.38,.34,.75),head=box(fur,0,.65,.42,.4,.36,.32);box(white,0,.31,.26,.26,.24,.18);for(const x of [-.13,.13]){const ear=new T.Mesh(new T.ConeGeometry(.11,.2,4),fur);ear.position.set(x,.94,.4);g.add(ear);box(black,x,.7,.59,.07,.065,.025)}box(pink,0,.59,.602,.07,.05,.025);const legs=[];for(const x of [-.13,.13])for(const z of [-.25,.25])legs.push(box(z>0?white:fur,x,.17,z,.12,.32,.13));const tail=new T.Group();tail.position.set(0,.48,-.4);g.add(tail);const tm=new T.Mesh(new T.BoxGeometry(.09,.09,.64),fur);tm.position.z=-.26;tail.add(tm);tail.rotation.x=-.5;g.traverse(o=>{if(o.isMesh){o.castShadow=!this.mobile;o.receiveShadow=!this.mobile}});return {g,body,head,legs,tail,index,state:index?'play':'roof',timer:0,path:[],routeAge:0,home:0,jump:null,target:null,steps:0,scratchCount:0,chaseCount:0}}
@@ -87,7 +87,7 @@ export class CatLife{
  const p=this.point(c),threat=boars.filter(b=>!b.flee&&Math.abs(p.y-b.g.position.y)<1.1).map(b=>({b,d:Math.hypot(p.x-b.g.position.x,p.z-b.g.position.z)})).sort((a,b)=>a.d-b.d)[0];
  if(!threat||threat.d>4.5)continue;
  const b=threat.b,body=capsuleAt(b.g.position.x,b.g.position.z,b.g.rotation.y,b.bodyScale??Math.abs(b.g.scale.x)),contact=capsuleCircleContact(body,p.x,p.z,.65);
- let dx=contact?.nx??(p.x-b.g.position.x),dz=contact?.nz??(p.z-b.g.position.z),len=Math.hypot(dx,dz);if(len<.01){dx=1;dz=0;len=1}dx/=len;dz/=len;
+ let dx=contact?-contact.nx:p.x-b.g.position.x,dz=contact?-contact.nz:p.z-b.g.position.z,len=Math.hypot(dx,dz);if(len<.01){dx=1;dz=0;len=1}dx/=len;dz/=len;
  if(!(c.fleeUntil>this.time))this.stats.escapes++;c.fleeUntil=this.time+1.5;c.target=null;c.boar=null;
  if(!c.escapeTarget||Math.hypot(c.escapeTarget.x-p.x,c.escapeTarget.z-p.z)<.5||c.escapeRefresh<=this.time){c.escapeTarget=this.safeGround({x:p.x+dx*6,z:p.z+dz*6});c.escapeRefresh=this.time+1;c.path=[];c.routeAge=0}
  if(!contact)continue;
