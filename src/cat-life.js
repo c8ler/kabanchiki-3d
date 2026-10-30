@@ -28,7 +28,7 @@ export class CatLife{
   return false;
  }
  move(c,to,dt,speed){
-  if(!to||c.jump)return false;
+  if(!to||c.jump||c.evadedAt===this.time)return false;
   if((c.restUntil||0)>this.time||(c.yieldUntil||0)>this.time)return false;
   const p=this.point(c),goalDistance=distance(p,to);
   if(goalDistance>.8){const x=p.x+(to.x-p.x)/goalDistance*.45,z=p.z+(to.z-p.z)/goalDistance*.45;if(this.blocked(x,z)&&this.obstacleJump(c,to))return true}
@@ -90,9 +90,8 @@ export class CatLife{
  let dx=contact?-contact.nx:p.x-b.g.position.x,dz=contact?-contact.nz:p.z-b.g.position.z,len=Math.hypot(dx,dz);if(len<.01){dx=1;dz=0;len=1}dx/=len;dz/=len;
  if(!(c.fleeUntil>this.time))this.stats.escapes++;c.fleeUntil=this.time+1.5;c.target=null;c.boar=null;
  if(!c.escapeTarget||Math.hypot(c.escapeTarget.x-p.x,c.escapeTarget.z-p.z)<.5||c.escapeRefresh<=this.time){c.escapeTarget=this.safeGround({x:p.x+dx*6,z:p.z+dz*6});c.escapeRefresh=this.time+1;c.path=[];c.routeAge=0}
- if(!contact)continue;
  for(const turn of [0,.5,-.5,1,-1]){const a=Math.atan2(dx,dz)+turn,step=Math.min(.25,dt*5.4),x=p.x+Math.sin(a)*step,z=p.z+Math.cos(a)*step;
- const after=capsuleCircleContact(body,x,z,.65);if(!this.blocked(x,z)&&(!contact?!after:(after?.depth||0)<contact.depth-.001)){c.g.position.set(x,this.terrain(x,z),z);c.g.rotation.y=a;break}}
+ const after=capsuleCircleContact(body,x,z,.65);if(!this.blocked(x,z)&&(!contact?!after:(after?.depth||0)<contact.depth-.001)){c.g.position.set(x,this.terrain(x,z),z);c.g.rotation.y=smoothHeading(c.g.rotation.y,a,dt,5);c.evadedAt=this.time;break}}
  }
  }
 
