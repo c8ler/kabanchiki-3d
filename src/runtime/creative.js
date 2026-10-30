@@ -22,8 +22,8 @@ export function createModule(runtime){
   if(sandboxVisual){sandboxVisual.visible=false;for(const m of sandboxVisual.userData.solids){const index=runtime.treeSolidMeshes.indexOf(m);if(index>=0)runtime.treeSolidMeshes.splice(index,1)}for(const entry of sandboxVisual.userData.rocks){const index=runtime.rockPositions.indexOf(entry);if(index>=0)runtime.rockPositions.splice(index,1)}}
   runtime.syncSeasonChoices();runtime.weatherBaseSky=null;runtime.worldEpoch++;runtime.wallCacheEpoch=-1;
  }
- function enterSandbox(){
-  leaveSandbox();sandboxReturnSeason=runtime.currentSeason;runtime.loadLevel(2);sandboxMode=true;craftUnlocked=homeUnlocked=true;runtime.level=SECRET_LEVEL;
+ function enterSandbox(dream=false){
+  if(!dream){if(runtime.dreamVisit?.active)runtime.wakeFromDream();leaveSandbox();sandboxReturnSeason=runtime.currentSeason;runtime.loadLevel(2)}else sandboxReturnSeason=runtime.currentSeason;sandboxMode=true;craftUnlocked=homeUnlocked=true;runtime.level=SECRET_LEVEL;
   runtime.clearEntities(runtime.foes);runtime.clearEntities(runtime.familyMembers);runtime.clearEntities(runtime.friends);
   runtime.locationExit=null;runtime.opening=null;runtime.lakeExitProps.visible=false;
   for(const props of runtime.locationExitProps.values())props.visible=false;
@@ -33,7 +33,7 @@ export function createModule(runtime){
   for(const t of runtime.treeObjects)t.visible=false;for(const [,,,m]of runtime.rockPositions)if(m)m.visible=false;
   for(const o of runtime.biomeObjects)o.visible=false;
   for(const a of runtime.apples)runtime.scene.remove(a.g);runtime.apples.length=0;
-  for(const a of runtime.adventurePickups)runtime.disposePickupVisual(a.g);runtime.adventurePickups.length=0;
+  for(const a of runtime.adventurePickups)if(dream)a.g.removeFromParent();else runtime.disposePickupVisual(a.g);runtime.adventurePickups.length=0;
   sandboxVisual??=createIsland(THREE,runtime.mats);if(!sandboxVisual.parent)runtime.scene.add(sandboxVisual);sandboxVisual.visible=true;for(const q of sandboxVisual.userData.supplies){q.left=0;q.g.visible=true}for(const m of sandboxVisual.userData.mushrooms){m.spent=false;m.left=null;for(const part of m.parts)part.visible=true;m.cap.scale.y=.45}
   runtime.treeSolidMeshes.push(...sandboxVisual.userData.solids);runtime.rockPositions.push(...sandboxVisual.userData.rocks);
   for(const [,,,m]of sandboxVisual.userData.rocks)m.visible=true;
@@ -81,7 +81,7 @@ export function createModule(runtime){
   if(code.type==='spawnSpider')runtime.resetSpiders();
   else if(code.type==='spawnCat'||code.type==='spawnDog'){const kind=code.type==='spawnCat'?'cat':'dog';for(const item of [...runtime.craftWorld.items])if(item.kind===kind)runtime.craftWorld.remove(item);delete runtime.craftWorld.stock[kind];if(runtime.craftWorld.selected===kind)runtime.craftWorld.selected=''}
   else if(code.type==='tornado'){runtime.tornadoState.cancel();runtime.tornadoVisual.reset()}
-  else if(code.type==='friend'){if(runtime.mountedFriend)runtime.dismountFriendNow();if(runtime.friend){runtime.scene.remove(runtime.friend.g);runtime.friend=null}}
+  else if(code.type==='friend'){if(runtime.mountedFriend){runtime.mountedFriend=false;runtime.setRiderPose(false);runtime.rideHop.reset();runtime.py=runtime.vy=0;runtime.boy.position.y=runtime.terrainHeightAt(runtime.boy.position.x,runtime.boy.position.z);runtime.dismountLatch.leave(performance.now())}if(runtime.friend){runtime.scene.remove(runtime.friend.g);runtime.friend=null}}
   else if(code.type==='bomb'){runtime.adventureInventory.bombs=0;for(const b of runtime.armedBombs){runtime.disposePickupVisual(b.g);b.ring.removeFromParent();b.ring.geometry.dispose()}runtime.armedBombs.length=0}
   else if(code.type==='form')runtime.endBoarForm();
   else if(code.type==='craft'){craftUnlocked=false;runtime.$('craftPanel').open=false}
