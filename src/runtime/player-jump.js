@@ -17,7 +17,7 @@ function tryPlayerJump(now,supported){
  const fresh=runtime.boy.userData.jumpFresh;runtime.boy.userData.jumpFresh=false;
  if(!runtime.jump||!supported||!fresh&&now-(runtime.boy.userData.jumpQueuedAt||now)>=220)return false;
  runtime.softEffectTone(240,.15,'sine',.018,0,370);if(runtime.waterAt(runtime.boy.position.x,runtime.boy.position.z))runtime.spawnWaterSplash(runtime.boy.position.x,runtime.boy.position.z,1.8);
- runtime.vy=runtime.catFormTime>0?CAT_JUMP_SPEED:runtime.boarFormTime>0?BOAR_JUMP_SPEED:7;runtime.jump=false;return true;
+ runtime.vy=runtime.catFormTime>0?(runtime.level===7?18:CAT_JUMP_SPEED):runtime.boarFormTime>0?BOAR_JUMP_SPEED:7;runtime.jump=false;return true;
 }
 
 function manualRideJump(){if(!runtime.mountedFriend||runtime.rideHop.active)return false;runtime.rideHop.active=true;runtime.rideHop.time=0;runtime.rideHop.height=0;runtime.rideHop.peak=.35;runtime.rideHop.duration=.55;runtime.rideHop.target=null;return true}
