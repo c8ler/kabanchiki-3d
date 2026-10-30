@@ -26,9 +26,10 @@ export function createModule(runtime){
  }
  function spawnCheatSpiders(count=3){
   refreshSpiderSurfaces(true);let made=0;
-  runtime.visualOnly(()=>{for(let i=0;i<count;i++){const a=runtime.yaw+(i-1)*.8,x=runtime.boy.position.x+Math.sin(a)*1.5,z=runtime.boy.position.z+Math.cos(a)*1.5,q=runtime.nearestSafeSpawn(x,z,.22,{allowRoad:true})||[runtime.boy.position.x,runtime.boy.position.z];if((runtime.waterAt(...q)?.depth||0)>.08)continue;if(spiderLife.spawn(q[0],ground(...q),q[1],runtime.level))made++}});
+  runtime.visualOnly(()=>{for(let i=0;i<count;i++){if(!runtime.creatureRoom())break;const a=runtime.yaw+(i-1)*.8,x=runtime.boy.position.x+Math.sin(a)*1.5,z=runtime.boy.position.z+Math.cos(a)*1.5,q=runtime.nearestSafeSpawn(x,z,.22,{allowRoad:true})||[runtime.boy.position.x,runtime.boy.position.z];if((runtime.waterAt(...q)?.depth||0)>.08)continue;if(spiderLife.spawn(q[0],ground(...q),q[1],runtime.level))made++}});
   spiderLife.root.visible=runtime.started&&!runtime.cinematicRunning;return made;
  }
+ function spawnTreeSpider(){refreshSpiderSurfaces(true);const p=runtime.boy.position,trees=runtime.treeSolidMeshes.filter(m=>m.parent?.visible!==false).map(mesh=>({mesh,d:Math.hypot(mesh.parent.position.x-p.x,mesh.parent.position.z-p.z)})).filter(q=>q.d>5&&q.d<24).sort((a,b)=>a.d-b.d);for(const {mesh} of trees){const q=spiderLife.surfaces.find(s=>s.mesh===mesh);if(!q||q.box.max.y<1.5)continue;const x=(q.box.min.x+q.box.max.x)/2,z=q.box.max.z+.04,y=Math.min(q.box.max.y-.2,q.box.min.y+1.4);if((runtime.waterAt(x,z)?.depth||0)>.08)continue;const s=spiderLife.spawn(x,y,z,runtime.level);if(!s)return null;spiderLife.enterFace(s,q,'z',1);s.natural=true;s.life=75;s.immune=3;return s}return null}
  function shakeOffSpiders(){const count=spiderLife.shake(runtime.boy,environment());if(count)runtime.notice('🕷 Паук стряхнут! Если он успел укусить, яд ещё немного действует.');return count}
  function resetSpiders(){spiderLife.clear();surfaceKey='';for(const b of runtime.boarBodies()){b.spiderFear=0;b.spiderEscape=null;b.route=null;b.navigation=null}}
  function updateSpiders(dt,elapsed){
@@ -48,6 +49,6 @@ export function createModule(runtime){
   }
  }
  return{bindings:{
-  spiderLife:{get:()=>spiderLife},spawnCheatSpiders:{get:()=>spawnCheatSpiders},shakeOffSpiders:{get:()=>shakeOffSpiders},resetSpiders:{get:()=>resetSpiders},updateSpiders:{get:()=>updateSpiders}
+  spiderLife:{get:()=>spiderLife},spawnTreeSpider:{get:()=>spawnTreeSpider},spawnCheatSpiders:{get:()=>spawnCheatSpiders},shakeOffSpiders:{get:()=>shakeOffSpiders},resetSpiders:{get:()=>resetSpiders},updateSpiders:{get:()=>updateSpiders}
  },initialize(){spiderLife=runtime.visualOnly(()=>new SpiderLife(runtime.scene,{mobile:runtime.mobile}))}};
 }
