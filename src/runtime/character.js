@@ -1,4 +1,4 @@
-import { RideHop } from "../world-interactions.js?v=221";
+import { RideHop } from "../world-interactions.js?v=222";
 import * as THREE from "../../vendor/three/three.module.min.js";
 
 // Owns 17 bindings. See docs/architecture.md for startup order.
