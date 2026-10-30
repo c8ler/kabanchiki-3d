@@ -3,7 +3,7 @@ await mkdir('screenshots',{recursive:true});const failures=[];
 for(const [engine,mobile] of [[chromium,false],[webkit,true]]){
  const browser=await engine.launch({headless:true}),page=await browser.newPage({viewport:mobile?{width:390,height:844}:{width:960,height:640},isMobile:mobile,hasTouch:mobile}),errors=[];
  page.on('pageerror',e=>errors.push(e.message));
- try{await page.goto('http://127.0.0.1:8080/?autotest=1&level=3');await page.waitForFunction(()=>window.__KABANCHIKI_TEST__?.ready,null,{timeout:120000});
+ try{await page.goto('http://127.0.0.1:8080/?autotest=1&level=3');await page.waitForFunction(()=>(window.__KABANCHIKI_TEST__?.ready&&window.__KABANCHIKI_TEST__.auditsComplete!==false),null,{timeout:120000});
  const qa=(method,...args)=>page.evaluate(({method,args})=>window.__KABANCHIKI_QA__[method](...args),{method,args});
  const check=async(name,fn)=>{try{await fn();console.log('PASS',mobile?'webkit':'chromium',name)}catch(e){failures.push(name+': '+e.message);console.log('CHECK_FAILED',name,e.stack)}};
  const shot=async(name,show=true)=>{await page.waitForTimeout(300);const b=await page.screenshot({path:'screenshots/v212-'+(mobile?'mobile-':'desktop-')+name+'.jpg',type:'jpeg',quality:45});if(show){const s=b.toString('base64');for(let i=0;i<s.length;i+=6000)console.log('REVIEW_IMAGE:'+(mobile?'mobile-':'desktop-')+name+':'+Math.floor(i/6000)+':'+s.slice(i,i+6000));}};
