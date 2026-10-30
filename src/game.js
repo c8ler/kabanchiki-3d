@@ -71,6 +71,7 @@ import {createModule as createCameraOcclusion} from './runtime/camera-occlusion.
 import {createModule as createWorldHints} from './runtime/world-hints.js?v=221';
 import {createModule as createGameInformation} from './runtime/game-information.js?v=221';
 import {createModule as createGameLoop} from './runtime/game-loop.js?v=221';
+import {createModule as createDream} from './runtime/dream.js?v=221';
 import {createModule as createSpiders} from './runtime/spiders.js?v=221';
 import {createModule as createFrameSimulation} from './runtime/frame-simulation.js?v=221';
 
@@ -104,6 +105,7 @@ await initializeModules(runtime,[
  createHome(runtime),
  createAdventureWorld(runtime),
  createCreative(runtime),
+ createDream(runtime),
  createSpiders(runtime),
  createCrafting(runtime),
  createBombs(runtime),
