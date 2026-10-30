@@ -6,7 +6,7 @@ for(const engine of [chromium,webkit]){
  const check=async(name,fn)=>{try{await fn();console.log('PASS219',engine.name(),name)}catch(e){failures.push(engine.name()+' '+name+': '+e.stack);console.log('FAIL219',engine.name(),name,e.stack)}};
  const shot=async name=>{const b=await page.screenshot({path:'screenshots/v219-'+engine.name()+'-'+name+'.jpg',type:'jpeg',quality:50});if(!mobile){const data=b.toString('base64');for(let i=0;i<data.length;i+=6000)console.log('REVIEW_IMAGE:v219-'+name+':'+i/6000+':'+data.slice(i,i+6000))}};
  try{
-  await page.goto('http://127.0.0.1:8080/?autotest=1&level=3');await page.waitForFunction(()=>window.__KABANCHIKI_TEST__?.ready,null,{timeout:120000});
+  await page.goto('http://127.0.0.1:8080/?autotest=1&level=3');await page.waitForFunction(()=>(window.__KABANCHIKI_TEST__?.ready&&window.__KABANCHIKI_TEST__.auditsComplete!==false),null,{timeout:120000});
   for(let n=1;n<=6;n++)await check('exit '+n,async()=>{let r=await qa('v219Exit',n);assert.ok(!r.hidden&&r.kind==='exit',JSON.stringify({n,r}));assert.match(r.text,n===6?/босса/:/Накорми/);if([1,3,5].includes(n))assert.match(r.text,/Найди/);r=await qa('v219Exit',n,true);assert.ok(r.hidden||r.kind!=='exit',JSON.stringify({n,r}));if(n<6){r=await qa('v219Exit',n,false,'boars');assert.ok(!r.text.includes('Найди')&&r.text.includes('Накорми'))}});
   console.log('PASS219',engine.name(),'all exit hints update with objective completion');
   for(const opts of [{},{full:true},{food:'fish'},{food:'yellow'},{mounted:true},{blocked:true}])await check('feeding '+JSON.stringify(opts),async()=>{
