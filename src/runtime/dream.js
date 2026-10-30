@@ -1,5 +1,5 @@
 import * as THREE from '../../vendor/three/three.module.min.js';
-import {DreamVisit} from '../dream-visit.js?v=221';
+import {DreamVisit} from '../dream-visit.js?v=222';
 export function createModule(runtime){
  let dreamVisit;
  const fields=['level','levelTime','worldEpoch','score','familyFound','levelBoarsDone','levelBoarsTotal','levelFamilyDone','levelFamilyTotal','life','food','fishStock','yellowAppleStock','yellowMushroomStock','friend','friendHP','invuln','hasFlashlight','craftUnlocked','homeUnlocked','catFormTime','boarFormTime','weatherStage','weatherBaseSky','nextLightningAt','forageTimer','locationExit','opening','yaw','pitch','camMode'];
