@@ -1,6 +1,6 @@
 import {chromium} from 'playwright';import assert from 'node:assert/strict';
 const browser=await chromium.launch({headless:true});const page=await browser.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
-try{await page.goto('http://127.0.0.1:8080/?autotest=1&level=1');await page.waitForFunction(()=>window.__KABANCHIKI_TEST__?.ready,null,{timeout:60000});
+try{await page.goto('http://127.0.0.1:8080/?autotest=1&level=1');await page.waitForFunction(()=>(window.__KABANCHIKI_TEST__?.ready&&window.__KABANCHIKI_TEST__.auditsComplete!==false),null,{timeout:60000});
 const qa=(method,...args)=>page.evaluate(({method,args})=>window.__KABANCHIKI_QA__[method](...args),{method,args});
 let s=await qa('v207Inspect');assert.equal(s.version,'v222');assert.equal(s.guideButtons,0);
 for(const n of [1,2,3,4,5,6]){await qa('load',n);s=await qa('v207Inspect');assert.equal(s.sprites,0);assert.ok(s.fixed>=1);}
