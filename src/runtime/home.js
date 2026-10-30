@@ -1,4 +1,4 @@
-import { HOME_SITE, WOOD_PILES } from "../home-construction.js?v=221";
+import { HOME_SITE, WOOD_PILES } from "../home-construction.js?v=222";
 import * as THREE from "../../vendor/three/three.module.min.js";
 
 // Owns 7 bindings. See docs/architecture.md for startup order.
@@ -24,7 +24,7 @@ function homeInteraction(){if(!runtime.homeUnlocked||runtime.level!==3||!runtime
 
 function updateHomeUI(){if(runtime.level===3&&runtime.homeParts?.doorHinge){const near=Math.hypot(runtime.boy.position.x-HOME_SITE.x,runtime.boy.position.z-HOME_SITE.z-2.4)<3||runtime.friend?.g&&Math.hypot(runtime.friend.g.position.x-HOME_SITE.x,runtime.friend.g.position.z-HOME_SITE.z-2.4)<3;runtime.homeParts.doorHinge.rotation.y=near?-Math.PI*.48:0;runtime.homeParts.door.userData.closed=!near;}const action=homeInteraction(),button=runtime.$('homeAction');button.hidden=!action;if(action)button.textContent=action.kind==='wood'?'🪵 Собрать доски · B':`🏠 ${['Построить пол','Построить стены','Построить крышу','Провести освещение'][runtime.home.stage]} · B (${runtime.home.wood}/2)`;if(runtime.home.stage>=3&&runtime.personalHouse?.visible)runtime.setHomeHouseCutaway(Math.abs(runtime.boy.position.x-HOME_SITE.x)<2.25&&Math.abs(runtime.boy.position.z-HOME_SITE.z)<2.25&&runtime.py<2.8);}
 
-function interactHome(){const action=homeInteraction();if(!action)return;if(action.kind==='wood'){runtime.home.collect(action.i);runtime.notice(`🪵 Собраны доски: ${runtime.home.wood}. Неси их к площадке «Мой домик».`)}else{if(!runtime.home.build()){runtime.notice('🪵 Нужны 2 доски. Найди штабели рядом с поляной.');return}runtime.worldEpoch++;runtime.tagStormTargetsForCurrentLocation();runtime.notice(runtime.home.stage===4?'🚪 Дверь готова! Домик достроен.':runtime.home.stage===3?'🏠 Крыша готова! Найди ещё брёвна для двери.':['','🏠 Пол готов. Теперь нужны стены.','🏠 Стены готовы. Осталось построить крышу.'][runtime.home.stage])}saveHome();syncHomeVisual();syncHomeLocation(runtime.level);updateHomeUI();}
+function interactHome(){const action=homeInteraction();if(!action)return;if(action.kind==='wood'){runtime.home.collect(action.i);runtime.notice(`🪵 Собраны доски: ${runtime.home.wood}. Неси их к площадке «Мой домик».`)}else{if(!runtime.home.build()){runtime.notice('🪵 Нужны 2 доски. Найди штабели рядом с поляной.');return}runtime.worldEpoch++;runtime.tagStormTargetsForCurrentLocation();runtime.notice(runtime.home.stage===4?'💡 Свет включён! Домик достроен.':runtime.home.stage===3?'🏠 Крыша готова! Дверь уже на месте. Осталось провести освещение.':['','🏠 Пол готов. Теперь нужны стены.','🚪 Стены и дверь готовы. Осталось построить крышу.'][runtime.home.stage])}saveHome();syncHomeVisual();syncHomeLocation(runtime.level);updateHomeUI();}
  return {
   bindings:{
 "saveHome":{get:()=>saveHome},
