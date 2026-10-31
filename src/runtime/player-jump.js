@@ -1,3 +1,4 @@
+import {IslandFlight} from "../island-flight.js?v=223";
 import { BOAR_JUMP_SPEED } from "../tornado-rules.js?v=222";
 import { ceilingMotion } from "../player-house-physics.js?v=222";
 import { capsuleCircleContact } from "../boar-physics.js?v=222";
@@ -5,8 +6,17 @@ import { polygonContact } from "../movement-geometry.js?v=222";
 import { riverDepthAt, onRiverBridge, lakeInletDepthAt, lakeDepth } from "../world-surface.js?v=222";
 import { CAT_JUMP_SPEED } from "../form-rules.js?v=222";
 
-// Owns 6 bindings. See docs/architecture.md for startup order.
+// Owns 9 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){
+ const islandFlight=new IslandFlight();
+ function startIslandFlight(){
+  if(!runtime.sandboxMode)return false;
+  if(runtime.mountedFriend){runtime.mountedFriend=false;runtime.setRiderPose(false);runtime.rideHop.reset();runtime.dismountLatch.leave(performance.now())}
+  runtime.stopFishing();runtime.clearInput();runtime.hurricaneCarry=0;runtime.vy=0;runtime.boy.rotation.set(0,runtime.yaw,0);islandFlight.start();
+  runtime.notice("🌪 Торнадо подарило полёт! Двигайся как обычно. Прыжок / пробел — выше, «Приземлиться» — вниз.");return true;
+ }
+ function stopIslandFlight(){islandFlight.stop();runtime.$("landFlightAction").hidden=true}
+
 
 function queuePlayerJump(){
  if(!runtime.started||runtime.paused||runtime.cinematicRunning||runtime.endShown||runtime.win||runtime.life<=0)return false;
@@ -14,6 +24,7 @@ function queuePlayerJump(){
 }
 
 function tryPlayerJump(now,supported){
+ if(islandFlight.active)return false;
  const fresh=runtime.boy.userData.jumpFresh;runtime.boy.userData.jumpFresh=false;
  if(!runtime.jump||!supported||!fresh&&now-(runtime.boy.userData.jumpQueuedAt||now)>=220)return false;
  runtime.softEffectTone(240,.15,'sine',.018,0,370);if(runtime.waterAt(runtime.boy.position.x,runtime.boy.position.z))runtime.spawnWaterSplash(runtime.boy.position.x,runtime.boy.position.z,1.8);
@@ -38,10 +49,17 @@ function dismountFriendNow(){
 }
 
 function movePlayerVertical(dt){
+ if(islandFlight.active&&!runtime.sandboxMode)islandFlight.stop();
+ const flying=islandFlight.active;
+ if(flying){runtime.vy=islandFlight.step(dt,{rise:!!runtime.keys.Space,pulse:runtime.jump,down:!!(runtime.keys.ShiftLeft||runtime.keys.ShiftRight)})+18*dt;runtime.jump=false;runtime.boy.userData.jumpFresh=false}
  const prevPy=runtime.py;runtime.vy-=18*dt;let nextPy=runtime.py+runtime.vy*dt;
  const ceiling=ceilingMotion(runtime.py,runtime.vy,nextPy,runtime.houseCeilingAt(runtime.boy.position.x,runtime.boy.position.z),runtime.playerPhysicalHeight());nextPy=ceiling.feet;runtime.vy=ceiling.velocity;
  const support=playerSupportHeightAt(runtime.boy.position.x,runtime.boy.position.z);
  if(runtime.vy<=0&&prevPy>=support-.10&&nextPy<=support){if(runtime.vy<-2){if(runtime.waterAt(runtime.boy.position.x,runtime.boy.position.z))runtime.spawnWaterSplash(runtime.boy.position.x,runtime.boy.position.z,2.8);else runtime.effect('land');}runtime.py=support;runtime.vy=0}else{runtime.py=Math.max(0,nextPy);if(runtime.py===0)runtime.vy=0}
+ if(flying){
+  if(runtime.py>24){runtime.py=24;runtime.vy=0}
+  if(islandFlight.landing||runtime.keys.ShiftLeft||runtime.keys.ShiftRight){if(runtime.vy===0&&Math.abs(runtime.py-support)<.13){stopIslandFlight();runtime.notice('🌤 Тимур приземлился.')}}
+ }
  runtime.boy.position.y=runtime.py;
 }
 
@@ -64,6 +82,9 @@ function playerSupportHeightAt(x,z){
 }
  return {
   bindings:{
+"islandFlight":{get:()=>islandFlight},
+"startIslandFlight":{get:()=>startIslandFlight},
+"stopIslandFlight":{get:()=>stopIslandFlight},
 "queuePlayerJump":{get:()=>queuePlayerJump},
 "tryPlayerJump":{get:()=>tryPlayerJump},
 "manualRideJump":{get:()=>manualRideJump},
@@ -72,6 +93,11 @@ function playerSupportHeightAt(x,z){
 "playerSupportHeightAt":{get:()=>playerSupportHeightAt}
   },
   initialize(){
+ const land=runtime.$("landFlightAction");let pointerAt=-Infinity;
+ const descend=()=>{if(runtime.started&&!runtime.paused&&!runtime.cinematicRunning)islandFlight.land()};
+ land.addEventListener("pointerdown",e=>{if(e.pointerType==="mouse"&&e.button!==0)return;e.preventDefault();e.stopPropagation();pointerAt=performance.now();descend()});
+ land.onclick=e=>{if(e.detail>0&&performance.now()-pointerAt<700)return;descend()};
+
 
   }
  };
