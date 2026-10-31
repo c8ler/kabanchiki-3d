@@ -1,0 +1,20 @@
+import test from 'node:test';import assert from 'node:assert/strict';import * as T from '../vendor/three/three.module.min.js';
+import {IslandFlight} from '../src/island-flight.js';
+import {createModule as movement} from '../src/runtime/player-jump.js';
+import {createModule as weather} from '../src/runtime/lightning-weather.js';
+function fixture(sandbox=true){
+ const button={hidden:true},r={sandboxMode:sandbox,level:sandbox?7:1,boy:new T.Group(),keys:{},jump:false,py:0,vy:0,yaw:0,paused:false,mountedFriend:false,hurricaneCarry:0,
+ craftWorld:{items:[],support:()=>0},tornadoState:{active:false},home:{stage:0},familyHideout:{visible:false},
+ familyFloorAt:()=>0,branchStepHeightAt:()=>0,rockPositions:[],openingDebrisCapsules:()=>[],roofHeightAt:()=>0,
+ terrainHeightAt:()=>0,houseCeilingAt:()=>Infinity,playerPhysicalHeight:()=>1.8,waterAt:()=>null,
+ currentSeason:'summer',notice:()=>{},effect:()=>{},stopFishing:()=>{},clearInput(){this.keys={};this.jump=false},$(){return button},playCinematic(){this.cinematicRunning=true},setRiderPose:()=>{},rideHop:{reset(){}},dismountLatch:{leave(){}}};
+ Object.defineProperties(r,movement(r).bindings);Object.defineProperties(r,weather(r).bindings);return r;
+}
+test('island capture grants flight without pausing, cinematic or death',()=>{const r=fixture();r.beginHurricaneScene();assert.equal(r.islandFlight.active,true);assert.equal(r.paused,false);assert.equal(r.cinematicRunning,undefined);assert.equal(r.hurricaneCarry,0);assert.equal(r.shelteredFromWind(),true);r.movePlayerVertical(.05);assert.ok(r.py>0);r.beginHurricaneScene();assert.equal(r.islandFlight.launch,1.45)});
+test('campaign capture retains its normal cinematic',()=>{const r=fixture(false);r.beginHurricaneScene();assert.equal(r.islandFlight.active,false);assert.equal(r.paused,true);assert.equal(r.cinematicRunning,true);assert.ok(r.hurricaneCarry>0)});
+test('flight launches then hovers consistently at different frame rates',()=>{for(const fps of [20,30,60,144]){const r=fixture();r.beginHurricaneScene();for(let i=0;i<fps*4;i++)r.movePlayerVertical(1/fps);assert.ok(r.py>=8.9&&r.py<9.31,r.py);const y=r.py;for(let i=0;i<fps*4;i++)r.movePlayerVertical(1/fps);assert.equal(r.py,y);assert.equal(r.islandFlight.active,true)}});
+test('jump pulse climbs, landing descends, jump cancels landing and ground ends flight',()=>{const r=fixture();r.beginHurricaneScene();for(let i=0;i<80;i++)r.movePlayerVertical(.05);const y=r.py;r.jump=true;r.movePlayerVertical(.05);assert.ok(r.py>y);assert.equal(r.jump,false);r.islandFlight.land();r.movePlayerVertical(.05);assert.equal(r.vy,-4);r.jump=true;r.movePlayerVertical(.05);assert.ok(r.vy>0);assert.equal(r.islandFlight.landing,false);r.islandFlight.land();for(let i=0;i<100;i++)r.movePlayerVertical(.05);assert.equal(r.islandFlight.active,false);assert.equal(r.py,0)});
+test('ceilings, platform landing and altitude cap remain physical',()=>{const r=fixture();r.beginHurricaneScene();r.houseCeilingAt=()=>3;for(let i=0;i<100;i++)r.movePlayerVertical(.05);assert.ok(r.py<=1.2+.001);r.houseCeilingAt=()=>Infinity;r.keys.Space=true;for(let i=0;i<200;i++)r.movePlayerVertical(.05);assert.equal(r.py,24);r.keys={};r.familyFloorAt=()=>2;r.islandFlight.land();for(let i=0;i<150;i++)r.movePlayerVertical(.05);assert.equal(r.py,2);assert.equal(r.islandFlight.active,false)});
+test('leaving island cancels flight and ordinary gravity resumes',()=>{const r=fixture();r.beginHurricaneScene();r.py=10;r.sandboxMode=false;r.movePlayerVertical(.05);assert.equal(r.islandFlight.active,false);assert.ok(r.vy<0);r.stopIslandFlight();assert.equal(r.$().hidden,true)});
+test('mounted capture safely detaches the rider',()=>{const r=fixture();r.mountedFriend=true;r.beginHurricaneScene();assert.equal(r.mountedFriend,false);assert.equal(r.islandFlight.active,true)});
+test('flight state resets all pending ascent and landing on repeat visits',()=>{const f=new IslandFlight();assert.equal(f.step(.05),0);f.start();f.step(.05,{pulse:true});f.land();assert.equal(f.step(.05),-4);f.stop();assert.equal(f.step(.05),0);f.start();assert.equal(f.step(.05),6);assert.equal(f.landing,false)});
