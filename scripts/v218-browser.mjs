@@ -11,7 +11,7 @@ for(const engine of [chromium,webkit]){
   for(let i=0;i<4;i++){await page.locator('#versionSecret').click();assert.equal((await qa('v218SecretState')).open,false)}
   await page.locator('#versionSecret').click();assert.equal((await qa('v218SecretState')).open,true);assert.equal(await page.locator('#pauseMenu').isVisible(),false);
   await page.locator('[data-cheat="BOMB"]').click();assert.equal((await qa('v217Inspect')).bombs,1);
-  await page.keyboard.press('Escape');assert.deepEqual(await qa('v218SecretState'),{open:false,paused:true,visible:false,version:'v222'});
+  await page.keyboard.press('Escape');assert.deepEqual(await qa('v218SecretState'),{open:false,paused:true,visible:false,version:'v223'});
   await reveal();await page.locator('#secretResume').click();assert.equal((await qa('v218SecretState')).paused,false);
   await page.keyboard.press('KeyG');await page.waitForFunction(()=>{const r=window.__KABANCHIKI_QA__.v217Inspect();return r.armed>0&&r.bombs===1});assert.equal((await qa('v217Inspect')).bombs,1);
   await qa('v217Fresh');assert.equal((await qa('v217Inspect')).bombs,0);assert.equal((await qa('v218SecretState')).visible,false);
