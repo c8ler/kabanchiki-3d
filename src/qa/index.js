@@ -16,6 +16,7 @@ import {createQaPart as part14} from './qa-15.js?v=222';
 import {createQaPart as part15} from './qa-16.js?v=222';
 import {createQaPart as part16} from './qa-17.js?v=222';
 import {createQaPart as part17} from "./qa-18.js?v=222";
+import {createQaPart as part18} from "./qa-19.js?v=223";
 export function createGameQa(runtime){
- return Object.assign({},part0(runtime),part1(runtime),part2(runtime),part3(runtime),part4(runtime),part5(runtime),part6(runtime),part7(runtime),part8(runtime),part9(runtime),part10(runtime),part11(runtime),part12(runtime),part13(runtime),part14(runtime),part15(runtime),part16(runtime),part17(runtime));
+ return Object.assign({},part0(runtime),part1(runtime),part2(runtime),part3(runtime),part4(runtime),part5(runtime),part6(runtime),part7(runtime),part8(runtime),part9(runtime),part10(runtime),part11(runtime),part12(runtime),part13(runtime),part14(runtime),part15(runtime),part16(runtime),part17(runtime),part18(runtime));
 }
