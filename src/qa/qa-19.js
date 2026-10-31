@@ -1,0 +1,7 @@
+export function createQaPart(runtime){return{
+ v223FlightState(){return{active:runtime.islandFlight.active,landing:runtime.islandFlight.landing,launch:runtime.islandFlight.launch,py:runtime.py,vy:runtime.vy,level:runtime.level,x:runtime.boy.position.x,z:runtime.boy.position.z,paused:runtime.paused,cinematic:runtime.cinematicRunning,end:runtime.endShown,carry:runtime.hurricaneCarry,life:runtime.life}},
+ v223Capture(){this.v222Setup(7);runtime.closeSecretMenu(false);runtime.mountedFriend=false;runtime.boy.position.set(0,0,12);runtime.py=runtime.vy=0;runtime.setPause(false);runtime.tornadoState.schedule(runtime.levelTime);runtime.levelTime+=16;runtime.updateTornado(.01,performance.now());runtime.boy.position.set(runtime.tornadoState.x,runtime.terrainHeightAt(runtime.tornadoState.x,runtime.tornadoState.z),runtime.tornadoState.z);runtime.updateTornado(0,performance.now());return this.v223FlightState()},
+ v223FlightStep(seconds=2){for(let i=0;i<Math.ceil(seconds*20);i++){runtime.movePlayerVertical(.05);runtime.updateHurricaneCarry(.05,performance.now())}return this.v223FlightState()},
+ v223FlightPark(){runtime.tornadoState.cancel();runtime.tornadoVisual.reset();runtime.boy.position.x=0;runtime.boy.position.z=12;runtime.py=10;runtime.vy=0;runtime.boy.position.y=10+runtime.terrainHeightAt(0,12);return this.v223FlightState()},
+ v223ExitFlight(){runtime.loadLevel(3);return this.v223FlightState()}
+};}

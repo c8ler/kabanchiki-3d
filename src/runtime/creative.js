@@ -18,11 +18,13 @@ export function createModule(runtime){
  let craftUnlocked,homeUnlocked,sandboxMode,sandboxVisual,creativeNight;
  function refillCreative(){runtime.adventureInventory.wood=200;runtime.adventureInventory.wool=200;runtime.adventureInventory.bombs=20;runtime.food=runtime.foodCapacity();runtime.life=runtime.diffCfg().playerHP;runtime.invuln=999}
  function leaveSandbox(){
+  runtime.stopIslandFlight();
   if(!sandboxMode)return;sandboxMode=false;if(sandboxReturnSeason)runtime.currentSeason=sandboxReturnSeason;
   if(sandboxVisual){sandboxVisual.visible=false;for(const m of sandboxVisual.userData.solids){const index=runtime.treeSolidMeshes.indexOf(m);if(index>=0)runtime.treeSolidMeshes.splice(index,1)}for(const entry of sandboxVisual.userData.rocks){const index=runtime.rockPositions.indexOf(entry);if(index>=0)runtime.rockPositions.splice(index,1)}}
   runtime.syncSeasonChoices();runtime.weatherBaseSky=null;runtime.worldEpoch++;runtime.wallCacheEpoch=-1;
  }
  function enterSandbox(dream=false){
+  runtime.stopIslandFlight();
   if(!dream){if(runtime.dreamVisit?.active)runtime.wakeFromDream();leaveSandbox();sandboxReturnSeason=runtime.currentSeason;runtime.loadLevel(2)}else sandboxReturnSeason=runtime.currentSeason;sandboxMode=true;craftUnlocked=homeUnlocked=true;runtime.level=SECRET_LEVEL;
   runtime.clearEntities(runtime.foes);runtime.clearEntities(runtime.familyMembers);runtime.clearEntities(runtime.friends);
   runtime.locationExit=null;runtime.opening=null;runtime.lakeExitProps.visible=false;
