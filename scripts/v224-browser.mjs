@@ -3,7 +3,8 @@ for(const engine of [chromium,webkit]){
  const mobile=engine===webkit,browser=await engine.launch(),page=await browser.newPage({serviceWorkers:'block',viewport:mobile?{width:390,height:844}:{width:1024,height:720},isMobile:mobile,hasTouch:mobile}),errors=[];page.on('pageerror',e=>errors.push(e.message));
  const shot=async name=>{const b=await page.screenshot({path:'screenshots/v224-'+engine.name()+'-'+name+'.jpg',type:'jpeg',quality:45}),data=b.toString('base64');for(let i=0;i<data.length;i+=6000)console.log('REVIEW_IMAGE:v224-'+engine.name()+'-'+name+':'+i/6000+':'+data.slice(i,i+6000))};
  const pause=async()=>{if(mobile)await page.locator('#pauseBtn').click();else await page.keyboard.press('Escape')};
- const menuBack=async()=>{while(await page.locator('#pauseBack').isVisible())await page.locator('#pauseBack').click()};
+ const menuBack=async()=>{for(let n=0;n<3;n++){if(!await page.locator('#pauseBack').isVisible())return;console.log('BACK224',engine.name(),n,await page.locator('#pauseTitle').textContent());await page.locator('#pauseBack').click()}assert.equal(await page.locator('#pauseBack').isVisible(),false,'Back must reach the root within two levels')};
+ const watchdog=setTimeout(()=>{console.error('TIMEOUT224',engine.name(),'menu scenario exceeded four minutes');process.exit(1)},240000);watchdog.unref();
  try{
   await page.goto('http://127.0.0.1:8080/');await page.waitForFunction(()=>!document.getElementById('loadingScreen'),null,{timeout:120000});await page.locator('#cinematic').waitFor({state:'visible',timeout:30000});
   for(let i=0;i<INTRO_STORY.length;i++){
@@ -23,12 +24,12 @@ for(const engine of [chromium,webkit]){
   await page.locator('#restart').click();await page.locator('input[name="diff3d"][value="0"]').check({force:true});await page.locator('#difficultyStart').click();await pause();assert.equal(await page.locator('#healthMeter').getAttribute('aria-valuemax'),'10');
   await page.locator('#menuSettings').click();await page.locator('#menuDifficulty').click();await page.locator('input[name="diff3d"][value="1"]').check({force:true});await page.locator('#difficultyStart').click();assert.equal(await page.locator('#healthMeter').getAttribute('aria-valuemax'),'7');assert.equal(await page.locator('#menuDifficulty').isVisible(),true);
   for(const [width,height]of [[320,568],[390,844],[240,320],[568,320]])for(const name of ['root','help','controls','settings','journal','about']){
-   await page.setViewportSize({width,height});await menuBack();
+   console.log('MENU224',engine.name(),width,height,name);await page.setViewportSize({width,height});await menuBack();
    if(name==='controls'){await page.locator('#menuHelp').click();await page.locator('#showControls').click()}else if(name!=='root')await page.locator('[data-pause-open="'+name+'"]').click();
    const card=await page.locator('#pauseMenu>div').boundingBox();assert.ok(card.x>=0&&card.y>=0&&card.x+card.width<=width+1&&card.y+card.height<=height+1,JSON.stringify(card));
    assert.equal(await page.locator('#pauseMenu>div').evaluate(e=>e.scrollWidth<=e.clientWidth+1),true);
    for(const b of await page.locator('#pauseMenu button:visible').all()){await b.evaluate(e=>e.scrollIntoView({block:'center'}));const hit=await b.evaluate(e=>{const r=e.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2,h=document.elementFromPoint(x,y);return x>=0&&x<innerWidth&&y>=0&&y<innerHeight&&(h===e||e.contains(h))});assert.equal(hit,true,width+'x'+height+' '+name+': '+await b.textContent())}
   }
   assert.deepEqual(errors,[]);console.log('PASS224',engine.name(),'story before controls, keyboard navigation, safe replay, restart difficulty, cancellation and nested menus');
- }finally{await browser.close()}
+ }finally{clearTimeout(watchdog);await browser.close()}
 }
