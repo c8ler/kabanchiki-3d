@@ -1,5 +1,5 @@
 import {IntroSequence,INTRO_STORY,fillControls} from '../intro-sequence.js?v=224';
-import {familyDialogue,DialogueCursor} from '../family-dialogue.js?v=222';
+import {familyDialogue,DialogueCursor} from '../family-dialogue.js?v=226';
 import {leaderboardRequest,leaderboardError} from '../leaderboard-client.js?v=222';
 import { cinematicLines } from "../campaign-progress.js?v=222";
 import { reunionProfile } from "../family-reunion.js?v=222";
