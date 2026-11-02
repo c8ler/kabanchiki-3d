@@ -1,8 +1,10 @@
+import {installPauseNavigation} from '../pause-navigation.js?v=224';
+import {fillControls} from '../intro-sequence.js?v=224';
 
 
-// Owns 5 bindings. See docs/architecture.md for startup order.
+// Owns 6 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){
- let difficultyFromPause,startDifficultyRun;
+ let difficultyFromPause,startDifficultyRun,pauseNavigation;
 
 function syncAudioButtons(){const m=runtime.$('toggleMusic'),s=runtime.$('toggleSfx');if(m)m.textContent=runtime.musicEnabled?'🎵 Музыка: ВКЛ':'🔇 Музыка: ВЫКЛ';if(s)s.textContent=runtime.sfxEnabled?'🔊 Звуки: ВКЛ':'🔈 Звуки: ВЫКЛ'}
 
@@ -42,6 +44,7 @@ function syncFullscreenButton(){
 }
  return {
   bindings:{
+"pauseNavigation":{get:()=>pauseNavigation},
 "syncAudioButtons":{get:()=>syncAudioButtons},
 "goFullscreen":{get:()=>goFullscreen},
 "syncFullscreenButton":{get:()=>syncFullscreenButton},
@@ -49,6 +52,8 @@ function syncFullscreenButton(){
 "startDifficultyRun":{get:()=>startDifficultyRun}
   },
   initialize(){
+ pauseNavigation=installPauseNavigation(runtime.$("pauseMenu"));fillControls(runtime.$("pauseControlsList"),runtime.mobile);
+ runtime.$("showStatsPause").onclick=()=>runtime.showPlayerStats("global");
 
 runtime.$('toggleMusic').onclick=()=>{runtime.musicEnabled=!runtime.musicEnabled;localStorage.setItem('kabanchiki3d_music',runtime.musicEnabled?'1':'0');if(runtime.audio)runtime.audioBus('music').gain.setTargetAtTime(runtime.musicEnabled?.62:0,runtime.audio.currentTime,.03);if(runtime.musicEnabled){if(runtime.cinematicRunning)runtime.startCinematicMusic(runtime.movie?.kind||'intro');else runtime.startMusic()}else{runtime.stopMusic();runtime.stopCinematicMusic()}syncAudioButtons()};
 

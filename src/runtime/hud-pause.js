@@ -11,12 +11,12 @@ function notice(t){runtime.adventureHud.log(t);const m=runtime.$('message');m.te
 function hud(force=true){const now=performance.now();if(!force&&now-lastHudUpdate<150)return;lastHudUpdate=now;runtime.syncCraftUI();
  runtime.adventureHud.update({life: runtime.life,maxLife:runtime.diffCfg().playerHP,food:runtime.food+runtime.fishStock+runtime.yellowAppleStock+runtime.yellowMushroomStock,maxFood:runtime.foodCapacity(),form:runtime.catFormTime>0?'cat':runtime.boarFormTime>0?'boar':null,formPinned:runtime.cheatSession.has('form:cat')||runtime.cheatSession.has('form:boar'),seconds:Math.max(runtime.catFormTime,runtime.boarFormTime),storm:runtime.tornadoState.clock(runtime.levelTime,runtime.level)},now);
  runtime.$('stats').textContent=`${(runtime.level===7?'✨ Секретный остров':runtime.levels[runtime.level-1])} · ${{summer:'Лето',autumn:'Осень',winter:'Зима',spring:'Весна'}[runtime.currentSeason]}\nСложность: ${runtime.DIFF_NAMES[runtime.selectedDiff]} · Семья: ${runtime.familyFound}/4 · Очки: ${runtime.score}\nПрипасы: обычные ${runtime.food}, рыба ${runtime.fishStock}, жёлтые яблоки ${runtime.yellowAppleStock}, мухоморы ${runtime.yellowMushroomStock}${runtime.friend?'\nДруг: '+runtime.friendHP+'/'+runtime.diffCfg().friendHP+' здоровья':''}${runtime.hasFlashlight?' · Фонарик есть':''}`;
- runtime.$('quest').textContent=runtime.win?'Семья снова вместе!':runtime.questState();
+ runtime.$('quest').textContent=runtime.win?'Семья снова вместе!':runtime.questState();runtime.$('journalQuest').textContent=runtime.$('quest').textContent;
 }
 
-function setPause(on){if(!on)runtime.closeSecretMenu(false);if(!runtime.started)return;runtime.paused=on;if(on)runtime.$('pauseMenu').firstElementChild.scrollTop=0;if(on){runtime.$('homeAction').hidden=true;runtime.$('craftResult').textContent='';}runtime.syncCraftUI();if(on)runtime.stopMusic();else runtime.startMusic();runtime.$('pauseMenu').style.display=on?'grid':'none';runtime.$('pauseBtn').textContent=on?'▶':'☰';if(on&&!runtime.mobile){try{(document.exitPointerLock||document.webkitExitPointerLock)?.call(document)}catch{}}}
+function setPause(on){if(!on)runtime.closeSecretMenu(false);if(!runtime.started)return;const wasPaused=runtime.paused;runtime.paused=on;if(on&&!wasPaused)runtime.pauseNavigation.reset();if(on)runtime.$('pauseMenu').firstElementChild.scrollTop=0;if(on){runtime.$('homeAction').hidden=true;runtime.$('craftResult').textContent='';}runtime.syncCraftUI();if(on)runtime.stopMusic();else runtime.startMusic();runtime.$('pauseMenu').style.display=on?'grid':'none';if(on&&!wasPaused)runtime.$('resume').focus({preventScroll:true});runtime.$('pauseBtn').textContent=on?'▶':'☰';if(on&&!runtime.mobile){try{(document.exitPointerLock||document.webkitExitPointerLock)?.call(document)}catch{}}}
 
-function togglePause(){if(runtime.secretMenuOpen){runtime.closeSecretMenu();return}if(runtime.difficultyFromPause){runtime.closeDifficultyChoice();return}setPause(!runtime.paused)}
+function togglePause(){if(runtime.cinematicRunning)return;if(runtime.secretMenuOpen){runtime.closeSecretMenu();return}if(runtime.difficultyFromPause||runtime.$('difficultyScreen').style.display==='grid'){runtime.closeDifficultyChoice();return}if(runtime.paused&&runtime.pauseNavigation.back())return;setPause(!runtime.paused)}
  return {
   bindings:{
 "notice":{get:()=>notice},
@@ -29,7 +29,7 @@ function togglePause(){if(runtime.secretMenuOpen){runtime.closeSecretMenu();retu
 
 /* init:let */ lastHudUpdate = -Infinity;
 
-runtime.$('start').onclick=()=>{runtime.$('intro').style.display='none';runtime.$('difficultyScreen').style.display='grid'};
+runtime.$('start').onclick=()=>{if(!runtime.campaignProgress.introSeen)runtime.showIntroStory(()=>runtime.openDifficultyChoice('start'));else runtime.openDifficultyChoice('start')};
 
 runtime.$('difficultyBack').onclick=()=>{runtime.$('difficultyScreen').style.display='none';runtime.$('intro').style.display='grid'};
 
@@ -37,9 +37,9 @@ runtime.$('difficultyStart').onclick=()=>{try{if(!runtime.mobile)runtime.request
 
 runtime.$('camera').onclick=()=>{runtime.camMode=(runtime.camMode+1)%10;runtime.first=runtime.camMode===9;if(runtime.first)runtime.pitch=0;runtime.$('camera').textContent=`📷 Вид ${runtime.camMode+1}/10`;runtime.$('cross').style.display='none';notice(['Высоко · далеко','Средне · далеко','Низко · близко','Очень высоко','За плечом','Низко · далеко','Сверху под углом','Близко · средне','Строго сверху · 90°','От первого лица · еда в руке'][runtime.camMode])};
 
-runtime.$('restart').onclick=runtime.restartGame;
+runtime.$('restart').onclick=()=>runtime.openDifficultyChoice('restart');
 
-runtime.$('menuRestart').onclick=runtime.restartGame;
+runtime.$('menuRestart').onclick=()=>runtime.openDifficultyChoice('restart');
 
 runtime.$('jump').onpointerdown=e=>{e.preventDefault();runtime.queuePlayerJump()};
 

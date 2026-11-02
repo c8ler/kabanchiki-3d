@@ -22,3 +22,22 @@
 #secretMenu .pauseHeader h2{flex:1 0 100%;margin:0}
 #secretMenu summary[hidden]{display:none!important}
 #secretResume{background:#67a743}
+
+/* A short home page, followed by one page per topic. */
+.pausePage[hidden],#pauseBack[hidden],#menuRestart[hidden],#cinematicLesson[hidden],#cinematicProgress[hidden],#cinematicText[hidden]{display:none!important}
+.pauseLinks{display:grid;gap:8px}.pauseLinks button{text-align:left;width:100%;margin:0;padding:13px 15px}
+#pauseMenu .pauseHeader{flex-wrap:wrap;align-items:center;gap:8px}
+#pauseTitle{flex:1;min-width:75px}#pauseBack{padding:8px 10px;font-size:13px}
+.pausePage{min-width:0}.pauseGoal{font-size:14px;line-height:1.45;padding:10px 12px;border-radius:12px;background:#ffffff0a}
+#stats{white-space:pre-line;font-size:14px;line-height:1.5}#pauseJournal{font-size:13px;line-height:1.5}
+#pauseMenu .menuBtns{display:grid;grid-template-columns:minmax(0,1fr);gap:8px}.menuBtns button{width:100%;margin:0}
+.controlsList{display:grid;gap:12px}.controlsList section{min-width:0}.controlsList h3{font-size:16px;margin:0 0 5px}.controlsList p{font-size:14px;line-height:1.5;margin:0}
+#cinematicProgress{position:absolute;left:12px;top:max(18px,env(safe-area-inset-top));max-width:48vw;padding:7px 10px;background:#09121bce;border-radius:10px;font-size:13px}
+#cinematicLesson{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(560px,calc(100% - 24px));box-sizing:border-box;max-height:calc(100dvh - 160px);padding:20px;border-radius:18px;background:#101e28f5;color:#f4f7f6;overflow:auto;pointer-events:auto;touch-action:pan-y;overscroll-behavior:contain}
+#cinematicLesson h2{font-size:21px;line-height:1.2;margin:0 0 18px}#cinematicControls .controlsList{gap:12px}
+#cinematicNext{min-height:44px}#cinematicText{box-sizing:border-box}
+@media(max-width:360px){#pauseMenu .pauseHeader #resume{font-size:12px;padding:9px}#pauseTitle{font-size:19px!important}#cinematicSkip{font-size:11px;max-width:47vw}#cinematicLesson{padding:14px}.controlsList h3{font-size:15px}.controlsList p{font-size:13px}}
+@media(max-height:420px){#cinematicProgress{top:10px}#cinematicLesson{max-height:calc(100dvh - 92px);top:44%;padding:12px 16px}#cinematicLesson h2{font-size:17px;margin-bottom:10px}#cinematicLesson .controlsList{gap:8px}#cinematicLesson .controlsList p{font-size:12px}#cinematicText{font-size:14px!important;max-height:calc(100dvh - 110px)!important}}
+
+#pauseMenu>div{scroll-padding-block:var(--pause-header,62px) 12px}
+@media(max-width:360px){#pauseMenu .pauseHeader{display:grid;grid-template-columns:auto minmax(0,1fr)}#pauseTitle{grid-column:2;grid-row:1}#pauseBack{grid-column:1;grid-row:1}#pauseMenu .pauseHeader #resume{grid-column:1/-1;grid-row:2;width:100%}#pauseBack[hidden]+#pauseTitle{grid-column:1/-1}}

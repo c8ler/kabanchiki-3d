@@ -1,19 +1,41 @@
+import {IntroSequence,INTRO_STORY,fillControls} from '../intro-sequence.js?v=224';
 import {familyDialogue,DialogueCursor} from '../family-dialogue.js?v=222';
 import {leaderboardRequest,leaderboardError} from '../leaderboard-client.js?v=222';
-import { cinematicLines, INTRO_LESSONS } from "../campaign-progress.js?v=222";
+import { cinematicLines } from "../campaign-progress.js?v=222";
 import { reunionProfile } from "../family-reunion.js?v=222";
 
-// Owns 3 bindings. See docs/architecture.md for startup order.
+// Owns 4 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){
  let familyCursor=null,dialogueVariant=0;
  function advanceFamilyDialogue(){if(!runtime.cinematicRunning||runtime.movie?.kind!=='family'||!familyCursor)return false;if(familyCursor.next()){runtime.$('cinematicText').textContent=familyCursor.text;runtime.$('cinematicNext').textContent=familyCursor.last?'Продолжить приключение ✓':'Дальше →'}else runtime.cinematicFinish?.();return true}
 
 
 function playCinematic(kind,onDone,detail={}){
- runtime.stopFishing();runtime.spiderLife.root.visible=false;if(kind==='family'){runtime.shakeOffSpiders();runtime.spiderLife.cure()}runtime.cineClear();if(kind==='family'){const form=runtime.catFormTime>0?'cat':runtime.boarFormTime>0?'boar':'human';if(form!=='human'){const profile=reunionProfile(form,detail.role);detail={...detail,form,line:profile.line,after:profile.after};}}runtime.cinematicRunning=true;runtime.paused=true;if(runtime.boarFormVisual)runtime.boarFormVisual.visible=false;runtime.$('cinematic').style.display='block';runtime.cineSetup(kind,detail);runtime.startCinematicMusic(kind);
- const steps=kind==='intro'?[["Семья приехала отдохнуть в лесу.",0],["У озера их ждал пикник…",4200],["Но из чащи появились кабанчики.",8000],["Все разбежались в разные стороны.",12000],["Тимур остался один. Ему предстоит найти родных.",15000]]:kind==='outro'?[["Босс сбежал. Семья снова вместе.",0],["Верный кабанчик помог найти дорогу домой.",3200],["Пора возвращаться к машине.",6300],["Спасибо, кабанчик! Пора домой.",10000]]:cinematicLines(kind,detail);
- const text=runtime.$('cinematicText');if(kind==='intro'){steps.splice(0,steps.length,...INTRO_LESSONS.map((s,i)=>[runtime.mobile?['Семья приехала на пикник. Тимуру предстоит найти родных.','Джойстик — идти, свайп по миру — осмотреться.','Кнопка еды — покормить кабанчика. Прыжок — запрыгнуть на друга.','Котик высоко прыгает. Крафт — в меню; кнопки помогут собрать материалы и поставить предмет.','Выполни все квесты и открой проход. От торнадо ищи укрытие!'][i]:s.text,s.at*1000]));}if(kind==='family'){familyCursor=new DialogueCursor(familyDialogue(detail.role,detail,dialogueVariant++));steps.splice(0,steps.length,[familyCursor.text,0]);}runtime.$('cinematicNext').hidden=kind!=='family';runtime.$('cinematicNext').textContent='Дальше →';runtime.$('cinematicNext').onclick=advanceFamilyDialogue;for(const [line,at] of steps)if(at===0)text.textContent=line;else runtime.cineLater(()=>text.textContent=line,at);if(kind==='intro')runtime.cineLater(runtime.softBoarAttackSound,8000);else if(kind==='family')runtime.bonusSound();
- const finish=()=>{if(!runtime.cinematicRunning)return;runtime.cinematicRunning=false;runtime.cinematicFinish=null;runtime.cineClear();runtime.stopCinematicMusic();runtime.$('cinematic').style.display='none';onDone?.();if(!runtime.cinematicRunning)runtime.startMusic()};runtime.cinematicFinish=finish;runtime.$('cinematicSkip').onclick=finish;if(kind!=='family')runtime.cineLater(finish,kind==='sleep'?4200:kind==='dream'?3500:kind==='intro'?18500:kind==='outro'?15500:kind==='storm'?6500:kind==='death'?4500:8500);
+ runtime.stopFishing();runtime.spiderLife.root.visible=false;
+ if(kind==='family'){runtime.shakeOffSpiders();runtime.spiderLife.cure()}
+ runtime.cineClear();
+ if(kind==='family'){const form=runtime.catFormTime>0?'cat':runtime.boarFormTime>0?'boar':'human';if(form!=='human'){const profile=reunionProfile(form,detail.role);detail={...detail,form,line:profile.line,after:profile.after}}}
+ runtime.cinematicRunning=true;runtime.paused=true;
+ if(runtime.boarFormVisual)runtime.boarFormVisual.visible=false;
+ const overlay=runtime.$('cinematic'),text=runtime.$('cinematicText'),next=runtime.$('cinematicNext'),skip=runtime.$('cinematicSkip'),lesson=runtime.$('cinematicLesson'),progress=runtime.$('cinematicProgress');
+ overlay.style.display='block';lesson.hidden=true;progress.hidden=true;skip.hidden=false;skip.textContent='⏭ Пропустить заставку';
+ runtime.cineSetup(kind,detail);runtime.startCinematicMusic(kind);
+ const finish=()=>{if(!runtime.cinematicRunning)return;runtime.cinematicRunning=false;runtime.cinematicFinish=null;runtime.cineClear();runtime.stopCinematicMusic();overlay.style.display='none';lesson.hidden=true;progress.hidden=true;next.hidden=true;skip.hidden=false;onDone?.();if(!runtime.cinematicRunning)runtime.startMusic()};
+ runtime.cinematicFinish=finish;
+ if(kind==='intro'){
+  const sequence=new IntroSequence(performance.now());runtime.movie.introSequence=sequence;fillControls(runtime.$('cinematicControls'),runtime.mobile);
+  const render=()=>{const story=sequence.phase==='story';text.hidden=!story;text.textContent=sequence.current.text;lesson.hidden=story;progress.hidden=false;progress.textContent=story?'История · '+(sequence.index+1)+' / '+INTRO_STORY.length:'Теперь — управление';next.hidden=false;next.textContent=story?(sequence.index===INTRO_STORY.length-1?'Продолжить → Управление':'Дальше →'):'Понятно, продолжить →';skip.hidden=!story;skip.textContent='К управлению →'};
+  next.onclick=()=>{if(sequence.advance(performance.now()))finish();else {if(sequence.phase==='story'&&sequence.index===2)runtime.softBoarAttackSound();render()}};
+  skip.onclick=()=>{sequence.skipStory();render()};render();return;
+ }
+ text.hidden=false;
+ const steps=kind==='outro'?[['Босс сбежал. Семья снова вместе.',0],['Верный кабанчик помог найти дорогу домой.',3200],['Пора возвращаться к машине.',6300],['Спасибо, кабанчик! Пора домой.',10000]]:cinematicLines(kind,detail);
+ if(kind==='family'){familyCursor=new DialogueCursor(familyDialogue(detail.role,detail,dialogueVariant++));steps.splice(0,steps.length,[familyCursor.text,0])}
+ next.hidden=kind!=='family';next.textContent='Дальше →';next.onclick=advanceFamilyDialogue;
+ for(const [line,at]of steps)if(at===0)text.textContent=line;else runtime.cineLater(()=>text.textContent=line,at);
+ if(kind==='family')runtime.bonusSound();
+ skip.onclick=finish;
+ if(kind!=='family')runtime.cineLater(finish,kind==='sleep'?4200:kind==='dream'?3500:kind==='outro'?15500:kind==='storm'?6500:kind==='death'?4500:8500);
 }
 
 

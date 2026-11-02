@@ -2,8 +2,21 @@ import { buildExitLandscape, makeExitFence } from "../exit-scenery.js?v=222";
 import { forestEdgeAt } from "../world-interactions.js?v=222";
 import * as THREE from "../../vendor/three/three.module.min.js";
 
-// Owns 7 bindings. See docs/architecture.md for startup order.
+// Owns 8 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){
+ function showIntroStory(after){
+  if(runtime.cinematicRunning)return false;
+  const saved={started:runtime.started,paused:runtime.paused,panels:['intro','pauseMenu','difficultyScreen'].map(id=>[id,runtime.$(id).style.display])};
+  runtime.clearInput();for(const [id]of saved.panels)runtime.$(id).style.display='none';
+  runtime.playCinematic('intro',()=>{
+   runtime.campaignProgress.sawIntro();runtime.started=saved.started;runtime.paused=saved.paused;
+   for(const [id,display]of saved.panels)runtime.$(id).style.display=display;
+   if(after)after();else (runtime.$('pauseMenu').style.display!=='none'&&runtime.started?runtime.$('replayIntro'):runtime.$('difficultyScreen').style.display!=='none'?runtime.$('difficultyStory'):runtime.$('watchIntro')).focus({preventScroll:true});
+  });
+  try{(document.exitPointerLock||document.webkitExitPointerLock)?.call(document)}catch{}
+  return true;
+ }
+
 
 
 function buildExitFence(props,z){makeExitFence(props,z,runtime.mats)}
@@ -86,6 +99,7 @@ function syncOpeningGuide(){
 }
  return {
   bindings:{
+"showIntroStory":{get:()=>showIntroStory},
 "buildExitFence":{get:()=>buildExitFence},
 "openingLabel":{get:()=>openingLabel},
 "buildForestEdge":{get:()=>buildForestEdge},
@@ -96,7 +110,9 @@ function syncOpeningGuide(){
   },
   initialize(){
 
-runtime.$('watchIntro').onclick=()=>{runtime.$('intro').style.display='none';runtime.playCinematic('intro',()=>{runtime.campaignProgress.sawIntro();runtime.started=false;runtime.paused=false;runtime.$('intro').style.display='grid';try{document.exitPointerLock?.()}catch{}})};
+runtime.$('watchIntro').onclick=()=>showIntroStory();
+runtime.$('replayIntro').onclick=()=>showIntroStory();
+runtime.$('difficultyStory').onclick=()=>showIntroStory();
   }
  };
 

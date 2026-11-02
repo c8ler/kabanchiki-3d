@@ -1,15 +1,26 @@
 import * as THREE from "../../vendor/three/three.module.min.js";
 import { BOSS_HITS } from "../world-surface.js?v=222";
 
-// Owns 9 bindings. See docs/architecture.md for startup order.
+// Owns 11 bindings. See docs/architecture.md for startup order.
 export function createModule(runtime){
  let stickEl,nub,editable;
 
+let difficultyAction='start';
+function openDifficultyChoice(action='start'){
+ difficultyAction=action;runtime.difficultyFromPause=action!=='start';
+ if(action!=='start')runtime.setPause(true);
+ document.querySelector('input[name="diff3d"][value="'+runtime.selectedDiff+'"]').checked=true;
+ runtime.$('intro').style.display='none';runtime.$('pauseMenu').style.display='none';runtime.$('difficultyScreen').style.display='grid';
+ runtime.$('difficultyContext').textContent=action==='restart'?'Начнётся новое приключение. Текущий прогресс будет сброшен только после нажатия «Начать заново».':action==='adjust'?'Измени сложность и продолжай текущую игру.':'Выбери сложность нового приключения.';
+ runtime.$('difficultyStart').textContent=action==='restart'?'↻ Начать заново':action==='adjust'?'Применить сложность':'Отправиться в путь →';
+ runtime.$('difficultyScreen').firstElementChild.scrollTop=0;runtime.$('difficultyStart').focus({preventScroll:true});
+}
 function closeDifficultyChoice(){
-  runtime.$('difficultyScreen').style.display='none';
-  runtime.$('difficultyStart').innerHTML='Отправиться в путь <span>→</span>';
-  if(runtime.difficultyFromPause){runtime.difficultyFromPause=false;runtime.$('pauseMenu').style.display='grid'}
-  else runtime.$('intro').style.display='grid';
+ runtime.$('difficultyScreen').style.display='none';
+ runtime.$('difficultyStart').innerHTML='Отправиться в путь <span>→</span>';
+ if(runtime.difficultyFromPause){runtime.difficultyFromPause=false;runtime.$('pauseMenu').style.display='grid';runtime.$(difficultyAction==='restart'?'restart':'menuDifficulty').focus({preventScroll:true})}
+ else {runtime.$('intro').style.display='grid';runtime.$('start').focus({preventScroll:true})}
+ difficultyAction='start';
 }
 
 function requestDesktopMouseLock(){
@@ -28,6 +39,8 @@ function resetStick(e){if(runtime.stickPointer===e.pointerId){runtime.stickPoint
 function clearInput(){runtime.keys={};runtime.drag=null;runtime.stickPointer=null;runtime.stick.x=runtime.stick.y=0;nub.style.transform='';runtime.jump=false;runtime.act=false}
  return {
   bindings:{
+"openDifficultyChoice":{get:()=>openDifficultyChoice},
+"difficultyAction":{get:()=>difficultyAction},
 "closeDifficultyChoice":{get:()=>closeDifficultyChoice},
 "requestDesktopMouseLock":{get:()=>requestDesktopMouseLock},
 "endCameraDrag":{get:()=>endCameraDrag},
@@ -42,14 +55,12 @@ function clearInput(){runtime.keys={};runtime.drag=null;runtime.stickPointer=nul
 
 runtime.$('difficultyBack').onclick=closeDifficultyChoice;
 
-runtime.$('menuDifficulty').onclick=()=>{
-  runtime.difficultyFromPause=true;
-  document.querySelector(`input[name="diff3d"][value="${runtime.selectedDiff}"]`).checked=true;
-  runtime.$('pauseMenu').style.display='none';runtime.$('difficultyScreen').style.display='grid';
-  runtime.$('difficultyStart').textContent='Применить сложность';
-};
+runtime.$('menuDifficulty').onclick=()=>openDifficultyChoice('adjust');
 
 runtime.$('difficultyStart').onclick=()=>{
+  if(difficultyAction==='restart'){
+   runtime.selectedDiff=Number(document.querySelector('input[name="diff3d"]:checked')?.value??runtime.selectedDiff);runtime.difficultyFromPause=false;difficultyAction='start';runtime.$('difficultyScreen').style.display='none';runtime.endShown=false;runtime.win=false;runtime.restartGame();return;
+  }
   if(!runtime.difficultyFromPause)return runtime.startDifficultyRun();
   const previous=runtime.diffCfg(),next=Number(document.querySelector('input[name="diff3d"]:checked')?.value??runtime.selectedDiff);
   const healthRatio=runtime.life/previous.playerHP,friendRatio=runtime.friendHP/previous.friendHP;
@@ -79,7 +90,7 @@ document.addEventListener('mozfullscreenchange',runtime.syncFullscreenButton);
 
 document.addEventListener('MSFullscreenChange',runtime.syncFullscreenButton);
 
-document.addEventListener('keydown',e=>{if(runtime.gameInformation.isOpen){if(e.code==='Escape')runtime.gameInformation.close();return}if(e.target?.closest?.('input,textarea,select,[contenteditable]:not([contenteditable="false"])'))return;if(e.code==='KeyE'&&!e.repeat&&runtime.startBedDream()){e.preventDefault();return}runtime.keys[e.code]=true;if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();if(e.code==='Escape'&&!e.repeat){e.preventDefault();runtime.togglePause()}if(e.code==='KeyV'&&!e.repeat)runtime.$('camera').click();if(e.code==='Space'&&!e.repeat){runtime.queuePlayerJump()};if((e.code==='KeyE'||e.code==='KeyF')&&!e.repeat)runtime.feed();if((e.code==='Enter'||e.code==='NumpadEnter')&&!e.repeat&&runtime.started&&!runtime.paused&&!runtime.win&&!runtime.endShown&&!runtime.cinematicRunning&&!e.target?.closest?.('input,textarea,select,[contenteditable]:not([contenteditable="false"])')){e.preventDefault();runtime.feed()}if(e.code==='KeyB'&&!e.repeat)runtime.interactHome();if(e.code==='KeyQ'&&!e.repeat)runtime.dismountFriendNow();if(e.code==='KeyZ'&&!e.repeat)runtime.$('rotateCraft').click();if(e.code==='KeyR'&&!e.repeat)runtime.gatherCraftMaterial();if(e.code==='KeyT'&&!e.repeat)runtime.placeCraftItem();if(e.code==='KeyG'&&!e.repeat)runtime.placeAdventureBomb();if(e.code==='KeyC'&&!e.repeat&&runtime.craftUnlocked&&runtime.started&&!runtime.cinematicRunning&&!runtime.endShown){runtime.openSecretMenu();runtime.$('craftPanel').open=true;runtime.$('craftPanel').scrollIntoView({block:'center'});}if(e.code==='KeyP'&&!e.repeat)runtime.togglePause()});
+document.addEventListener('keydown',e=>{if(runtime.gameInformation.isOpen){if(e.code==='Escape')runtime.gameInformation.close();return}if(runtime.cinematicRunning)return;if(e.target?.closest?.('input,textarea,select,[contenteditable]:not([contenteditable="false"])'))return;if(e.code==='KeyE'&&!e.repeat&&runtime.startBedDream()){e.preventDefault();return}runtime.keys[e.code]=true;if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();if(e.code==='Escape'&&!e.repeat){e.preventDefault();runtime.togglePause()}if(e.code==='KeyV'&&!e.repeat)runtime.$('camera').click();if(e.code==='Space'&&!e.repeat){runtime.queuePlayerJump()};if((e.code==='KeyE'||e.code==='KeyF')&&!e.repeat)runtime.feed();if((e.code==='Enter'||e.code==='NumpadEnter')&&!e.repeat&&runtime.started&&!runtime.paused&&!runtime.win&&!runtime.endShown&&!runtime.cinematicRunning&&!e.target?.closest?.('input,textarea,select,[contenteditable]:not([contenteditable="false"])')){e.preventDefault();runtime.feed()}if(e.code==='KeyB'&&!e.repeat)runtime.interactHome();if(e.code==='KeyQ'&&!e.repeat)runtime.dismountFriendNow();if(e.code==='KeyZ'&&!e.repeat)runtime.$('rotateCraft').click();if(e.code==='KeyR'&&!e.repeat)runtime.gatherCraftMaterial();if(e.code==='KeyT'&&!e.repeat)runtime.placeCraftItem();if(e.code==='KeyG'&&!e.repeat)runtime.placeAdventureBomb();if(e.code==='KeyC'&&!e.repeat&&runtime.craftUnlocked&&runtime.started&&!runtime.cinematicRunning&&!runtime.endShown){runtime.openSecretMenu();runtime.$('craftPanel').open=true;runtime.$('craftPanel').scrollIntoView({block:'center'});}if(e.code==='KeyP'&&!e.repeat)runtime.togglePause()});
 
 document.addEventListener('keyup',e=>runtime.keys[e.code]=false);
 

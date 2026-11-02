@@ -49,7 +49,7 @@ function cinemaHug(person,amount){const model=person.children.find(c=>c.isGroup)
 
 runtime.scene.add(movieRoot);
 
-window.addEventListener('keydown',e=>{if(cinematicRunning&&['Escape','Space','Enter'].includes(e.code)){e.preventDefault();if(e.code!=='Escape'&&runtime.movie?.kind==='family')runtime.advanceFamilyDialogue();else cinematicFinish?.()}});
+window.addEventListener('keydown',e=>{if(cinematicRunning&&['Escape','Space','Enter'].includes(e.code)){e.preventDefault();if(e.repeat)return;if(runtime.movie?.kind==='intro'){runtime.$(e.code==='Escape'&&!runtime.$('cinematicSkip').hidden?'cinematicSkip':'cinematicNext').click();return}if(e.code!=='Escape'&&runtime.movie?.kind==='family')runtime.advanceFamilyDialogue();else cinematicFinish?.()}});
 
 /* init:const */ cinematicAssets = new THREE.Group();
 
