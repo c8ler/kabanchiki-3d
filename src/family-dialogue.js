@@ -12,9 +12,9 @@ const PERSONAL=[
 ];
 export function familyDialogue(role,detail={},variant=0){
  const names=['мама','папа','брат','бабушка'],who=typeof role==='number'?names[role]||'родные':String(role||'родные');
- const roleIndex=Math.max(0,names.indexOf(who)),turn=Number.isFinite(variant)?Math.trunc(variant):0,index=((turn+roleIndex)%TOPICS.length+TOPICS.length)%TOPICS.length;
+ const roleIndex=Math.max(0,names.indexOf(who)),turn=Number.isFinite(variant)?Math.trunc(variant):0,index=((turn%TOPICS.length)+TOPICS.length)%TOPICS.length;
  // One quiet hint from the brother, rather than repeated dream exposition from everyone.
- const personal=who==='брат'&&((turn%4)+4)%4===0?'В моём доме есть кровать. Один раз мне приснился остров с огромными грибами… Интересно, приснится ли он тебе?':PERSONAL[roleIndex];
+ const personal=who==='брат'&&((turn%4)+4)%4===1?'В моём доме есть кровать. Один раз мне приснился остров с огромными грибами… Интересно, приснится ли он тебе?':PERSONAL[roleIndex];
  return [detail.line||who+': Как же хорошо, что ты нашёл меня!',...TOPICS[index],personal,detail.after||'Ну что, продолжим искать остальных? Я буду ждать тебя в безопасности.'];
 }
 export class DialogueCursor{constructor(lines){this.lines=lines;this.index=0}get text(){return this.lines[this.index]||''}get last(){return this.index>=this.lines.length-1}next(){if(this.last)return false;this.index++;return true}}
