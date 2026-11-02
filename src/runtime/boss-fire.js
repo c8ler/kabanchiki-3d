@@ -31,7 +31,11 @@ export function createModule(runtime){
    if(b.time<=0){runtime.beginCraftDestruction(item,'fire');continue;}
    b.time=Math.max(0,b.time-Math.max(0,dt));
    if(item.g.visible&&visuals<limit){
-    visuals++;if(!b.flames){b.flames=runtime.createLivingFire(item.g,item.kind==='house'?'house':'log');b.light=runtime.makeEffectLight(0xff882f,8,14,1.2);b.light.position.set(0,1,0);item.g.add(b.light)}
+    visuals++;if(!b.flames){b.flames=runtime.createLivingFire(item.g,item.kind==='house'?'house':'log');
+     const contact=item.g.worldToLocal(b.point.clone());
+     if(item.kind==='house')b.flames.children.forEach((m,i)=>{const side=i%4,along=((i*.618)%1-.5)*4.4;m.userData.fireX=side===0?-2.65:side===1?2.65:along;m.userData.fireZ=side===2?-2.65:side===3?2.65:along});
+     else b.flames.position.copy(contact);
+     b.light=runtime.makeEffectLight(0xff882f,8,14,1.2);b.light.position.copy(contact);b.light.position.y+=.4;item.g.add(b.light)}
    }else releaseVisual(b);
    // Material progression is independent of the visual flame budget.
    const dummyLight={intensity:0},dummyFlames={children:[]};
