@@ -1,4 +1,4 @@
-import { installGameInformation } from "../game-information.js?v=224";
+import { installGameInformation } from "../game-information.js?v=225";
 import { cinematicScore } from "../music-player.js?v=222";
 
 // Owns 1 bindings. See docs/architecture.md for startup order.
