@@ -66,3 +66,5 @@ test('fragment effects have a fixed pool, reuse one instanced draw and settle ab
   for(let i=0;i<300;i++)pool.update(.05,()=>1);assert.equal(pool.items.length,0);assert.equal(pool.mesh.count,0);
  }
 });
+
+test('house flames are visible outside its walls and furniture fire starts at the contact point',()=>{const r=fixture(),h=r.craftWorld.create('house',0,0,0,6);r.igniteCraftObject(h,new T.Vector3(0,1,-2.5));r.updateCraftFires(.1,100);const fire=r.craftFires.get(h);assert.ok(fire.flames.children.every(m=>Math.abs(m.position.x)>2.4||Math.abs(m.position.z)>2.4));const wall=r.craftWorld.create('wall',6,0,0,6),point=new T.Vector3(6,1,-.35);r.igniteCraftObject(wall,point);r.updateCraftFires(.1,200);const flames=r.craftFires.get(wall).flames;assert.ok(flames.getWorldPosition(new T.Vector3()).distanceTo(point)<.001)});
