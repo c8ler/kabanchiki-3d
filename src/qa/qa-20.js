@@ -13,7 +13,7 @@ export function createQaPart(runtime){
  },
  v225Burn(seconds=48){for(let i=0;i<seconds*20;i++){runtime.updateCraftFires(.05,i*50);runtime.updateCraftDestruction(.05)}return snapshot()},
  v225Storm(){runtime.craftWorld.clear();runtime.boy.position.set(30,0,30);tracked=[runtime.craftWorld.create('house',10,0,10,runtime.level),runtime.craftWorld.create('bed',10,0,10,runtime.level),runtime.craftWorld.create('wall',15,0,15,runtime.level),runtime.craftWorld.create('table',14,0,12,runtime.level)];
-  runtime.applyCheat('TORNADO');const waiting=snapshot();runtime.levelTime+=16;runtime.updateTornado(.01,performance.now());runtime.tornadoState.active=true;runtime.tornadoState.x=10;runtime.tornadoState.z=15;runtime.updateTornado(0,performance.now());
+  runtime.applyCheat('TORNADO');const waiting=snapshot();runtime.levelTime+=16;runtime.updateTornado(.01,performance.now());runtime.tornadoState.active=true;runtime.tornadoState.x=10;runtime.tornadoState.z=15;runtime.tornadoSweep=0;runtime.updateTornado(0,performance.now());
   return{waiting,started:snapshot(),wallSolid:runtime.craftWorld.blocked(12.3,10,0)};
  },
  v225StormStep(seconds=1.5){for(let i=0;i<seconds*20;i++)runtime.updateCraftDestruction(.05);return{...snapshot(),wallSolid:runtime.craftWorld.blocked(12.3,10,0)}},
