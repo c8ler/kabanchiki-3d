@@ -1,4 +1,4 @@
-import { CraftWorld } from "../craft-world.js?v=222";
+import { CraftWorld } from "../craft-world.js?v=225";
 import { capturedByTornado, TORNADO_REACH, tornadoInfluence } from "../tornado-rules.js?v=222";
 import * as THREE from "../../vendor/three/three.module.min.js";
 import { riverCenterAt, lakeInletCenterAt } from "../world-surface.js?v=222";
@@ -42,14 +42,18 @@ function updateTornado(dt,now){
  for(const [kind,objects] of [['tree',runtime.treeObjects],['house',runtime.houseObjects],['rock',runtime.rockPositions.map(q=>q[3])],['log',runtime.logObstacles.map(o=>o.g)]]){
   if(grabbed>=3)break;
   for(const obj of objects){if(!obj?.visible||!obj.parent||obj===runtime.personalHouse&&runtime.home.stage===0||!close(obj,kind==='house'?4:kind==='tree'?6:9))continue;let shown=true;for(let q=obj.parent;q;q=q.parent)if(!q.visible)shown=false;if(!shown)continue;
-   if(runtime.tornadoVisual.capture(kind,now/1000,kind==='tree'?1.2:1)){destroyAdventureObject(obj,kind,'tornado');grabbed++;break}
+   if(kind==='house'){if(runtime.beginCraftDestruction({g:obj,kind,level:runtime.level,world:true})){grabbed++;break}}else if(runtime.tornadoVisual.capture(kind,now/1000,kind==='tree'?1.2:1)){destroyAdventureObject(obj,kind,'tornado');grabbed++;break}
   }
  }
  for(const f of [...runtime.foes])if(!f.flee&&close(f.g,5)&&runtime.tornadoVisual.captureActor('boar',f.g,now/1000)){if(f.isBoss)continue;if(removeAdventureFoe(f,'tornado'))f.g.visible=false}
  if(runtime.friend?.g&&!runtime.mountedFriend&&!runtime.friend.windFlightUntil&&close(runtime.friend.g,5)&&runtime.tornadoVisual.captureActor('boar',runtime.friend.g,now/1000)){runtime.friend.g.visible=false;runtime.friend.windFlightUntil=runtime.levelTime+7;runtime.friend.exitBreaking=true;const safe=runtime.nearestSafeSpawn(runtime.tornadoState.x>0?-8:8,12,1.8,{allowRoad:true})||[0,12];runtime.friend.g.position.set(safe[0],0,safe[1]);runtime.friend.route=null;runtime.friend.knockback=null;runtime.friendHP=Math.max(1,runtime.friendHP-1);runtime.settleBoarOnGround(runtime.friend);runtime.notice('🐗 Друг кружится в воронке! Он попробует выбраться.')}
  for(const cat of runtime.catLife.cats)if(cat.g.visible&&runtime.catLife.root.visible&&close(cat.g,8)&&runtime.tornadoVisual.captureActor('cat',cat.g,now/1000)){cat.tornadoUntil=runtime.catLife.time+7;cat.g.visible=false;cat.jump=null;const safe=runtime.catLife.safeGround({x:runtime.tornadoState.x>0?-15:15,z:20});cat.g.position.set(safe.x,safe.y,safe.z);cat.state='play';cat.navigation=null;}
  for(const member of runtime.familyMembers)if(!member.done&&member.g.visible&&close(member.g,8)&&runtime.tornadoVisual.captureActor('human',member.g,now/1000)){member.g.visible=false;member.windFlightUntil=runtime.levelTime+7;const safe=runtime.nearestSafeSpawn(runtime.tornadoState.x>0?-12:12,20,.8,{allowRoad:true})||[0,20];member.x=safe[0];member.z=safe[1];member.g.position.set(safe[0],runtime.terrainHeightAt(...safe),safe[1]);}
- for(const item of [...craftWorld.items])if(item.g.visible&&close(item.g,item.living?8:6)){if(item.living?runtime.tornadoVisual.captureActor(item.kind,item.g,now/1000):runtime.tornadoVisual.capture('house',now/1000,1))craftWorld.remove(item);}
+ for(const item of [...craftWorld.items]){
+  if(grabbed>=3)break;if(item.level!==runtime.level||!item.g.visible||!close(item.g,item.living?8:6))continue;
+  if(item.living){if(runtime.tornadoVisual.captureActor(item.kind,item.g,now/1000)){craftWorld.remove(item);grabbed++}}
+  else if(runtime.beginCraftDestruction(item,'tornado'))grabbed++;
+ }
  runtime.tornadoVisual.waterSources=[];
  if(runtime.currentSeason!=='winter'){
   const sources=runtime.level===4?[{x:runtime.tornadoState.x,z:riverCenterAt(runtime.tornadoState.x)}]:runtime.level===2?[{x:-18,z:-17},{x:Math.max(-45,Math.min(-22,runtime.tornadoState.x)),z:lakeInletCenterAt(runtime.tornadoState.x)}]:[];
