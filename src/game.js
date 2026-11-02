@@ -1,13 +1,15 @@
+import {createModule as createCraftDestruction} from './runtime/craft-destruction.js?v=225';
+import {createModule as createBossFire} from './runtime/boss-fire.js?v=225';
 import {createRuntime,initializeModules} from './runtime/context.js?v=222';
-import {createModule as createFoundation} from './runtime/foundation.js?v=224';
-import {createModule as createRenderer} from './runtime/renderer.js?v=222';
+import {createModule as createFoundation} from './runtime/foundation.js?v=225';
+import {createModule as createRenderer} from './runtime/renderer.js?v=225';
 import {createModule as createMaterials} from './runtime/materials.js?v=222';
 import {createModule as createForestGround} from './runtime/forest-ground.js?v=222';
 import {createModule as createSceneryLayout} from './runtime/scenery-layout.js?v=222';
 import {createModule as createVillage} from './runtime/village.js?v=222';
 import {createModule as createBiomes} from './runtime/biomes.js?v=222';
 import {createModule as createStormState} from './runtime/storm-state.js?v=222';
-import {createModule as createStormDamage} from './runtime/storm-damage.js?v=222';
+import {createModule as createStormDamage} from './runtime/storm-damage.js?v=225';
 import {createModule as createLightningWeather} from './runtime/lightning-weather.js?v=223';
 import {createModule as createLakeScenery} from './runtime/lake-scenery.js?v=222';
 import {createModule as createCharacter} from './runtime/character.js?v=222';
@@ -24,9 +26,9 @@ import {createModule as createSeasons} from './runtime/seasons.js?v=222';
 import {createModule as createWaterEffects} from './runtime/water-effects.js?v=222';
 import {createModule as createFishing} from './runtime/fishing.js?v=222';
 import {createModule as createHome} from './runtime/home.js?v=222';
-import {createModule as createAdventureWorld} from './runtime/adventure-world.js?v=222';
+import {createModule as createAdventureWorld} from './runtime/adventure-world.js?v=225';
 import {createModule as createCreative} from './runtime/creative.js?v=223';
-import {createModule as createCrafting} from './runtime/crafting.js?v=222';
+import {createModule as createCrafting} from './runtime/crafting.js?v=225';
 import {createModule as createBombs} from './runtime/bombs.js?v=222';
 import {createModule as createLevelLifecycle} from './runtime/level-lifecycle.js?v=222';
 import {createModule as createFeeding} from './runtime/feeding.js?v=222';
@@ -63,21 +65,21 @@ import {createModule as createBoarMotion} from './runtime/boar-motion.js?v=222';
 import {createModule as createFriendMotion} from './runtime/friend-motion.js?v=222';
 import {createModule as createBehaviorAudits} from './runtime/behavior-audits.js?v=222';
 import {createModule as createRegressionAudit} from './runtime/regression-audit.js?v=222';
-import {createModule as createQaInstall} from './runtime/qa-install.js?v=223';
+import {createModule as createQaInstall} from './runtime/qa-install.js?v=225';
 import {createModule as createAdditionalAudits} from './runtime/additional-audits.js?v=222';
 import {createModule as createQaStartup} from './runtime/qa-startup.js?v=222';
 import {createModule as createBossVictory} from './runtime/boss-victory.js?v=222';
 import {createModule as createCameraOcclusion} from './runtime/camera-occlusion.js?v=222';
 import {createModule as createWorldHints} from './runtime/world-hints.js?v=222';
-import {createModule as createGameInformation} from './runtime/game-information.js?v=224';
+import {createModule as createGameInformation} from './runtime/game-information.js?v=225';
 import {createModule as createGameLoop} from './runtime/game-loop.js?v=224';
 import {createModule as createDream} from './runtime/dream.js?v=222';
 import {createModule as createCreatures} from './runtime/creatures.js?v=222';
-import {createModule as createNature} from './runtime/nature.js?v=222';
+import {createModule as createNature} from './runtime/nature.js?v=225';
 import {createModule as createMonsters} from './runtime/monsters.js?v=222';
 import {createModule as createCheatMode} from './runtime/cheat-mode.js?v=222';
 import {createModule as createSpiders} from './runtime/spiders.js?v=222';
-import {createModule as createFrameSimulation} from './runtime/frame-simulation.js?v=223';
+import {createModule as createFrameSimulation} from './runtime/frame-simulation.js?v=225';
 
 // Factories register live bindings before ordered initialization starts.
 const runtime=createRuntime();
@@ -108,6 +110,8 @@ await initializeModules(runtime,[
  createFishing(runtime),
  createHome(runtime),
  createAdventureWorld(runtime),
+ createCraftDestruction(runtime),
+ createBossFire(runtime),
  createCreative(runtime),
  createDream(runtime),
  createSpiders(runtime),
