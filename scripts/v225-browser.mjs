@@ -8,7 +8,7 @@ for(const engine of [chromium,webkit]){
   await qa('v225Setup',6);
   for(const [kind,angle]of [['house',0],['house',Math.PI/4],['wall',0],['wall',Math.PI/2]])for(const dt of [.05,.5,2]){const r=await qa('v225Fire',kind,angle,dt);assert.equal(r.blocked,true,JSON.stringify(r));assert.equal(r.ignited,true);assert.equal(r.safe,true);assert.equal(r.items[0].exists,true)}
   await qa('v225Fire','house',0,.05);await shot('burning-house');let r=await qa('v225Burn',48);assert.equal(r.items[0].exists,false);assert.equal(r.fires,0);assert.ok(r.debris>0);
-  await qa('v225Setup',7);r=await qa('v225Storm');assert.ok(r.waiting.items.every(i=>i.exists));assert.ok(r.started.pending>0);assert.equal(r.started.items[1].exists,true);assert.equal(r.wallSolid,true);
+  await qa('v225Setup',7);r=await qa('v225Storm');assert.ok(r.waiting.items.every(i=>i.exists));assert.ok(r.started.pending>0,JSON.stringify(r));assert.equal(r.started.items[1].exists,true);assert.equal(r.wallSolid,true);
   r=await qa('v225StormStep',.4);assert.equal(r.items[0].exists,true);assert.notEqual(r.items[0].rotation,0);r=await qa('v225StormStep',1.2);assert.equal(r.items[0].exists,false);assert.equal(r.items[1].exists,true);assert.equal(r.wallSolid,false);assert.ok(r.debris>0);await qa('v225Focus');await shot('tornado-debris');
   await qa('v225Setup',7);await qa('v225Storm');await qa('v225StormStep',.3);r=await qa('v225StormCancel');assert.equal(r.pending,0);assert.ok(r.items.every(i=>i.exists));assert.equal(r.items[0].rotation,0);
   await qa('v225Setup',3);r=await qa('v225Home');assert.equal(r.before,3);assert.equal(r.during,3);assert.equal(r.after,0);assert.ok(r.debris>0);
