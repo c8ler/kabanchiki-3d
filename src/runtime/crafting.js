@@ -1,6 +1,6 @@
 import {CatLife} from "../cat-life.js?v=222";
 import { candidateBoxes, placementHeight, placementProblem } from "../craft-placement.js?v=222";
-import { PROP_FOOTPRINTS } from "../craft-world.js?v=222";
+import { PROP_FOOTPRINTS } from "../craft-world.js?v=225";
 import { RECIPES, craftResult } from "../crafting-rules.js?v=222";
 import * as THREE from "../../vendor/three/three.module.min.js";
 
