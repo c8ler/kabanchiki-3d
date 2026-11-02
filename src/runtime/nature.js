@@ -1,7 +1,7 @@
 import * as T from '../../vendor/three/three.module.min.js';
 import {FlyingInsects} from '../flying-insects.js?v=222';
 import {FlowerField} from '../flower-field.js?v=222';
-import {CraftWorld} from '../craft-world.js?v=222';
+import {CraftWorld} from '../craft-world.js?v=225';
 export function createModule(runtime){
  let flyingInsects,flowerField,natureFauna,lastLevel=0,flowerKey='',insectClock=22,groundClock=12,spiderClock=36,still=0,lastPosition={x:1e9,z:1e9},time=0;
  let shapeEpoch='',trunks=[];function shapes(){const key=runtime.worldEpoch+':'+runtime.level;if(key!==shapeEpoch){shapeEpoch=key;trunks=runtime.treeSolidMeshes.filter(m=>m.parent?.visible!==false).map(m=>runtime.treeTrunkShape(m))}return trunks}
