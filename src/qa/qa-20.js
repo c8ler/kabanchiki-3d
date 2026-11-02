@@ -21,7 +21,7 @@ export function createQaPart(runtime){
  v225Home(){runtime.homeUnlocked=true;runtime.home.stage=3;runtime.syncHomeVisual();runtime.syncHomeLocation(3);runtime.tornadoState.active=true;runtime.tornadoState.x=HOME_SITE.x;runtime.tornadoState.z=HOME_SITE.z+5;runtime.beginCraftDestruction({g:runtime.personalHouse,kind:'house',level:3,world:true});
   const before=runtime.home.stage;runtime.updateCraftDestruction(.4);const during=runtime.home.stage;for(let i=0;i<30;i++)runtime.updateCraftDestruction(.05);return{before,during,after:runtime.home.stage,debris:runtime.craftDebris.items.length};
  },
- v225Focus(){runtime.boy.position.set(10,0,21);runtime.yaw=Math.PI;runtime.camMode=0;runtime.hemi.intensity=1.1;return snapshot()},
+ v225Focus(){runtime.boy.position.set(10,0,21);runtime.yaw=Math.PI;runtime.camMode=4;runtime.hemi.intensity=1.1;return snapshot()},
  v225Inspect(){return snapshot()}
  };
 }
