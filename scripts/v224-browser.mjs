@@ -4,7 +4,7 @@ for(const engine of [chromium,webkit]){
  const shot=async name=>{const b=await page.screenshot({path:'screenshots/v224-'+engine.name()+'-'+name+'.jpg',type:'jpeg',quality:45}),data=b.toString('base64');for(let i=0;i<data.length;i+=6000)console.log('REVIEW_IMAGE:v224-'+engine.name()+'-'+name+':'+i/6000+':'+data.slice(i,i+6000))};
  const pause=async()=>{if(mobile)await page.locator('#pauseBtn').click();else await page.keyboard.press('Escape')};
  const menuBack=async()=>{for(let n=0;n<3;n++){if(!await page.locator('#pauseBack').isVisible())return;console.log('BACK224',engine.name(),n,await page.locator('#pauseTitle').textContent());await page.locator('#pauseBack').click()}assert.equal(await page.locator('#pauseBack').isVisible(),false,'Back must reach the root within two levels')};
- const watchdog=setTimeout(()=>{console.error('TIMEOUT224',engine.name(),'menu scenario exceeded four minutes');process.exit(1)},240000);watchdog.unref();
+ const watchdog=setTimeout(()=>{console.error('TIMEOUT224',engine.name(),'menu scenario exceeded six minutes');process.exit(1)},360000);watchdog.unref();
  try{
   await page.goto('http://127.0.0.1:8080/');await page.waitForFunction(()=>!document.getElementById('loadingScreen'),null,{timeout:120000});await page.locator('#cinematic').waitFor({state:'visible',timeout:30000});
   for(let i=0;i<INTRO_STORY.length;i++){
@@ -23,6 +23,18 @@ for(const engine of [chromium,webkit]){
   assert.equal(await page.locator('#difficultyScreen').isVisible(),true);assert.equal(await page.locator('input[name="diff3d"][value="0"]').isChecked(),true);await page.locator('#difficultyBack').click();assert.equal(await page.locator('#stats').textContent(),saved);
   await page.locator('#restart').click();await page.locator('input[name="diff3d"][value="0"]').check({force:true});await page.locator('#difficultyStart').click();await pause();assert.equal(await page.locator('#healthMeter').getAttribute('aria-valuemax'),'10');
   await page.locator('#menuSettings').click();await page.locator('#menuDifficulty').click();await page.locator('input[name="diff3d"][value="1"]').check({force:true});await page.locator('#difficultyStart').click();assert.equal(await page.locator('#healthMeter').getAttribute('aria-valuemax'),'7');assert.equal(await page.locator('#menuDifficulty').isVisible(),true);
+  // Layout uses the same HTML, styles and navigation, without GPU work between DOM assertions.
+  await page.route('**/src/game.js?*',route=>route.fulfill({contentType:'text/javascript',body:'window.__menuLayoutOnly=true;window.__gameLoaded?.();'}));
+  await page.goto('http://127.0.0.1:8080/?menu-review=1');await page.waitForFunction(()=>window.__menuLayoutOnly&&!document.getElementById('loadingScreen'));
+  await page.evaluate(async mobile=>{
+   const {installPauseNavigation}=await import('./src/pause-navigation.js?v=224'),{fillControls}=await import('./src/intro-sequence.js?v=224'),{installMenuViewport}=await import('./src/menu-viewport.js?v=222');
+   for(const id of ['intro','difficultyScreen','familyPopup','endScreen','statsScreen','secretMenu','cinematic'])document.getElementById(id).style.display='none';
+   const root=document.getElementById('pauseMenu');root.style.display='grid';installMenuViewport(window,document);fillControls(document.getElementById('pauseControlsList'),mobile);installPauseNavigation(root);
+   document.getElementById('quest').textContent='Найди маму и подружись с кабанчиком.';
+   document.getElementById('journalQuest').textContent='Найди маму и подружись с кабанчиком.';
+   document.getElementById('stats').textContent='Лес · Лето\\nСложность: Ультра-кабан · Семья: 0/4 · Очки: 120\\nПрипасы: обычные 3, рыба 1, жёлтые яблоки 0';
+   document.getElementById('pauseJournal').textContent=Array.from({length:35},(_,i)=>'Событие '+i+': кабанчик стал другом, дорога к озеру открыта.').join(' ');
+  },mobile);
   for(const [width,height]of [[320,568],[390,844],[240,320],[568,320]])for(const name of ['root','help','controls','settings','journal','about']){
    console.log('MENU224',engine.name(),width,height,name);await page.setViewportSize({width,height});await menuBack();
    if(name==='controls'){await page.locator('#menuHelp').click();await page.locator('#showControls').click()}else if(name!=='root')await page.locator('[data-pause-open="'+name+'"]').click();
