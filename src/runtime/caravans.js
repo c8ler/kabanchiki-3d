@@ -6,7 +6,7 @@ export function createModule(runtime){
  let caravan=null,visual=null,visit=0,spawnClock=0,attempted=false,lootTaken=new Set(),openedAt=0,hurtClock=0,clock=0;
  const active=()=>runtime.started&&!runtime.paused&&!runtime.cinematicRunning&&!runtime.endShown&&!runtime.win&&runtime.life>0;
  const helper=()=>runtime.boarFormTime>0||!!(runtime.mountedFriend&&runtime.friend&&!runtime.friend.flee);
- function caravanObstacle(x,z,r=.4,height=0){return !!(caravan&&runtime.level===CARAVAN_LEVEL&&caravan.state!=='gone'&&caravanFootprint(caravan.point(),x,z,r,height))}
+ function caravanObstacle(x,z,r=.4,height=0){return !!(caravan&&runtime.level===visit&&caravan.state!=='gone'&&caravanFootprint(caravan.point(),x,z,r,height))}
  function actorBlocked(x,z,r=.55){
   if(obstacleEpoch!==runtime.worldEpoch||obstacleCache.size>600){obstacleEpoch=runtime.worldEpoch;obstacleCache.clear()}
   const key=x.toFixed(1)+':'+z.toFixed(1)+':'+r;let blocked=obstacleCache.get(key);if(blocked===undefined){blocked=runtime.worldObstacleAt(x,z,r,true)||runtime.craftWorld.blocked(x,z,runtime.terrainHeightAt(x,z),r,3.4);obstacleCache.set(key,blocked)}return blocked;
@@ -18,12 +18,17 @@ export function createModule(runtime){
  function caravanActors(){return caravan&&visual?.root.visible&&runtime.level===CARAVAN_LEVEL?visual.actors.filter(a=>a.g.visible):[]}
  function resetCaravan(level=runtime.level){caravan=null;visual?.hide();visit=level;spawnClock=0;attempted=false;lootTaken=new Set();openedAt=0;hurtClock=0;runtime.$('caravanAction').hidden=true;runtime.$('caravanHint').hidden=true}
  function spawnCaravan(){
-  if(runtime.level!==CARAVAN_LEVEL||caravan||!runtime.creatureRoom(CARAVAN_ACTORS))return false;
-  for(const x of [0,-.8,.8]){
-   const route=[{x,z:-30},{x,z:30}];if(!caravanRouteClear(route,corridorBlocked))continue;
+  if(!runtime.cheatSession.active||caravan||!runtime.creatureRoom(CARAVAN_ACTORS))return false;
+  const routes=[],origin=runtime.boy.position;
+  for(const angle of [runtime.yaw,0,Math.PI,Math.PI/2,-Math.PI/2])for(const length of [26,18]){
+   const dx=Math.sin(angle),dz=Math.cos(angle);routes.push([{x:origin.x+dx*7,z:origin.z+dz*7},{x:origin.x+dx*(7+length),z:origin.z+dz*(7+length)}]);
+  }
+  if(runtime.level===CARAVAN_LEVEL)routes.push([{x:0,z:-30},{x:0,z:30}]);
+  for(const route of routes){
+   if(!caravanRouteClear(route,corridorBlocked))continue;visit=runtime.level;
    caravan=new CaravanRaid(route);visual??=createCaravanVisual(runtime.scene);lootTaken=new Set();openedAt=0;attempted=true;
    visual.update({raid:caravan,time:clock,lootTaken,openedAt,blocked:actorBlocked},runtime.terrainHeightAt);
-   runtime.notice('🛞 В деревню едет караван! Подойди к повозке верхом на кабанчике — можно устроить налёт.');return true;
+   runtime.notice('🛞 Караван вызван! Подъедь к повозке верхом на кабанчике — можно устроить налёт.');return true;
   }
   return false;
  }
@@ -38,7 +43,7 @@ export function createModule(runtime){
  }
  function opened(result){
   if(!result)return;openedAt=caravan.age;
-  if(result.score){runtime.score+=runtime.diffScore(result.score);runtime.notice('💰 Караван ограблен! Подбери ящики: еда, материалы и лечебные припасы.');runtime.softCrateSound()}
+  if(result.reason==='raid'){runtime.notice('💰 Караван ограблен! Подбери ящики: еда, материалы и лечебные припасы.');runtime.softCrateSound()}
   else runtime.notice('💥 Повозка разбита! Припасы рассыпались рядом.');
   runtime.hud();
  }
@@ -49,9 +54,10 @@ export function createModule(runtime){
  }
  function updateCaravan(dt){
   if(visit!==runtime.level)resetCaravan(runtime.level);
-  if(!active()||runtime.level!==CARAVAN_LEVEL)return;
+  if(!active())return;
+  if(!runtime.cheatSession.has('caravan')){if(caravan)resetCaravan(runtime.level);return}
   const elapsed=Math.max(0,Math.min(.25,dt));clock+=elapsed;
-  if(!caravan){if(runtime.__autoTest)return;spawnClock+=elapsed;if(!attempted&&spawnClock>=8){spawnClock=0;spawnCaravan()}return}
+  if(!caravan){spawnClock+=elapsed;if(!attempted&&spawnClock>=2){spawnClock=0;spawnCaravan()}return}
   if(caravan.state==='gone'){visual.hide();return}
   const p=caravan.point(),close=nearCaravan(5.5),help=helper(),clear=clearApproach();
   const result=caravan.update(elapsed,{near:close,helper:help,clear,blocked:(x,z)=>corridorBlocked(x,z)||Math.hypot(runtime.boy.position.x-x,runtime.boy.position.z-z)<3.1||runtime.boarBodies().some(b=>b.g.visible&&!b.flee&&Math.hypot(b.g.position.x-x,b.g.position.z-z)<2.9)||runtime.familyMembers.some(f=>!f.done&&Math.hypot(f.g.position.x-x,f.g.position.z-z)<3)});
