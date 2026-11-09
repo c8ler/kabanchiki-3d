@@ -2,6 +2,7 @@ export const CREATURE_LIMIT=16;
 export function createModule(runtime){
  function creatureEntries(){
  const entries=[],seen=new Set(),add=(id,priority,remove)=>{if(!id||seen.has(id))return;seen.add(id);entries.push({id,priority,remove})};
+ for(const a of (runtime.caravanActors?.()||[]))add(a,95,()=>runtime.resetCaravan());
  for(const b of [...runtime.foes,...runtime.friends,...runtime.defeatedBoars,...runtime.exitHelpers,runtime.friend])if(b?.g?.parent&&b.g.visible)add(b,100,()=>{});
  if(runtime.catLife.root.visible)for(const c of runtime.catLife.cats)if(c.g.visible)add(c,90,()=>{c.g.visible=false});
  for(const i of runtime.craftWorld.items)if(i.level===runtime.level&&i.living)add(i,70,()=>runtime.craftWorld.remove(i));

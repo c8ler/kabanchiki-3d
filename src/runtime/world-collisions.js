@@ -67,7 +67,8 @@ function mountainContactsAt(x,z,radius){
 
 function mountainBlockedAt(x,z,radius){return mountainContactsAt(x,z,radius).length>0}
 
-function worldObstacleAt(x,z,pad=.38){
+function worldObstacleAt(x,z,pad=.38,ignoreCaravan=false){
+ if(!ignoreCaravan&&runtime.caravanObstacle(x,z,pad,0))return true;
  // v105: only the visible trunk is solid; decorative/apple branches never create an invisible tree halo.
  if(runtime.circleHitsTreeGeometry(x,z,PLAYER_RADIUS+pad))return true;
  if(runtime.logObstacles.some(o=>logFootprintHit(o,x,z,PLAYER_RADIUS+pad,false)))return true;
