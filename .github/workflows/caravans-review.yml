@@ -1,0 +1,31 @@
+name: Caravan joke checks
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  caravan:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+      options: --ipc=host
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm test
+      - run: npm run validate
+      - run: npm install --no-save --package-lock=false playwright@1.56.1
+      - name: Play the caravan joke on desktop and portrait phone
+        run: |
+          node scripts/serve.mjs 8080 > /tmp/caravan-server.log 2>&1 &
+          node scripts/v228-browser.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: caravan-previews
+          path: screenshots/v228-*
