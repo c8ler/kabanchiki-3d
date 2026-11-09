@@ -20,7 +20,7 @@ export function createModule(runtime){
 
   },
   initialize(){
-if(runtime.__autoTest||runtime.__autoParams.get('openingtest')==='1')return import('../qa/index.js?v=225').then(({createGameQa})=>{window.__KABANCHIKI_QA__=createGameQa(runtime)});
+if(runtime.__autoTest||runtime.__autoParams.get('openingtest')==='1')return import('../qa/index.js?v=228').then(({createGameQa})=>{window.__KABANCHIKI_QA__=createGameQa(runtime)});
   }
  };
 
