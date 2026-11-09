@@ -1,5 +1,5 @@
 import * as T from '../../vendor/three/three.module.min.js';
-import {CaravanRaid,CARAVAN_LEVEL,CARAVAN_ACTORS,RAID_SECONDS,caravanRouteClear,caravanFootprint} from '../caravan-raid.js?v=228';
+import {CaravanRaid,CARAVAN_LEVEL,CARAVAN_ACTORS,RAID_SECONDS,caravanRouteClear,caravanFootprint,caravanRoof} from '../caravan-raid.js?v=228';
 import {createCaravanVisual} from '../caravan-visual.js?v=228';
 export function createModule(runtime){
  let obstacleEpoch=-1,obstacleCache=new Map();
@@ -11,6 +11,7 @@ export function createModule(runtime){
   if(obstacleEpoch!==runtime.worldEpoch||obstacleCache.size>600){obstacleEpoch=runtime.worldEpoch;obstacleCache.clear()}
   const key=x.toFixed(1)+':'+z.toFixed(1)+':'+r;let blocked=obstacleCache.get(key);if(blocked===undefined){blocked=runtime.worldObstacleAt(x,z,r,true)||runtime.craftWorld.blocked(x,z,runtime.terrainHeightAt(x,z),r,3.4);obstacleCache.set(key,blocked)}return blocked;
  }
+ function caravanSupport(x,z){if(!caravan||runtime.level!==visit||caravan.state==='gone')return 0;const p=caravan.point(),roof=caravanRoof(p,x,z);return roof?Math.max(0,runtime.terrainHeightAt(p.x,p.z)+roof-runtime.terrainHeightAt(x,z)):0}
  function corridorBlocked(x,z){
   if(Math.abs(x)>37||Math.abs(z)>37||(runtime.waterAt(x,z)?.depth||0)>.12)return true;
   return actorBlocked(x,z,2.6);
@@ -90,5 +91,5 @@ export function createModule(runtime){
   hint.querySelector('i').hidden=caravan.state!=='raid';hint.style.setProperty('--fill',Math.round(caravan.progress/RAID_SECONDS*100)+'%');
  }
  function caravanSnapshot(){return{state:caravan?.state||'none',level:runtime.level,point:caravan?.point(),hits:caravan?.hits||0,score:runtime.score,loot:[...lootTaken],actors:caravanActors().length,drawCalls:visual?.drawCalls||0}}
- return{bindings:{caravanObstacle:{get:()=>caravanObstacle},caravanActors:{get:()=>caravanActors},resetCaravan:{get:()=>resetCaravan},spawnCaravan:{get:()=>spawnCaravan},interactCaravan:{get:()=>interactCaravan},blastCaravan:{get:()=>blastCaravan},updateCaravan:{get:()=>updateCaravan},syncCaravanUI:{get:()=>syncCaravanUI},caravanSnapshot:{get:()=>caravanSnapshot}},initialize(){}}
+ return{bindings:{caravanSupport:{get:()=>caravanSupport},caravanObstacle:{get:()=>caravanObstacle},caravanActors:{get:()=>caravanActors},resetCaravan:{get:()=>resetCaravan},spawnCaravan:{get:()=>spawnCaravan},interactCaravan:{get:()=>interactCaravan},blastCaravan:{get:()=>blastCaravan},updateCaravan:{get:()=>updateCaravan},syncCaravanUI:{get:()=>syncCaravanUI},caravanSnapshot:{get:()=>caravanSnapshot}},initialize(){}}
 }
