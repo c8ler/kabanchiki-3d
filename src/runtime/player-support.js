@@ -30,7 +30,7 @@ if(runtime.caravanObstacle(x,z,(runtime.mountedFriend?.8:runtime.PLAYER_RADIUS)+
 
 function roofHeightAt(x,z){let top=0;if(runtime.level===7)return Math.max(0,islandMushroomTop(runtime.sandboxVisual,x,z)-runtime.terrainHeightAt(x,z));if(runtime.level!==3)return top;for(const h of runtime.houseObjects){if(!h.visible)continue;h.updateWorldMatrix(true,true);for(const m of h.children){if((!m.visible&&!h.userData.enterable)||!m.isMesh||(!m.userData.dadRoof&&(runtime.seasonBaseMaterials.get(m)||m.material).map!==runtime.mats.roof.map))continue;m.geometry.computeBoundingBox();const q=m.worldToLocal(new THREE.Vector3(x,0,z)),b=m.geometry.boundingBox;if(q.x>b.min.x+runtime.PLAYER_RADIUS*.12&&q.x<b.max.x-runtime.PLAYER_RADIUS*.12&&q.z>b.min.z+runtime.PLAYER_RADIUS*.12&&q.z<b.max.z-runtime.PLAYER_RADIUS*.12){const world=m.localToWorld(new THREE.Vector3(q.x,b.max.y,q.z));top=Math.max(top,world.y)}}}return top}
 
-function playerSupportHeightAtNoRock(x,z){return roofHeightAt(x,z)}
+function playerSupportHeightAtNoRock(x,z){return Math.max(roofHeightAt(x,z),runtime.caravanSupport(x,z))}
 
 function familyFloorAt(x,z){if(runtime.level===3&&runtime.personalHouse?.visible&&runtime.home.stage>0&&Math.abs(x-HOME_SITE.x)<2.35&&Math.abs(z-HOME_SITE.z)<2.35)return .16;if(runtime.level===4&&runtime.locationExitReady()&&Math.abs(x)<5.4&&z<-37&&z>-47)return .37;if(runtime.level!==3||!runtime.familyHideout.visible)return 0;const p=runtime.familyHideout.worldToLocal(new THREE.Vector3(x,0,z));return Math.abs(p.x)<2.4&&p.z>-1.95&&p.z<2.08?.16:0}
 
