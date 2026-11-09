@@ -35,7 +35,7 @@ export function createModule(runtime){
  function nearCaravan(range=5.2){const p=caravan?.point();return !!p&&Math.hypot(p.x-runtime.boy.position.x,p.z-runtime.boy.position.z)<range}
  function clearApproach(){if(!caravan)return false;const p=caravan.point();return runtime.clearWallLine(runtime.boy.position.clone().add(new T.Vector3(0,.9,0)),new T.Vector3(p.x,runtime.terrainHeightAt(p.x,p.z)+1.1,p.z))}
  function interactCaravan(){
-  if(!active()||!caravan||!nearCaravan()||!['travel','raid'].includes(caravan.state))return false;
+  if(!active()||!caravan||!nearCaravan()||!['travel','raid'].includes(caravan.state)||!clearApproach())return false;
   if(caravan.state==='raid')return true;
   if(!helper()){runtime.notice('🐗 Для налёта сядь на кабанчика-друга или превратись в кабанчика.');return true}
   if(caravan.start({near:true,helper:true,clear:clearApproach()})){runtime.stopFishing();runtime.notice('🐗 Налёт! Держись рядом с повозкой: кабанчик прорвёт охрану тремя ударами.');runtime.sound(170,.18,'triangle')}
@@ -81,7 +81,7 @@ export function createModule(runtime){
  }
  function syncCaravanUI(){
   const button=runtime.$('caravanAction'),hint=runtime.$('caravanHint'),show=active()&&caravan&&caravan.state!=='gone'&&runtime.level===CARAVAN_LEVEL;
-  button.hidden=!show||!nearCaravan()||caravan.state==='loot';hint.hidden=true;if(!show)return;
+  button.hidden=!show||!nearCaravan()||caravan.state==='loot'||!clearApproach();hint.hidden=true;if(!show)return;
   button.disabled=caravan.state==='raid';button.textContent=caravan.state==='raid'?'🐗 Налёт · '+caravan.hits+'/3':'🐗 Ограбить караван · E';
   const p=caravan.point();if(Math.hypot(p.x-runtime.boy.position.x,p.z-runtime.boy.position.z)>25)return;
   const point=new T.Vector3(p.x,runtime.terrainHeightAt(p.x,p.z)+4,p.z).project(runtime.camera);if(point.z<-1||point.z>1||Math.abs(point.x)>.88||Math.abs(point.y)>.85)return;
