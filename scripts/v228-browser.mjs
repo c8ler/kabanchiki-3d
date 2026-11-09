@@ -6,6 +6,7 @@ for(const engine of [chromium,webkit]){
  try{
   await page.goto('http://127.0.0.1:8080/?openingtest=1');await page.waitForFunction(()=>!!window.__KABANCHIKI_QA__&&!document.getElementById('loadingScreen'),null,{timeout:120000});
   let r=await qa('v228Setup');assert.equal(r.hiddenBefore,'none');assert.equal(r.state,'travel');assert.equal(r.actors,4);assert.equal(r.drawCalls,2);assert.ok(r.budget<=16);assert.equal(await page.locator('#intro').isVisible(),false);await shot('caravan');
+  r=await qa('v228Roof');assert.ok(r.support>2.8);assert.equal(r.blocked,false);
   r=await qa('v228Collision');assert.equal(r.inside,true);assert.equal(r.outside,false);
   await qa('v228Move',false);r=await qa('v228Key',false);assert.equal(r.state,'travel');const food=r.food;
   await qa('v228Move',true);const box=await page.locator('#caravanAction').boundingBox();assert.ok(box&&box.x>=0&&box.y>=0&&box.x+box.width<=page.viewportSize().width);
