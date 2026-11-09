@@ -2800,6 +2800,7 @@ export const GAME_MODULES=[
       "boarTreeContacts",
       "boarWallContacts",
       "caravanObstacle",
+      "caravanSupport",
       "catFormTime",
       "catLife",
       "circleHitsTreeGeometry",
@@ -4048,6 +4049,7 @@ export const GAME_MODULES=[
     "name": "caravans",
     "path": "src/runtime/caravans.js",
     "owns": [
+      "caravanSupport",
       "caravanObstacle",
       "caravanActors",
       "resetCaravan",
