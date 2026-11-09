@@ -1,5 +1,5 @@
 import * as THREE from '../../vendor/three/three.module.min.js';
-import {parseCheatCode} from '../cheat-codes.js?v=222';
+import {parseCheatCode} from '../cheat-codes.js?v=228';
 import {createIsland,islandDepth,SECRET_LEVEL} from '../creative-island.js?v=222';
 import {SecretEntry} from '../secret-entry.js?v=222';
 export function createModule(runtime){
@@ -55,7 +55,7 @@ export function createModule(runtime){
   if(!code){result.textContent='Неизвестный код.';return false}
   if(!runtime.started||runtime.endShown||runtime.win||runtime.life<=0||runtime.cinematicRunning){result.textContent='Открой читы в меню паузы во время игры.';return false}
   if((code.type==='level'||code.type==='sandbox')&&runtime.dreamVisit?.active){runtime.wakeFromDream();runtime.paused=true}
-  runtime.enterCheatMode();runtime.keys={};runtime.stick.x=runtime.stick.y=0;runtime.jump=false;runtime.stopFishing();
+  runtime.enterCheatMode();if(code.type==='caravan'&&runtime.cheatSession.has('caravan')){undoCheat(value);return true}runtime.keys={};runtime.stick.x=runtime.stick.y=0;runtime.jump=false;runtime.stopFishing();
   if(!undoState.has(code.type))undoState.set(code.type,{level:runtime.level,life:runtime.life,food:runtime.food,wood:runtime.adventureInventory.wood,wool:runtime.adventureInventory.wool,homeWood:runtime.home.wood});
   const supply=()=>{runtime.adventureInventory.wood=200;runtime.adventureInventory.wool=200;runtime.food=runtime.foodCapacity();runtime.home.wood=Math.max(8,runtime.home.wood)};
   if(code.type==='sandbox'){enterSandbox();result.textContent='✨ Секретный остров открыт. Нажми «Продолжить».'}
@@ -65,9 +65,10 @@ export function createModule(runtime){
    result.textContent='Локация '+code.level+': '+runtime.levels[code.level-1]+'. Нажми «Продолжить».';
   }else if(code.type==='craft'){craftUnlocked=true;supply();runtime.$('craftPanel').hidden=false;runtime.$('craftPanel').open=true;result.textContent='⚒ Мастерская открыта. Создай предмет и вернись в игру: T — поставить, Z — повернуть.'}
   else if(code.type==='home'){homeUnlocked=true;supply();if(sandboxMode){runtime.craftWorld.addStock('house');result.textContent='🏠 Домик подготовлен: T — поставить.'}else{runtime.syncHomeVisual();runtime.syncHomeLocation(runtime.level);result.textContent='🏠 Стройка включена. В деревне иди к площадке «Мой домик»; B — строить.'}}
+  else if(code.type==='caravan'){const made=runtime.spawnCaravan();result.textContent=made?'🛞 Караван вызван. Подъедь верхом на кабанчике и нажми E или кнопку у повозки. Повторное нажатие или × убирает караван.':'Не нашлось свободной сухой дороги или достигнут лимит 16 существ. Попробуй на открытом месте, например в деревне.';if(!made)return false}
   else if(code.type==='supplies'){supply();result.textContent='🎒 Припасы пополнены.'}
   else if(code.type==='heal'){runtime.spiderLife.cure();runtime.life=runtime.diffCfg().playerHP;result.textContent='💚 Здоровье восстановлено.'}
-  else if(code.type==='clear'){runtime.resetMonsters();runtime.flyingInsects.clear(null,{onlyCheats:true});runtime.spiderLife.clearCheats();runtime.craftWorld.clear();runtime.worldEpoch++;runtime.wallCacheEpoch=-1;result.textContent='🧹 Созданные предметы и спутники убраны.'}
+  else if(code.type==='clear'){runtime.resetCaravan();runtime.cheatSession.stop({type:'caravan'});runtime.resetMonsters();runtime.flyingInsects.clear(null,{onlyCheats:true});runtime.spiderLife.clearCheats();runtime.craftWorld.clear();runtime.worldEpoch++;runtime.wallCacheEpoch=-1;result.textContent='🧹 Созданные предметы и спутники убраны.'}
   else if(['spawnBee','spawnMosquito','spawnButterfly'].includes(code.type)){const kind={spawnBee:'bee',spawnMosquito:'mosquito',spawnButterfly:'butterfly'}[code.type],n=runtime.spawnFlying(kind,kind==='mosquito'?3:2,true);result.textContent=n?'Выпущено: '+n+'. Бабочки мирные, пчёлы и комарики очень редко жалят и кусают.':'Лимит: не больше 16 существ на карте, либо рядом преграда.'}
   else if(['spawnZombie','spawnScreamer','spawnBrute'].includes(code.type)){const kind={spawnZombie:'zombie',spawnScreamer:'screamer',spawnBrute:'brute'}[code.type],made=runtime.spawnMonster(kind);result.textContent=made?'Монстр появился! Защищайся кабанчиками или бомбами. Зомби преследует, скример поджидает, громила охраняет место.':'Нет свободного места или достигнут лимит 16 существ.'}
   else if(code.type==='spawnSpider'){const n=runtime.spawnCheatSpiders();result.textContent=n?'🕷 Выпущено пауков: '+n+'. Они плетут паутину и опасно кусаются. Прыжок стряхивает паука с Тимура.':'🕷 Не получилось выпустить: лимит 12 пауков или рядом только вода.'}
@@ -87,6 +88,7 @@ export function createModule(runtime){
   else if(['spawnZombie','spawnScreamer','spawnBrute'].includes(code.type))runtime.monsterLife.clear({spawnZombie:'zombie',spawnScreamer:'screamer',spawnBrute:'brute'}[code.type]);
   else if(code.type==='spawnSpider'){runtime.spiderLife.clearCheats()}
   else if(code.type==='spawnCat'||code.type==='spawnDog'){const kind=code.type==='spawnCat'?'cat':'dog';for(const item of [...runtime.craftWorld.items])if(item.kind===kind)runtime.craftWorld.remove(item);delete runtime.craftWorld.stock[kind];if(runtime.craftWorld.selected===kind)runtime.craftWorld.selected=''}
+  else if(code.type==='caravan'){runtime.resetCaravan()}
   else if(code.type==='tornado'){runtime.tornadoState.cancel();runtime.tornadoVisual.reset()}
   else if(code.type==='friend'){if(runtime.mountedFriend){runtime.mountedFriend=false;runtime.setRiderPose(false);runtime.rideHop.reset();runtime.py=runtime.vy=0;runtime.boy.position.y=runtime.terrainHeightAt(runtime.boy.position.x,runtime.boy.position.z);runtime.dismountLatch.leave(performance.now())}if(runtime.friend){runtime.scene.remove(runtime.friend.g);runtime.friend=null}}
   else if(code.type==='bomb'){runtime.adventureInventory.bombs=0;for(const b of runtime.armedBombs){runtime.disposePickupVisual(b.g);b.ring.removeFromParent();b.ring.geometry.dispose()}runtime.armedBombs.length=0}
@@ -111,9 +113,9 @@ export function createModule(runtime){
  "refillCreative":{get:()=>refillCreative},"leaveSandbox":{get:()=>leaveSandbox},"enterSandbox":{get:()=>enterSandbox},"updateCreative":{get:()=>updateCreative},"applyCheat":{get:()=>applyCheat}
  },initialize(){
  for(const button of runtime.$('cheatButtons').querySelectorAll('[data-cheat]')){const value=button.dataset.cheat;if(value==='CLEAR'||value==='TIMUR')continue;const undo=document.createElement('button');undo.type='button';undo.dataset.undoCheat=value;undo.textContent='×';undo.title='Убрать этот чит';undo.setAttribute('aria-label','Убрать: '+button.textContent);undo.onclick=()=>undoCheat(value);const pair=document.createElement('div');pair.className='cheatPair';button.replaceWith(pair);pair.append(button,undo);button.style.cssText='flex:1;min-width:0';undo.className='cheatUndo'}
- const categories=[['🗺 Локации',['LEVEL1','LEVEL2','LEVEL3','LEVEL4','LEVEL5','LEVEL6','SANDBOX']],['🐾 Животные',['SPAWNCAT','DOG','FRIEND','SPIDERS','BEES','MOSQUITOES','BUTTERFLIES']],['👻 Страшилки',['ZOMBIE','SCREAMER','BRUTE']],['🧰 Предметы и припасы',['HOME','SUPPLIES','BOMB','LIGHT','HEAL','CLEAR']],['✨ Погода и превращения',['TORNADO','BOAR','CAT','TIMUR']]];
+ const categories=[['🎭 Шутки',['CARAVAN']],['🗺 Локации',['LEVEL1','LEVEL2','LEVEL3','LEVEL4','LEVEL5','LEVEL6','SANDBOX']],['🐾 Животные',['SPAWNCAT','DOG','FRIEND','SPIDERS','BEES','MOSQUITOES','BUTTERFLIES']],['👻 Страшилки',['ZOMBIE','SCREAMER','BRUTE']],['🧰 Предметы и припасы',['HOME','SUPPLIES','BOMB','LIGHT','HEAL','CLEAR']],['✨ Погода и превращения',['TORNADO','BOAR','CAT','TIMUR']]];
  const host=runtime.$('cheatButtons');host.className='cheatGroups';
- const labels={BEES:'🐝 Пчёлы',MOSQUITOES:'🦟 Комарики',BUTTERFLIES:'🦋 Бабочки',ZOMBIE:'🧟 Зомби',SCREAMER:'👻 Скример',BRUTE:'👹 Громила',SANDBOX:'✨ Остров',SPAWNCAT:'🐈 Котик',DOG:'🐕 Собака',FRIEND:'🐗 Друг',SPIDERS:'🕷 Пауки',HOME:'🏠 Домик',SUPPLIES:'🎒 Припасы',BOMB:'💣 Бомба',LIGHT:'🔦 Фонарик',HEAL:'💚 Здоровье',CLEAR:'🧹 Очистить всё',TORNADO:'🌪 Торнадо · 15 с',BOAR:'🐗 Кабанчик',CAT:'🐱 Кот',TIMUR:'🧍 Тимур'};
+ const labels={CARAVAN:'🛞 Грабить караваны',BEES:'🐝 Пчёлы',MOSQUITOES:'🦟 Комарики',BUTTERFLIES:'🦋 Бабочки',ZOMBIE:'🧟 Зомби',SCREAMER:'👻 Скример',BRUTE:'👹 Громила',SANDBOX:'✨ Остров',SPAWNCAT:'🐈 Котик',DOG:'🐕 Собака',FRIEND:'🐗 Друг',SPIDERS:'🕷 Пауки',HOME:'🏠 Домик',SUPPLIES:'🎒 Припасы',BOMB:'💣 Бомба',LIGHT:'🔦 Фонарик',HEAL:'💚 Здоровье',CLEAR:'🧹 Очистить всё',TORNADO:'🌪 Торнадо · 15 с',BOAR:'🐗 Кабанчик',CAT:'🐱 Кот',TIMUR:'🧍 Тимур'};
  for(const button of host.querySelectorAll('[data-cheat]'))if(labels[button.dataset.cheat]){button.title=button.textContent;button.textContent=labels[button.dataset.cheat]}
 
  for(const [title,values]of categories){const group=document.createElement('details'),summary=document.createElement('summary'),grid=document.createElement('div');group.className='cheatGroup';group.open=true;summary.textContent=title;grid.className='cheatGroupGrid';group.append(summary,grid);for(const value of values){const button=host.querySelector('[data-cheat="'+value+'"]');if(button)grid.append(button.closest('.cheatPair')||button)}host.append(group)}
