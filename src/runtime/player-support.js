@@ -10,6 +10,7 @@ import {islandMushroomTop} from '../creative-island.js?v=222';
 export function createModule(runtime){
 
 function playerWorldBlocked(x,z,pad=0){
+ if(runtime.caravanObstacle(x,z,(runtime.mountedFriend?.8:runtime.PLAYER_RADIUS)+pad,runtime.py))return true;
  if(runtime.locationExit&&forestExitBlocked(x,z+4,runtime.mountedFriend?.7:runtime.PLAYER_RADIUS+pad,runtime.locationExitReady()))return true;
  if(x<-43.1||x>43.1||z<-43.1||z>43.1)return true;
  if(runtime.level===2&&forestExitBlocked(x,z+4,runtime.mountedFriend?.7:runtime.PLAYER_RADIUS+pad,runtime.lakeExitReady()))return true;
