@@ -18,8 +18,8 @@ export class CaravanRaid{
  }
  open(reason='raid'){
   if(!['travel','raid'].includes(this.state))return null;
-  this.state='loot';const score=reason==='raid'&&!this.rewarded?60:0;this.rewarded=true;this.reason=reason;
-  return{opened:true,score};
+  this.state='loot';const score=0;this.rewarded=true;this.reason=reason;
+  return{opened:true,score,reason};
  }
  update(dt,{blocked=()=>false,near=false,helper=false,clear=true}={}){
   const elapsed=Math.max(0,Math.min(.25,Number.isFinite(dt)?dt:0));this.age+=elapsed;
