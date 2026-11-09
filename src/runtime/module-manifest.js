@@ -1529,6 +1529,7 @@ export const GAME_MODULES=[
       "setPause",
       "setRiderPose",
       "shots",
+      "spawnCaravan",
       "spawnCheatSpiders",
       "spawnFlying",
       "spawnMonster",
@@ -4058,18 +4059,17 @@ export const GAME_MODULES=[
       "caravanSnapshot"
     ],
     "dependencies": [
-      "__autoTest",
       "adventureInventory",
       "boarBodies",
       "boarFormTime",
       "boy",
       "camera",
+      "cheatSession",
       "cinematicRunning",
       "clearWallLine",
       "craftWorld",
       "creatureRoom",
       "diffCfg",
-      "diffScore",
       "effect",
       "endShown",
       "familyMembers",
@@ -4097,7 +4097,8 @@ export const GAME_MODULES=[
       "waterAt",
       "win",
       "worldEpoch",
-      "worldObstacleAt"
+      "worldObstacleAt",
+      "yaw"
     ]
   },
   {
@@ -4266,6 +4267,7 @@ export const GAME_MODULES=[
       "nearestSafeSpawn",
       "notice",
       "py",
+      "resetCaravan",
       "resetMonsters",
       "sandboxMode",
       "scene",
