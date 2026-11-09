@@ -41,6 +41,12 @@ export function caravanRouteClear(route,blocked){
  return true;
 }
 export function caravanFootprint(point,x,z,radius=.4,height=0){
- if(!point||height>=3.1)return false;const dx=x-point.x,dz=z-point.z,c=Math.cos(point.yaw),s=Math.sin(point.yaw),side=dx*c-dz*s,along=dx*s+dz*c;
- return Math.abs(side)<1.2+radius&&Math.abs(along)<1.9+radius;
+ if(!point)return false;const dx=x-point.x,dz=z-point.z,c=Math.cos(point.yaw),s=Math.sin(point.yaw),side=dx*c-dz*s,along=dx*s+dz*c;
+ const roof=3-Math.max(0,Math.min(1.2,Math.abs(side))-.6)*.9;
+ return height<roof-.04&&Math.abs(side)<1.2+radius&&Math.abs(along)<1.9+radius;
+}
+
+export function caravanRoof(point,x,z){
+ if(!point)return 0;const dx=x-point.x,dz=z-point.z,c=Math.cos(point.yaw),s=Math.sin(point.yaw),side=dx*c-dz*s,along=dx*s+dz*c;
+ return Math.abs(side)<1.2&&Math.abs(along)<1.85?3-Math.max(0,Math.abs(side)-.6)*.9:0;
 }
