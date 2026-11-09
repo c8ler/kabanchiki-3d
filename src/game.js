@@ -78,7 +78,7 @@ import {createModule as createDream} from './runtime/dream.js?v=222';
 import {createModule as createCreatures} from './runtime/creatures.js?v=228';
 import {createModule as createNature} from './runtime/nature.js?v=225';
 import {createModule as createMonsters} from './runtime/monsters.js?v=222';
-import {createModule as createCheatMode} from './runtime/cheat-mode.js?v=222';
+import {createModule as createCheatMode} from './runtime/cheat-mode.js?v=228';
 import {createModule as createSpiders} from './runtime/spiders.js?v=222';
 import {createModule as createFrameSimulation} from './runtime/frame-simulation.js?v=228';
 
