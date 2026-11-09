@@ -23,7 +23,7 @@ export function createModule(runtime){
   if(sandboxVisual){sandboxVisual.visible=false;for(const m of sandboxVisual.userData.solids){const index=runtime.treeSolidMeshes.indexOf(m);if(index>=0)runtime.treeSolidMeshes.splice(index,1)}for(const entry of sandboxVisual.userData.rocks){const index=runtime.rockPositions.indexOf(entry);if(index>=0)runtime.rockPositions.splice(index,1)}}
   runtime.syncSeasonChoices();runtime.weatherBaseSky=null;runtime.worldEpoch++;runtime.wallCacheEpoch=-1;
  }
- function enterSandbox(dream=false){
+ function enterSandbox(dream=false){runtime.resetCaravan(7);
   runtime.stopIslandFlight();
   if(!dream){if(runtime.dreamVisit?.active)runtime.wakeFromDream();leaveSandbox();sandboxReturnSeason=runtime.currentSeason;runtime.loadLevel(2)}else sandboxReturnSeason=runtime.currentSeason;sandboxMode=true;craftUnlocked=homeUnlocked=true;runtime.level=SECRET_LEVEL;
   runtime.clearEntities(runtime.foes);runtime.clearEntities(runtime.familyMembers);runtime.clearEntities(runtime.friends);
