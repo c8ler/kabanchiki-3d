@@ -6,7 +6,7 @@ export function createModule(runtime){
  let hintPoint;
 
 function updateAdventureHints(now){
- runtime.updateBedDream(0);const active=runtime.started&&!runtime.paused&&!runtime.cinematicRunning&&!runtime.endShown&&runtime.life>0;runtime.adventureHud.active(active);runtime.$('bombAction').hidden=!active||runtime.mountedFriend||runtime.adventureInventory.bombs<=0;runtime.$('dismountAction').hidden=!active||!runtime.mountedFriend;if(!active)return;
+ runtime.syncCaravanUI();runtime.updateBedDream(0);const active=runtime.started&&!runtime.paused&&!runtime.cinematicRunning&&!runtime.endShown&&runtime.life>0;runtime.adventureHud.active(active);runtime.$('bombAction').hidden=!active||runtime.mountedFriend||runtime.adventureInventory.bombs<=0;runtime.$('dismountAction').hidden=!active||!runtime.mountedFriend;if(!active)return;
  runtime.camera.updateMatrixWorld();
  const screen=(x,y,z)=>{hintPoint.set(x,y,z).project(runtime.camera);if(hintPoint.z<-1||hintPoint.z>1||Math.abs(hintPoint.x)>.95||Math.abs(hintPoint.y)>.9)return null;return {x:(hintPoint.x*.5+.5)*innerWidth,y:(-.5*hintPoint.y+.5)*innerHeight}};
  let goal=null;const boss=runtime.level===6?runtime.foes.find(f=>f.isBoss):null;
