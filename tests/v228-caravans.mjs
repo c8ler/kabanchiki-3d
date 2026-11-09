@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';import * as T from '../vendor/three/three.module.min.js';
-import {CaravanRaid,caravanRouteClear,caravanFootprint,RAID_SECONDS} from '../src/caravan-raid.js';import {createCaravanVisual} from '../src/caravan-visual.js';
+import {CaravanRaid,caravanRouteClear,caravanFootprint,caravanRoof,RAID_SECONDS} from '../src/caravan-raid.js';import {createCaravanVisual} from '../src/caravan-visual.js';
 import {parseCheatCode} from '../src/cheat-codes.js';
 const route=[{x:0,z:-30},{x:0,z:30}],env={near:true,helper:true,clear:true};
 test('caravans require a usable route, a nearby boar and a clear approach',()=>{
@@ -36,3 +36,4 @@ test('the animated convoy uses two bounded instance batches and keeps actors gro
 });
 
 test('caravan is a hidden toggle with language aliases',()=>{for(const code of ['CARAVAN','караван','караваны'])assert.deepEqual(parseCheatCode(code),{type:'caravan'})});
+test('jumpers can land on a rotated canopy and walk off instead of getting trapped',()=>{for(const yaw of [0,Math.PI/2,Math.PI/4]){const p={x:4,z:-8,yaw};const roof=caravanRoof(p,p.x,p.z);assert.equal(roof,3);assert.equal(caravanFootprint(p,p.x,p.z,.4,roof),false);assert.equal(caravanFootprint(p,p.x,p.z,.4,0),true);assert.equal(caravanRoof(p,p.x+10,p.z),0)}});
