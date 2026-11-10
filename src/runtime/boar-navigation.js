@@ -13,6 +13,7 @@ function companionValid(f,x=f.g.position.x,z=f.g.position.z,yaw=f.g.rotation.y){
 
 function settleBoarOnGround(f){
  const {x,z}=f.g.position;
+ if(f.followManaged&&runtime.controlledSwimmer(f)){const wet=runtime.waterAt(x,z);if(wet&&wet.depth>BOAR_WADING_DEPTH){f.g.position.y=wet.y-.38;return}}
  // Absolute world support; exit helpers and actors skipped by distance LOD
  // must never accumulate last frame's elevation.
  const bridge=runtime.level===4&&onRiverBridge(x,z)?.28:0;
@@ -21,37 +22,41 @@ function settleBoarOnGround(f){
 
 function repairCompanion(f,force=false){if(!f?.g||f.flee)return;const now=performance.now();if(!force&&now-(f.g.userData.lastRecoveryAt||0)<200)return;f.g.userData.lastRecoveryAt=now;companionChecks.checks++;if(companionValid(f)){f.lastSafe={x:f.g.position.x,z:f.g.position.z,yaw:f.g.rotation.y};return}const current={x:f.g.position.x,z:f.g.position.z};let safe=null;for(let r=.15;r<5&&!safe;r+=.25)for(let i=0;i<24;i++){const a=i/24*Math.PI*2,x=current.x+Math.sin(a)*r,z=current.z+Math.cos(a)*r;if(companionValid(f,x,z)){safe={x,z};break}}if(!safe&&f.lastSafe&&companionValid(f,f.lastSafe.x,f.lastSafe.z,f.lastSafe.yaw))safe=f.lastSafe;if(safe){f.g.position.x=safe.x;f.g.position.z=safe.z;if(Number.isFinite(safe.yaw))f.g.rotation.y=safe.yaw;f.route=null;f.tightEscape=null;f.escapeRetry=0;f.navigation=null;f.lastSafe={x:safe.x,z:safe.z,yaw:f.g.rotation.y};companionChecks.repairs++}}
 
-function companionNavBlocked(f){
- const traffic=f.isMinion?runtime.boarBodies().filter(b=>b!==f&&!b.flee).map(b=>runtime.boarBody(b)):[];
+function companionNavBlocked(f,wide=false){
+ const traffic=f.isMinion||f.followManaged?runtime.boarBodies().filter(b=>b!==f&&!b.flee).map(b=>runtime.boarBody(b)):[];
  // Each search is synchronous: snapshot dynamic gates and inflated geometry once,
  // rather than rebuilding the same shapes for every A* point and swept edge.
- const scale=runtime.boarScale(f),radius=1.65*scale+.05,
- trees=runtime.treeObjects.filter(t=>t.visible).map(t=>{const m=t.children.find(m=>m.userData.treeSolid);if(!m)return null;const q=runtime.treeTrunkShape(m);return {...q,r2:(q.r+1.65*scale)**2}}).filter(Boolean),
+ const cats=f.followManaged&&runtime.catLife.root.visible?runtime.catLife.cats.filter(c=>c.g.visible&&Math.abs(c.g.position.y-f.g.position.y)<1.6).map(c=>({x:c.g.position.x,z:c.g.position.z})):[];
+ const scale=runtime.boarScale(f),radius=f.followManaged&&!wide?runtime.PLAYER_RADIUS:1.65*scale+.05,
+ trees=runtime.treeObjects.filter(t=>t.visible).map(t=>{const m=t.children.find(m=>m.userData.treeSolid);if(!m)return null;const q=runtime.treeTrunkShape(m);return {...q,r2:(q.r+radius)**2}}).filter(Boolean),
  rocks=runtime.rockPositions.filter(q=>q[3]?.visible!==false&&q[3]?.parent?.visible!==false).map(q=>{const s=runtime.rockShape(q[3]);return {...s,c:Math.cos(s.yaw),sn:Math.sin(s.yaw),ix:1/(s.ax+radius)**2,iz:1/(s.az+radius)**2}}),
- walls=runtime.wallGeometry().filter(w=>!w.exit||f.g.position.y<w.box.max.y-.015&&f.g.position.y+1.6*scale>w.box.min.y+.01),mountains=runtime.level===5?runtime.mountainObstacles.filter(q=>q[3]?.parent?.visible!==false).map(q=>{const polygon=runtime.mountainFootprint(q[3]);return {polygon,minX:Math.min(...polygon.map(p=>p.x)),maxX:Math.max(...polygon.map(p=>p.x)),minZ:Math.min(...polygon.map(p=>p.z)),maxZ:Math.max(...polygon.map(p=>p.z))}}):[],
+ walls=[...runtime.wallGeometry(),...runtime.craftWorld.walls().map(w=>({...w,crafted:true}))].filter(w=>w.shell||f.g.position.y<w.box.max.y-.015&&f.g.position.y+1.6*scale>w.box.min.y+.01),mountains=runtime.level===5?runtime.mountainObstacles.filter(q=>q[3]?.parent?.visible!==false).map(q=>{const polygon=runtime.mountainFootprint(q[3]);return {polygon,minX:Math.min(...polygon.map(p=>p.x)),maxX:Math.max(...polygon.map(p=>p.x)),minZ:Math.min(...polygon.map(p=>p.z)),maxZ:Math.max(...polygon.map(p=>p.z))}}):[],
  debris=runtime.openingDebrisCapsules().filter(q=>!q.closed||!f.exitBreaking),
  exitReady=runtime.locationExit?runtime.locationExitReady():false,lakeReady=runtime.level===2?runtime.lakeExitReady():false,
  avoidsWater=!runtime.controlledSwimmer(f)&&!f.waterEscaping;
  return (x,z)=>{
+  if(runtime.caravanObstacle(x,z,radius,f.g.position.y-runtime.terrainHeightAt(x,z)))return true;
+  if(cats.some(p=>Math.hypot(x-p.x,z-p.z)<radius+.48))return true;
   if(traffic.some(body=>capsuleCircleContact(body,x,z,radius+.08)))return true;
-  if(runtime.locationExit&&forestExitBlocked(x,z+4,.7*scale,exitReady))return true;
-  if(runtime.level===2&&forestExitBlocked(x,z+4,.7*scale,lakeReady))return true;
-  if(runtime.level===1&&runtime.opening&&forestEdgeBlocked(x,z,.7*scale,runtime.opening.passageOpen))return true;
+  if(runtime.locationExit&&forestExitBlocked(x,z+4,(f.followManaged&&!wide?radius:.7*scale),exitReady))return true;
+  if(runtime.level===2&&forestExitBlocked(x,z+4,(f.followManaged&&!wide?radius:.7*scale),lakeReady))return true;
+  if(runtime.level===1&&runtime.opening&&forestEdgeBlocked(x,z,f.followManaged&&!wide?radius:.7*scale,runtime.opening.passageOpen))return true;
   for(const q of debris)if(capsuleCircleContact(q.body,x,z,radius))return true;
   if(f.exitBreaking&&Math.hypot(x-runtime.boy.position.x,z-runtime.boy.position.z)<runtime.boarRadius(f)+runtime.PLAYER_RADIUS+.7)return true;
-  if(Math.abs(x)>42||Math.abs(z)>42||(avoidsWater&&runtime.boarWaterDepth(f,x,z)>BOAR_WADING_DEPTH))return true;
+  if(Math.abs(x)>(f.followManaged?43.1:42)||Math.abs(z)>(f.followManaged?43.1:42)||(avoidsWater&&runtime.boarWaterDepth(f,x,z)>BOAR_WADING_DEPTH))return true;
   for(const t of trees)if((x-t.x)**2+(z-t.z)**2<t.r2)return true;
   for(const q of rocks){const dx=x-q.cx,dz=z-q.cz,lx=dx*q.c-dz*q.sn,lz=dx*q.sn+dz*q.c;if(lx*lx*q.ix+lz*lz*q.iz<1)return true}
-  for(const w of walls){if(x+radius<w.box.min.x||x-radius>w.box.max.x||z+radius<w.box.min.z||z-radius>w.box.max.z)continue;if(polygonContact(w.polygon,x,z,radius))return true}
+  for(const w of walls){if(x+radius<w.box.min.x||x-radius>w.box.max.x||z+radius<w.box.min.z||z-radius>w.box.max.z)continue;if(w.crafted||polygonContact(w.polygon,x,z,radius))return true}
   return mountains.some(q=>x+radius>=q.minX&&x-radius<=q.maxX&&z+radius>=q.minZ&&z-radius<=q.maxZ&&polygonContact(q.polygon,x,z,radius))||(runtime.level===6&&runtime.lairObstacles.some(([px,pz,r,o])=>o.visible&&Math.hypot(x-px,z-pz)<r+radius));
  };
 }
 
-function boarSceneryBlockedAt(f,x,z,yaw=f.g.rotation.y){if(runtime.craftWorld.blocked(x,z,f.g.position.y,runtime.boarRadius(f),1.5*runtime.boarScale(f)))return true;
+function boarSceneryBlockedAt(f,x,z,yaw=f.g.rotation.y){if(runtime.craftWorld.blocked(x,z,f.g.position.y,f.passageMode?f.passageRadius:runtime.boarRadius(f),1.5*runtime.boarScale(f)))return true;
   if(f.flee)return runtime.boarWallContacts(f,x,z,yaw).length>0;
- if(runtime.locationExit&&forestExitBlocked(x,z+4,.7*runtime.boarScale(f),runtime.locationExitReady()))return true;
- if(runtime.level===2&&forestExitBlocked(x,z+4,.7*runtime.boarScale(f),runtime.lakeExitReady()))return true;
- if(runtime.level===1&&runtime.opening&&forestEdgeBlocked(x,z,.7*runtime.boarScale(f),runtime.opening.passageOpen))return true;
+ const wagonBody=runtime.boarBody(f,x,z,yaw);if([[wagonBody.ax,wagonBody.az],[x,z],[wagonBody.bx,wagonBody.bz]].some(([px,pz])=>runtime.caravanObstacle(px,pz,wagonBody.r,f.g.position.y-runtime.terrainHeightAt(px,pz))))return true;
+ if(runtime.locationExit&&forestExitBlocked(x,z+4,(f.passageMode?f.passageRadius:.7*runtime.boarScale(f)),runtime.locationExitReady()))return true;
+ if(runtime.level===2&&forestExitBlocked(x,z+4,(f.passageMode?f.passageRadius:.7*runtime.boarScale(f)),runtime.lakeExitReady()))return true;
+ if(runtime.level===1&&runtime.opening&&forestEdgeBlocked(x,z,f.passageMode?f.passageRadius:.7*runtime.boarScale(f),runtime.opening.passageOpen))return true;
  if(Math.abs(x)>43.1||Math.abs(z)>43.1||runtime.boarTreeContacts(f,x,z,yaw).length||!runtime.boarLakeStepAllowed(f,x,z))return true;
  if(runtime.boarWallContacts(f,x,z,yaw).length)return true;
  const body=runtime.boarBody(f,x,z,yaw);if(runtime.openingDebrisCapsules().some(q=>(!q.closed||!f.exitBreaking)&&capsuleCapsuleContact(body,q.body)))return true;
@@ -63,9 +68,9 @@ function boarSceneryBlockedAt(f,x,z,yaw=f.g.rotation.y){if(runtime.craftWorld.bl
 
 function resolveBoarClearance(f,protectPlayer=true){
   if(f.flee)return;
- if(runtime.locationExit&&!runtime.locationExitReady())f.g.position.z=Math.max(f.g.position.z,-37.2+.7*runtime.boarScale(f));
- if(runtime.level===2&&!runtime.lakeExitReady())f.g.position.z=Math.max(f.g.position.z,-37.2+.7*runtime.boarScale(f));
- if(runtime.level===1&&runtime.opening&&forestEdgeBlocked(f.g.position.x,f.g.position.z,.7*runtime.boarScale(f),runtime.opening.passageOpen))f.g.position.z=forestEdgeLimit(f.g.position.x,.7*runtime.boarScale(f));
+ if(runtime.locationExit&&!runtime.locationExitReady())f.g.position.z=Math.max(f.g.position.z,-37.2+(f.passageMode?f.passageRadius:.7*runtime.boarScale(f)));
+ if(runtime.level===2&&!runtime.lakeExitReady())f.g.position.z=Math.max(f.g.position.z,-37.2+(f.passageMode?f.passageRadius:.7*runtime.boarScale(f)));
+ if(runtime.level===1&&runtime.opening&&forestEdgeBlocked(f.g.position.x,f.g.position.z,(f.passageMode?f.passageRadius:.7*runtime.boarScale(f)),runtime.opening.passageOpen))f.g.position.z=forestEdgeLimit(f.g.position.x,(f.passageMode?f.passageRadius:.7*runtime.boarScale(f)));
  if(f.flee){for(let pass=0;pass<4;pass++){const contacts=runtime.boarWallContacts(f);if(!contacts.length)break;for(const hit of contacts){f.g.position.x+=hit.nx*(hit.depth+.004);f.g.position.z+=hit.nz*(hit.depth+.004)}}return}
  for(let pass=0;pass<(f.playerControlled?12:4);pass++){
   const contacts=[...runtime.boarTreeContacts(f),...runtime.boarWallContacts(f)];const playerHit=protectPlayer?runtime.boarPlayerContact(f):null;if(playerHit)contacts.push(playerHit);

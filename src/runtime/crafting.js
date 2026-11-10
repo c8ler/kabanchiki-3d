@@ -136,7 +136,7 @@ function updateCraftCreatures(dt,now){
   
   craftedCats.update(dt,runtime.birdLife,runtime.boarBodies(),runtime.boy.position,runtime.mountedFriend?runtime.friend:null,runtime.catLife.root.visible?runtime.catLife.cats:[]);
  }
- runtime.craftWorld.update(dt,now/1000,runtime.level,terrain,blocked,runtime.boy.position);
+ runtime.craftWorld.update(dt,now/1000,runtime.level,terrain,blocked,runtime.boy.position,runtime.friend?.g?.position);
 }
 
 function placeCraftItem(){

@@ -6,7 +6,7 @@ export function createModule(runtime){
 
 function boarBodies(){const a=runtime.foes.filter(f=>f?.g&&!f.flee);if(runtime.friend?.g&&!runtime.friend.flee&&!runtime.friend.windFlightUntil)a.push(runtime.friend);for(const f of runtime.exitHelpers)if(f.g?.parent&&!f.flee&&!a.includes(f))a.push(f);return a}
 
-function boarRadius(b){return b?.isBoss?2.45:1.02}
+function boarRadius(b){return b?.passageMode?(b.passageRadius??.38):b?.isBoss?2.45:1.02}
 
 // v124: transparency has two independent causes: camera occlusion and being inside Dad's house.
 // Materials are cloned per mesh so fading one rock/house never fades every object sharing that material.

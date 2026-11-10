@@ -1,4 +1,4 @@
-import { CraftWorld } from "../craft-world.js?v=225";
+import { CraftWorld } from "../craft-world.js?v=229";
 import { capturedByTornado, TORNADO_REACH, tornadoInfluence } from "../tornado-rules.js?v=222";
 import * as THREE from "../../vendor/three/three.module.min.js";
 import { riverCenterAt, lakeInletCenterAt } from "../world-surface.js?v=222";

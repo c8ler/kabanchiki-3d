@@ -1938,6 +1938,7 @@ export const GAME_MODULES=[
       "rescued",
       "resetCaravan",
       "resetFallingSigns",
+      "resetFriendTrail",
       "resetStormLocationState",
       "resetWaterActivity",
       "rideHop",
@@ -3317,6 +3318,7 @@ export const GAME_MODULES=[
       "boarWallContacts",
       "boarWaterDepth",
       "boy",
+      "caravanObstacle",
       "controlledSwimmer",
       "craftWorld",
       "familyFloorAt",
@@ -3342,7 +3344,8 @@ export const GAME_MODULES=[
       "terrainHeightAt",
       "treeObjects",
       "treeTrunkShape",
-      "wallGeometry"
+      "wallGeometry",
+      "waterAt"
     ]
   },
   {
@@ -3369,15 +3372,20 @@ export const GAME_MODULES=[
       "boarWaterDepth",
       "boy",
       "catLife",
+      "compactFriend",
       "companionNavBlocked",
+      "craftWorld",
+      "familyDoor",
       "foes",
       "friend",
       "friendHP",
+      "homeParts",
       "lakeDepthAt",
       "level",
       "levelBoarsDone",
       "mountedFriend",
       "notice",
+      "prepareFriendPassage",
       "py",
       "scene",
       "setRiderPose",
@@ -3390,6 +3398,12 @@ export const GAME_MODULES=[
     "name": "friend-motion",
     "path": "src/runtime/friend-motion.js",
     "owns": [
+      "friendTrail",
+      "compactFriend",
+      "prepareFriendPassage",
+      "resetFriendTrail",
+      "updateFriendTrail",
+      "friendFollowingNeeded",
       "friendKnockbackActive",
       "bossRepelsFriend",
       "moveRecoilBoar",
@@ -3401,18 +3415,28 @@ export const GAME_MODULES=[
       "moveFriendAroundObstacles"
     ],
     "dependencies": [
+      "PLAYER_RADIUS",
       "blockedByBoar",
       "boarBodies",
       "boarBody",
       "boarPlayerContact",
       "boarSceneryBlockedAt",
       "boy",
+      "clearWallLine",
+      "companionNavBlocked",
+      "craftWorld",
+      "familyDoor",
       "friend",
       "friendAttack",
+      "homeParts",
+      "hurricaneCarry",
+      "islandFlight",
+      "level",
       "mountedFriend",
       "moveBoarToward",
       "movePlayerCollision",
-      "py"
+      "py",
+      "worldEpoch"
     ]
   },
   {
@@ -3877,6 +3901,7 @@ export const GAME_MODULES=[
       "boarFormTime",
       "boarPlayerContact",
       "boarRadius",
+      "boarSceneryBlockedAt",
       "boarShouldChasePlayer",
       "boarsInContact",
       "bossBattleImpact",
@@ -3921,6 +3946,7 @@ export const GAME_MODULES=[
       "forestVisual",
       "friend",
       "friendAttack",
+      "friendFollowingNeeded",
       "friendHP",
       "friendKnockbackActive",
       "friendYieldActive",
@@ -4021,6 +4047,7 @@ export const GAME_MODULES=[
       "updateFamilyHouseReveal",
       "updateFishing",
       "updateFriendKnockback",
+      "updateFriendTrail",
       "updateFriendYield",
       "updateHomeUI",
       "updateHurricaneCarry",
@@ -4291,6 +4318,7 @@ export const GAME_MODULES=[
   }
 ];
 export const GAME_SOURCES=[
+  "src/qa/qa-22.js",
   "src/runtime/caravans.js",
   "src/qa/qa-21.js",
   "src/runtime/craft-destruction.js",
