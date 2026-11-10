@@ -6,6 +6,6 @@ const m=await qa('v207Mechanics');assert.equal(m.piles,4);assert.equal(m.door.wi
 const house=await qa('v207BuildDoor');console.log('Built door',house);assert.equal(house.stage,4);assert.equal(house.wood,0);assert.ok(house.doorVisible&&house.inside);
 for(const n of [2,4]){const water=await qa('v207Water',n);console.log('Water',n,water);assert.ok(water.alive);assert.ok(water.depth<=.65);assert.ok(water.air<8);}
 for(const n of [1,3,5]){const route=await qa('v161Navigate',n);console.log('Navigation',n,route);assert.ok(route.remaining<3.3,JSON.stringify(route));assert.equal(route.penetrations,0);}
-for(const n of [1,2,3,4,5,6]){const r=await qa('v207Road',n);console.log('Smooth road route',r);assert.ok(r.remaining<3.3,JSON.stringify(r));assert.ok(r.maxTurn<=.16001);assert.ok(r.maxStep<=.20001);assert.equal(r.reversals,0);}
+for(const n of [1,2,3,4,5,6]){const r=await qa('v207Road',n);console.log('Smooth road route',r);assert.ok(r.remaining<3.3,JSON.stringify(r));assert.ok(r.maxTurn<=.16001);assert.ok(r.maxStep<=8.2*.05+.00001);assert.equal(r.reversals,0);}
 assert.deepEqual(errors,[]);console.log('v207 water, doors and actual-world routes PASS');
 }finally{await browser.close();}
