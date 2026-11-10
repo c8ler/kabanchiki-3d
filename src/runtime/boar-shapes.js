@@ -33,15 +33,15 @@ function slideAroundTree(px,pz,nx,nz,r=.82){
 
 function boarScale(f){return f.bodyScale??Math.max(Math.abs(f.g.scale.x),Math.abs(f.g.scale.z))}
 
-function boarBody(f,x=f.g.position.x,z=f.g.position.z,yaw=f.g.rotation.y){return capsuleAt(x,z,yaw,boarScale(f))}
+function boarBody(f,x=f.g.position.x,z=f.g.position.z,yaw=f.g.rotation.y){return f.passageMode?{ax:x,az:z,bx:x,bz:z,r:f.passageRadius??.38}:capsuleAt(x,z,yaw,boarScale(f))}
 
-function playerBoarBody(){return {g:runtime.boy,bodyScale:runtime.boarFormTime>0?.86:(runtime.friend?boarScale(runtime.friend):1),playerControlled:runtime.boarFormTime>0&&!runtime.mountedFriend,feet:runtime.py+runtime.terrainHeightAt(runtime.boy.position.x,runtime.boy.position.z)}}
+function playerBoarBody(){return {g:runtime.boy,passageMode:runtime.mountedFriend&&runtime.friend?.passageMode,passageRadius:runtime.friend?.passageRadius,bodyScale:runtime.boarFormTime>0?.86:(runtime.friend?boarScale(runtime.friend):1),playerControlled:runtime.boarFormTime>0&&!runtime.mountedFriend,feet:runtime.py+runtime.terrainHeightAt(runtime.boy.position.x,runtime.boy.position.z)}}
 
 function playerBodyRadius(){return runtime.boarFormTime>0?.90:runtime.PLAYER_RADIUS}
 
 function boarWaterDepth(f,x=f.g.position.x,z=f.g.position.z){if(runtime.level!==2&&runtime.level!==4)return 0;const body=boarBody(f,x,z);let depth=0;for(const [px,pz] of [[body.ax,body.az],[x,z],[body.bx,body.bz]])for(const [ox,oz] of [[0,0],[body.r,0],[-body.r,0],[0,body.r],[0,-body.r]])depth=Math.max(depth,runtime.lakeDepthAt(px+ox,pz+oz));return depth}
 
-function controlledSwimmer(f){return (runtime.boarFormTime>0&&f.g===runtime.boy)||runtime.mountedFriend&&(f===runtime.friend||f.g===runtime.boy)}
+function controlledSwimmer(f){return (f.followManaged&&f===runtime.friend)||(runtime.boarFormTime>0&&f.g===runtime.boy)||runtime.mountedFriend&&(f===runtime.friend||f.g===runtime.boy)}
 
 function boarLakeStepAllowed(f,x,z){if(controlledSwimmer(f))return true;return boarWaterStep(boarWaterDepth(f),boarWaterDepth(f,x,z))}
 
