@@ -57,7 +57,7 @@ function updateFriendYield(dx,dz,dt){
 
 function compactFriend(f,on){
  if(!f?.g||!!f.passageMode===on)return;f.passageMode=on;f.passageRadius=runtime.PLAYER_RADIUS;f.passageCooldown=.8;f.tightEscape=null;
- if(f.b){f.passageVisual??={x:f.b.scale.x,z:f.b.scale.z};f.b.scale.x=f.passageVisual.x*(on?.42:1);f.b.scale.z=f.passageVisual.z*(on?.20:1)}
+ if(f.b){f.passageVisual??={x:f.b.scale.x,z:f.b.scale.z,ax:f.aura?.scale.x??1,ay:f.aura?.scale.y??1};f.b.scale.x=f.passageVisual.x*(on?.42:1);f.b.scale.z=f.passageVisual.z*(on?.20:1);if(f.aura){f.aura.scale.x=f.passageVisual.ax*(on?.30:1);f.aura.scale.y=f.passageVisual.ay*(on?.30:1)}}
 }
 function prepareFriendPassage(f,tx,tz,dt){
  if(!f?.g||!f.followManaged)return;
