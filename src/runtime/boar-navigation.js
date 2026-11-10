@@ -68,9 +68,9 @@ function boarSceneryBlockedAt(f,x,z,yaw=f.g.rotation.y){if(runtime.craftWorld.bl
 
 function resolveBoarClearance(f,protectPlayer=true){
   if(f.flee)return;
- if(runtime.locationExit&&!runtime.locationExitReady())f.g.position.z=Math.max(f.g.position.z,-37.2+.7*runtime.boarScale(f));
- if(runtime.level===2&&!runtime.lakeExitReady())f.g.position.z=Math.max(f.g.position.z,-37.2+.7*runtime.boarScale(f));
- if(runtime.level===1&&runtime.opening&&forestEdgeBlocked(f.g.position.x,f.g.position.z,.7*runtime.boarScale(f),runtime.opening.passageOpen))f.g.position.z=forestEdgeLimit(f.g.position.x,.7*runtime.boarScale(f));
+ if(runtime.locationExit&&!runtime.locationExitReady())f.g.position.z=Math.max(f.g.position.z,-37.2+(f.passageMode?f.passageRadius:.7*runtime.boarScale(f)));
+ if(runtime.level===2&&!runtime.lakeExitReady())f.g.position.z=Math.max(f.g.position.z,-37.2+(f.passageMode?f.passageRadius:.7*runtime.boarScale(f)));
+ if(runtime.level===1&&runtime.opening&&forestEdgeBlocked(f.g.position.x,f.g.position.z,(f.passageMode?f.passageRadius:.7*runtime.boarScale(f)),runtime.opening.passageOpen))f.g.position.z=forestEdgeLimit(f.g.position.x,(f.passageMode?f.passageRadius:.7*runtime.boarScale(f)));
  if(f.flee){for(let pass=0;pass<4;pass++){const contacts=runtime.boarWallContacts(f);if(!contacts.length)break;for(const hit of contacts){f.g.position.x+=hit.nx*(hit.depth+.004);f.g.position.z+=hit.nz*(hit.depth+.004)}}return}
  for(let pass=0;pass<(f.playerControlled?12:4);pass++){
   const contacts=[...runtime.boarTreeContacts(f),...runtime.boarWallContacts(f)];const playerHit=protectPlayer?runtime.boarPlayerContact(f):null;if(playerHit)contacts.push(playerHit);
