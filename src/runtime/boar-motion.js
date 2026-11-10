@@ -27,6 +27,7 @@ function minionSpawnPoint(f,angle){
 
 function moveBoarToward(f,tx,tz,speed,dt){if(f.monsterFocus&&!f.flee&&!f.exitBreaking&&!f.spiderFear){if(f.monsterMovedFrame===runtime.boarCollisionEpoch)return false;f.monsterMovedFrame=runtime.boarCollisionEpoch;tx=f.monsterFocus.g.position.x;tz=f.monsterFocus.g.position.z;}
  if(f.spiderFear>0&&f.spiderEscape&&!f.flee&&!f.exitBreaking){if(f.spiderMovedFrame===runtime.boarCollisionEpoch)return false;f.spiderMovedFrame=runtime.boarCollisionEpoch;tx=f.spiderEscape.x;tz=f.spiderEscape.z;speed=Math.max(speed,4.8)}
+ if(f.followManaged)runtime.prepareFriendPassage(f,tx,tz,dt);
  const ox=f.g.position.x,oz=f.g.position.z,dx=tx-ox,dz=tz-oz,d=Math.hypot(dx,dz);if(d<.001)return false;
  const step=Math.min(speed*dt,d),ux=dx/d,uz=dz/d;
  // Fleeing boars ignore trees and stones, but always respect house walls.
@@ -46,13 +47,14 @@ function moveBoarToward(f,tx,tz,speed,dt){if(f.monsterFocus&&!f.flee&&!f.exitBre
   f.g.position.x=ox+dx/len*distance;f.g.position.z=oz+dz/len*distance;f.route=null;return true;
  }
  f.tightEscape=null;
- const target=f.route.next(point,goal,navBlocked,dt,{epoch:runtime.worldEpoch,step:runtime.level===3?.5:.8});
+ const target=f.followManaged&&f.friendTrailTarget||f.route.next(point,goal,navBlocked,dt,{epoch:f.followManaged?runtime.worldEpoch+':'+runtime.craftWorld.epoch+':'+runtime.familyDoor?.userData.closed+':'+runtime.homeParts?.door?.userData.closed:runtime.worldEpoch,step:f.followManaged?.4:runtime.level===3?.5:.8});
  if(!target){f.route.record(0,dt);return false;}
  const vx=target.x-ox,vz=target.z-oz,len=Math.hypot(vx,vz),desired=Math.atan2(vx,vz),heading=smoothHeading(f.g.rotation.y,desired,dt),stepSize=Math.min(speed*dt,len);
  let valid=true;const count=Math.max(1,Math.ceil(stepSize/.055));
  const delta=Math.atan2(Math.sin(heading-f.g.rotation.y),Math.cos(heading-f.g.rotation.y));
  const slices=Math.max(count,Math.ceil(Math.abs(delta)/.06));
  for(let i=1;i<=slices;i++)if(!clear(ox+vx/len*stepSize*i/slices,oz+vz/len*stepSize*i/slices,f.g.rotation.y+delta*i/slices)){valid=false;break;}
+ if(!valid&&f.followManaged&&!f.passageMode){runtime.compactFriend(f,true);valid=true;for(let i=1;i<=slices;i++)if(!clear(ox+vx/len*stepSize*i/slices,oz+vz/len*stepSize*i/slices,heading)){valid=false;break}}
  if(valid){f.g.position.x=ox+vx/len*stepSize;f.g.position.z=oz+vz/len*stepSize;f.g.rotation.y=heading;}
  // A long capsule must be able to turn while waiting at a corner.
  // Previously the heading only changed after translation succeeded: a blocked
@@ -64,7 +66,7 @@ function moveBoarToward(f,tx,tz,speed,dt){if(f.monsterFocus&&!f.flee&&!f.exitBre
   let safe=true;for(let i=1;i<=turns;i++)if(!clear(ox,oz,f.g.rotation.y+delta*i/turns)){safe=false;break;}
   if(safe&&Math.abs(delta)>1e-6){f.g.rotation.y=heading;turned=true;}
  }
- f.route.record(valid?stepSize:turned?.003:0,dt);return valid;
+ f.route.record(valid?stepSize:0,dt);return valid;
 }
 
 function moveBoarOutOfWater(f,tx,tz,speed,dt){
@@ -76,12 +78,12 @@ function moveBoarOutOfWater(f,tx,tz,speed,dt){
 
 function updateBoarWater(dt){
  for(const f of [...runtime.boarBodies()]){
-  const depth=runtime.boarWaterDepth(f);f.waterEscaping=depth>BOAR_WADING_DEPTH;
+  const depth=runtime.boarWaterDepth(f);f.waterEscaping=depth>BOAR_WADING_DEPTH&&!(f.followManaged&&f===runtime.friend);
   if(f.waterEscaping){f.graze=0;f.waterGoal??=shoreGoal(f.g.position.x,f.g.position.z,(x,z)=>runtime.boarWaterDepth(f,x,z),(x,z)=>runtime.boarWallContacts(f,x,z).length>0||runtime.boarTreeContacts(f,x,z).length>0);
    if(f.waterGoal)moveBoarOutOfWater(f,f.waterGoal.x,f.waterGoal.z,6.5,dt);
    if(f===runtime.friend&&runtime.mountedFriend){runtime.boy.position.x=f.g.position.x;runtime.boy.position.z=f.g.position.z;}
   }else f.waterGoal=null;
-  if(updateBoarBreath(f,runtime.lakeDepthAt(f.g.position.x,f.g.position.z),dt,runtime.boarScale(f))){
+  if(!(f.followManaged&&f===runtime.friend)&&updateBoarBreath(f,runtime.lakeDepthAt(f.g.position.x,f.g.position.z),dt,runtime.boarScale(f))){
    if(f===runtime.friend){runtime.friendHP--;runtime.notice('🌊 Кабанчик-друг слишком долго под водой!');if(runtime.friendHP<=0){if(runtime.mountedFriend){runtime.mountedFriend=false;runtime.setRiderPose(false);runtime.py=runtime.vy=0;}runtime.friend=null;runtime.scene.remove(f.g);}}
    else{f.hp=(f.hp??3)-1;if(f.hp<=0){const i=runtime.foes.indexOf(f);if(i>=0)runtime.foes.splice(i,1);runtime.scene.remove(f.g);runtime.levelBoarsDone++;}}
   }
