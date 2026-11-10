@@ -53,6 +53,7 @@ function companionNavBlocked(f,wide=false){
 
 function boarSceneryBlockedAt(f,x,z,yaw=f.g.rotation.y){if(runtime.craftWorld.blocked(x,z,f.g.position.y,f.passageMode?f.passageRadius:runtime.boarRadius(f),1.5*runtime.boarScale(f)))return true;
   if(f.flee)return runtime.boarWallContacts(f,x,z,yaw).length>0;
+ const wagonBody=runtime.boarBody(f,x,z,yaw);if([[wagonBody.ax,wagonBody.az],[x,z],[wagonBody.bx,wagonBody.bz]].some(([px,pz])=>runtime.caravanObstacle(px,pz,wagonBody.r,f.g.position.y-runtime.terrainHeightAt(px,pz))))return true;
  if(runtime.locationExit&&forestExitBlocked(x,z+4,(f.passageMode?f.passageRadius:.7*runtime.boarScale(f)),runtime.locationExitReady()))return true;
  if(runtime.level===2&&forestExitBlocked(x,z+4,(f.passageMode?f.passageRadius:.7*runtime.boarScale(f)),runtime.lakeExitReady()))return true;
  if(runtime.level===1&&runtime.opening&&forestEdgeBlocked(x,z,f.passageMode?f.passageRadius:.7*runtime.boarScale(f),runtime.opening.passageOpen))return true;
