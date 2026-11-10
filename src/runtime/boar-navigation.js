@@ -26,6 +26,7 @@ function companionNavBlocked(f,wide=false){
  const traffic=f.isMinion||f.followManaged?runtime.boarBodies().filter(b=>b!==f&&!b.flee).map(b=>runtime.boarBody(b)):[];
  // Each search is synchronous: snapshot dynamic gates and inflated geometry once,
  // rather than rebuilding the same shapes for every A* point and swept edge.
+ const cats=f.followManaged&&runtime.catLife.root.visible?runtime.catLife.cats.filter(c=>c.g.visible&&Math.abs(c.g.position.y-f.g.position.y)<1.6).map(c=>({x:c.g.position.x,z:c.g.position.z})):[];
  const scale=runtime.boarScale(f),radius=f.followManaged&&!wide?runtime.PLAYER_RADIUS:1.65*scale+.05,
  trees=runtime.treeObjects.filter(t=>t.visible).map(t=>{const m=t.children.find(m=>m.userData.treeSolid);if(!m)return null;const q=runtime.treeTrunkShape(m);return {...q,r2:(q.r+radius)**2}}).filter(Boolean),
  rocks=runtime.rockPositions.filter(q=>q[3]?.visible!==false&&q[3]?.parent?.visible!==false).map(q=>{const s=runtime.rockShape(q[3]);return {...s,c:Math.cos(s.yaw),sn:Math.sin(s.yaw),ix:1/(s.ax+radius)**2,iz:1/(s.az+radius)**2}}),
@@ -35,6 +36,7 @@ function companionNavBlocked(f,wide=false){
  avoidsWater=!runtime.controlledSwimmer(f)&&!f.waterEscaping;
  return (x,z)=>{
   if(runtime.caravanObstacle(x,z,radius,f.g.position.y-runtime.terrainHeightAt(x,z)))return true;
+  if(cats.some(p=>Math.hypot(x-p.x,z-p.z)<radius+.48))return true;
   if(traffic.some(body=>capsuleCircleContact(body,x,z,radius+.08)))return true;
   if(runtime.locationExit&&forestExitBlocked(x,z+4,(f.followManaged&&!wide?radius:.7*scale),exitReady))return true;
   if(runtime.level===2&&forestExitBlocked(x,z+4,(f.followManaged&&!wide?radius:.7*scale),lakeReady))return true;
