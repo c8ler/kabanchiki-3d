@@ -13,7 +13,7 @@ const checks=[
  ['v207 visible sun matches shadow light',/sun\.position\.set\(-28,24,-42\)/.test(game)&&/sunDisc\.position\.copy\(sun\.position\)/.test(game)],
  ['v207 jump reliability',/jumpSupported=grounded/.test(game)&&/lastGroundedAt/.test(game)&&/JUMP_SURFACE_AUDIT/.test(game)],
  ['v207 uniform grass on all locations',/one evenly seeded grass layer/.test(game)&&/meadowGrassCount=grassCount/.test(game)&&/meadowGrassRoot.visible=currentSeason!=='winter'/.test(game)],
- ['v207 calm friend',/d>4\.2/.test(game)&&/Math\.exp\(-3\.2\*dt\)/.test(game)],
+ ['v229 calm friend with reachable rest position',/function friendFollowingNeeded\(/.test(game)&&/!clearWallLine\(/.test(game)&&/Math\.exp\(-3\.2\*dt\)/.test(game)],
 
  ['v207 desktop mouse actions',/e\.button===0[^}]*feed\(\)/s.test(game)&&/e\.button===2[^}]*queuePlayerJump\(\)/s.test(game)],
  ['v207 cinematic ground safety',/heroGround=Math\.max\(0,terrainHeightAt/.test(game)&&/const ground=Math\.max\(0,terrainHeightAt\(q\.x,q\.z\)\)/.test(game)],
