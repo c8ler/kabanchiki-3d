@@ -4422,5 +4422,6 @@ export const GAME_SOURCES=[
   "src/runtime/monsters.js",
   "src/runtime/cheat-mode.js",
   "src/qa/qa-18.js",
-  "src/qa/qa-19.js"
+  "src/qa/qa-19.js",
+  "src/qa/release-audit.js"
 ];
