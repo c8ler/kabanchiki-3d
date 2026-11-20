@@ -18,3 +18,18 @@ export function disposeDetachedResources(previous,scene){
  }
  return disposed;
 }
+
+export function removeSceneObjects(scene,objects){
+ const roots=[...new Set(objects)].filter(object=>object?.parent===scene);
+ if(!roots.length)return{geometries:0,materials:0};
+ const previous={geometries:new Set(),materials:new Set()};
+ for(const root of roots){
+  const resources=captureSceneResources(root);
+  for(const kind of ['geometries','materials'])for(const resource of resources[kind])previous[kind].add(resource);
+ }
+ scene.remove(...roots);
+ return disposeDetachedResources(previous,scene);
+}
+export function removeSceneObject(scene,object){return removeSceneObjects(scene,[object])}
+
+export function removeSceneSubtree(scene,object){if(!object?.parent)return{geometries:0,materials:0};const previous=captureSceneResources(object);object.removeFromParent();return disposeDetachedResources(previous,scene)}

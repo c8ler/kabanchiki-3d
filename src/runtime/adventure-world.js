@@ -1,3 +1,4 @@
+import {removeSceneObject} from '../scene-resources.js?v=231';
 import { CraftWorld } from "../craft-world.js?v=229";
 import { capturedByTornado, TORNADO_REACH, tornadoInfluence } from "../tornado-rules.js?v=222";
 import * as THREE from "../../vendor/three/three.module.min.js";
@@ -37,7 +38,7 @@ function updateTornado(dt,now){
  if(capturedByTornado(runtime.boy.position,runtime.tornadoState,runtime.shelteredFromWind())){runtime.notice('🌪️ Торнадо подхватило Тимура!');runtime.beginHurricaneScene();return}
  runtime.tornadoSweep-=dt;if(runtime.tornadoSweep>0)return;runtime.tornadoSweep=.22;let grabbed=0;
  const close=(o,r)=>{const q=objectWorldPoint(o);return Math.hypot(q.x-runtime.tornadoState.x,q.z-runtime.tornadoState.z)<r};
- for(const a of runtime.apples){if(grabbed>=3)break;if(!a.done&&close(a.g,TORNADO_REACH)&&runtime.tornadoVisual.capture('food',now/1000,.65)){a.done=true;runtime.scene.remove(a.g);grabbed++}}
+ for(const a of runtime.apples){if(grabbed>=3)break;if(!a.done&&close(a.g,TORNADO_REACH)&&runtime.tornadoVisual.capture('food',now/1000,.65)){a.done=true;removeSceneObject(runtime.scene,a.g);grabbed++}}
  for(let i=adventurePickups.length-1;i>=0&&grabbed<3;i--){const q=adventurePickups[i];if(close(q.g,10)&&runtime.tornadoVisual.capture(q.kind==='wood'?'log':'food',now/1000,.6)){adventureCollected.add(q.key);runtime.disposePickupVisual(q.g);adventurePickups.splice(i,1);grabbed++}}
  for(const [kind,objects] of [['tree',runtime.treeObjects],['house',runtime.houseObjects],['rock',runtime.rockPositions.map(q=>q[3])],['log',runtime.logObstacles.map(o=>o.g)]]){
   if(grabbed>=3)break;

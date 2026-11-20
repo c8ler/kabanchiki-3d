@@ -1,4 +1,4 @@
-import {captureSceneResources,disposeDetachedResources} from '../scene-resources.js?v=230';
+import {captureSceneResources,disposeDetachedResources} from '../scene-resources.js?v=231';
 import { refreshExitLandscape } from "../exit-scenery.js?v=222";
 import * as THREE from "../../vendor/three/three.module.min.js";
 import { BOSS_HITS, lakeRadiusAt } from "../world-surface.js?v=222";

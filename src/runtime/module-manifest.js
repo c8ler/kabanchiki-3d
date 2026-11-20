@@ -4423,5 +4423,8 @@ export const GAME_SOURCES=[
   "src/runtime/cheat-mode.js",
   "src/qa/qa-18.js",
   "src/qa/qa-19.js",
-  "src/qa/release-audit.js"
+  "src/qa/release-audit.js",
+  "src/qa/deep-audit.js",
+  "src/qa/audit-observer.js",
+  "src/qa/resource-watch.js"
 ];

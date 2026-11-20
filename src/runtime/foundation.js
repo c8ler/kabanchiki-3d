@@ -60,7 +60,7 @@ window.__gameLoadProgress?.(84);
 
 /* init:let */ __loadFinished = false;
 
-/* init:const */ GAME_VERSION = 'v230';
+/* init:const */ GAME_VERSION = 'v231';
 
 /* init:const */ campaignProgress = new CampaignProgress(window.localStorage);
 

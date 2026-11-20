@@ -1,3 +1,4 @@
+import {removeSceneObject} from '../scene-resources.js?v=231';
 import * as THREE from "../../vendor/three/three.module.min.js";
 import { BOAR_FORM_SECONDS, CAT_FORM_SECONDS, formTimeAfterStep } from "../form-rules.js?v=222";
 
@@ -27,7 +28,7 @@ function growBoarFromApple(f){if(!f?.g||f.appleGrown)return;f.appleGrown=true;f.
 function setBoarYellow(f){if(!f?.g||f.yellowPermanent)return;f.yellowPermanent=true;f.g.traverse(o=>{if(o.isMesh&&o.material?.color){o.material=o.material.clone();o.material.color.set(0xffd92f)}});runtime.bonusSound();runtime.notice(f.isBoss?'🟡 Босс стал жёлтым!':'🟡 Кабанчик стал жёлтым!')}
 
 function collectForageItem(a,silent=false){
- if(!a||a.done)return false;a.done=true;runtime.scene.remove(a.g);runtime.score+=runtime.diffScore(5);
+ if(!a||a.done)return false;a.done=true;removeSceneObject(runtime.scene,a.g);runtime.score+=runtime.diffScore(5);
  if(a.type==='catberry'){runtime.statsData.berries++;startCatForm()}
  else if(a.bonus&&a.type==='berry'){runtime.statsData.berries++;startBoarForm()}
  else if(a.bonus&&a.type==='mushroom'){runtime.yellowMushroomStock++;runtime.statsData.forage++;runtime.bonusSound();if(!silent)runtime.notice(`🟡 Жёлтый мухомор! Следующее кормление накормит и навсегда окрасит кабанчика или босса. Запас: ${runtime.yellowMushroomStock}`)}
@@ -43,7 +44,7 @@ function runMountedAppleAudit(){
  runtime.mountedFriend=true;runtime.food=Math.max(0,max-1);runtime.boy.position.set(testApple.x,1.18,testApple.z);runtime.py=1.18;
  const before=runtime.food,reachable=canCollectForage(testApple),collected=reachable&&collectForageItem(testApple,true),after=runtime.food;
  if(!reachable)issues.push('mounted-apple-not-reachable');if(!collected||!testApple.done)issues.push('mounted-apple-not-collected');if(after!==Math.min(max,before+1))issues.push(`mounted-apple-food:${before}->${after}`);
- runtime.scene.remove(testApple.g);runtime.mountedFriend=oldMounted;runtime.food=oldFood;runtime.score=oldScore;runtime.statsData.forage=oldForage;runtime.boy.position.set(ox,oy,oz);runtime.py=opy;
+ removeSceneObject(runtime.scene,testApple.g);runtime.mountedFriend=oldMounted;runtime.food=oldFood;runtime.score=oldScore;runtime.statsData.forage=oldForage;runtime.boy.position.set(ox,oy,oz);runtime.py=opy;
  return {ok:issues.length===0,issues,reachable,collected,before,after,level: runtime.level};
 }
  return {
