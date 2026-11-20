@@ -1,10 +1,19 @@
 import assert from 'node:assert/strict';
 import {startAudit} from './audit-driver.mjs';
-import {actionPlan} from '../src/qa/audit-observer.js';
+import {actionPlan,resourceIssues} from '../src/qa/audit-observer.js';
 const d=await startAudit('deep'),{page,qa,check}=d;
 const healthy=s=>assert.deepEqual(s.issues,[],JSON.stringify(s));
 try{
  await d.open();
+ await check('repeated-stress-resource-plateau',async()=>{
+  const samples=[];
+  for(let round=0;round<4;round++)for(let level=1;level<=7;level++){
+   await qa('deepSetup',level);await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
+   const state=await qa('deepState');healthy(state);samples.push(state);
+  }
+  const issues=resourceIssues(samples);d.report.metrics.push({kind:'stress-resources',samples,issues});
+  console.log('HOT_RESOURCE_CHECK',d.engine,JSON.stringify({issues,forest:samples.filter(s=>s.level===1).map(s=>s.geometries)}));assert.deepEqual(issues,[]);
+ });
  for(const seed of [d.seed,d.seed+7331])await check('fuzz-'+seed,async()=>{
   const plan=actionPlan(seed,512);d.record({event:'plan',seed,actions:plan});
   for(const action of plan){
