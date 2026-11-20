@@ -1,6 +1,8 @@
+import * as T from '../../vendor/three/three.module.min.js';
+import {installResourceWatch} from './resource-watch.js';
 import {inspectState} from './audit-observer.js';
 export function createQaPart(runtime){
- let clock=performance.now();
+ let clock=performance.now(),resourceWatch=null;
  function state(){
   const active=[runtime.boy,...[runtime.friend,...runtime.foes,...runtime.friends].filter(Boolean).map(a=>a.g),...runtime.craftWorld.items.map(a=>a.g)];
   const managed=runtime.creatureEntries().length,fish=runtime.aquaticFish.filter(a=>a.level===runtime.level&&a.g.visible).length,birds=runtime.birdLife.root.visible?runtime.birdLife.body.count:0;
@@ -22,6 +24,8 @@ export function createQaPart(runtime){
  return{
   deepSetup(level=3){this.releaseSetup(level,true);runtime.adventureInventory.bombs=8;runtime.adventureInventory.wood=100;runtime.adventureInventory.wool=100;runtime.food=runtime.foodCapacity();clock=performance.now();return state()},
   deepState(){return state()},
+  deepWatchResources(){resourceWatch??=installResourceWatch(T);return resourceWatch.snapshot(runtime.scene)},
+  deepResources(){return resourceWatch?.snapshot(runtime.scene)},
   deepAction(action,live=false){
    const previousRandom=Math.random;let seed=action.seed>>>0;Math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296};
    try{
