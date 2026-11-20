@@ -7,8 +7,8 @@ for(const engine of [chromium,webkit]){
   let r=await qa('v223Capture');assert.equal(r.active,true,JSON.stringify(r));assert.equal(r.paused,false);assert.equal(r.cinematic,false);assert.equal(r.end,false);assert.equal(r.carry,0);
   await page.waitForFunction(()=>window.__KABANCHIKI_QA__.v223FlightState().py>6,null,{timeout:15000});
   r=await qa('v223FlightStep',3);assert.equal(r.active,true);assert.equal(r.end,false);assert.equal(r.paused,false);
-  await qa('v223FlightPark');const before=await qa('v223FlightState');await page.keyboard.down('KeyW');await page.waitForTimeout(350);await page.keyboard.up('KeyW');r=await qa('v223FlightState');assert.ok(Math.hypot(r.x-before.x,r.z-before.z)>.4);
-  const y=r.py;if(mobile)await page.locator('#jump').click();else await page.keyboard.press('Space');await page.waitForTimeout(350);r=await qa('v223FlightState');assert.ok(r.py>y+.3,JSON.stringify(r));
+  await qa('v223FlightPark');const before=await qa('v223FlightState');await page.keyboard.down('KeyW');await page.waitForFunction(before=>{const r=window.__KABANCHIKI_QA__.v223FlightState();return Math.hypot(r.x-before.x,r.z-before.z)>.4},before,{timeout:15000});await page.keyboard.up('KeyW');r=await qa('v223FlightState');assert.ok(Math.hypot(r.x-before.x,r.z-before.z)>.4);
+  const y=r.py;if(mobile)await page.locator('#jump').click();else await page.keyboard.press('Space');await page.waitForFunction(y=>window.__KABANCHIKI_QA__.v223FlightState().py>y+.3,y,{timeout:15000});r=await qa('v223FlightState');assert.ok(r.py>y+.3,JSON.stringify(r));
   await page.screenshot({path:'screenshots/v223-flight-'+engine.name()+'.png'});
   const land=page.locator('#landFlightAction');await land.waitFor({state:'visible'});const box=await land.boundingBox();assert.ok(box.x>=0&&box.x+box.width<=page.viewportSize().width);assert.ok(box.y>=0&&box.y+box.height<=page.viewportSize().height);
   await land.click();await page.waitForFunction(()=>!window.__KABANCHIKI_QA__.v223FlightState().active,null,{timeout:15000});r=await qa('v223FlightState');assert.equal(r.end,false);assert.equal(r.paused,false);assert.ok(r.py<1);await land.waitFor({state:'hidden'});
