@@ -29,6 +29,7 @@ for(const engine of [chromium,webkit]){
   await page.evaluate(async mobile=>{
    const {installPauseNavigation}=await import('./src/pause-navigation.js?v=224'),{fillControls}=await import('./src/intro-sequence.js?v=224'),{installMenuViewport}=await import('./src/menu-viewport.js?v=222');
    for(const id of ['intro','difficultyScreen','familyPopup','endScreen','statsScreen','secretMenu','cinematic'])document.getElementById(id).style.display='none';
+   document.getElementById('startupCredits').hidden=true;
    const root=document.getElementById('pauseMenu');root.style.display='grid';installMenuViewport(window,document);fillControls(document.getElementById('pauseControlsList'),mobile);installPauseNavigation(root);
    document.getElementById('quest').textContent='Найди маму и подружись с кабанчиком.';
    document.getElementById('journalQuest').textContent='Найди маму и подружись с кабанчиком.';
