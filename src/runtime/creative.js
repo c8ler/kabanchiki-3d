@@ -1,4 +1,4 @@
-import {captureSceneResources,disposeDetachedResources} from '../scene-resources.js?v=230';
+import {captureSceneResources,disposeDetachedResources} from '../scene-resources.js?v=231';
 import * as THREE from '../../vendor/three/three.module.min.js';
 import {parseCheatCode} from '../cheat-codes.js?v=228';
 import {createIsland,islandDepth,SECRET_LEVEL} from '../creative-island.js?v=222';
