@@ -5,6 +5,7 @@ const d=await startAudit('deep'),{page,qa,check}=d;
 const healthy=s=>assert.deepEqual(s.issues,[],JSON.stringify(s));
 try{
  await d.open();
+ await check('tornado-releases-food-geometry',async()=>{const s=await qa('deepTornadoFood');assert.equal(s.consumed,3);assert.equal(s.remaining,0);assert.ok(s.owned>0);assert.equal(s.disposed,s.owned);healthy(s)});
  await check('repeated-stress-resource-plateau',async()=>{
   const samples=[];
   for(let round=0;round<4;round++)for(let level=1;level<=7;level++){
