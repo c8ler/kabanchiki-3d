@@ -28,6 +28,7 @@ jobs:
       - run: npm run validate
       - run: npm install --no-save --package-lock=false playwright@1.56.1
       - name: Mixed actions, profiling, transitions and continuous play
+        id: sessions
         env:
           BROWSER: ${{ matrix.browser }}
           RELEASE_SEED: '1901'
@@ -37,7 +38,7 @@ jobs:
           chown pwuser:pwuser logs screenshots
           runuser -u pwuser -- node scripts/release-audit-browser.mjs
       - name: Independent route seed
-        if: always() && matrix.browser != 'firefox'
+        if: always() && matrix.browser != 'firefox' && steps.sessions.outcome != 'skipped'
         env:
           BROWSER: ${{ matrix.browser }}
           ROBOT_SEED: '1901'
