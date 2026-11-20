@@ -24,6 +24,18 @@ export function createQaPart(runtime){
  return{
   deepSetup(level=3){this.releaseSetup(level,true);runtime.adventureInventory.bombs=8;runtime.adventureInventory.wood=100;runtime.adventureInventory.wool=100;runtime.food=runtime.foodCapacity();clock=performance.now();return state()},
   deepState(){return state()},
+  deepStormRemains(){
+   this.deepSetup(3);const root=runtime.makeCharredTreeRemains(0,0),owned=new Set();let disposed=0;
+   root.traverse(m=>{if(m.geometry&&m.geometry!==runtime.cube)owned.add(m.geometry)});for(const g of owned)g.addEventListener('dispose',()=>disposed++);
+   runtime.resetStormLocationState();return{owned:owned.size,disposed,attached:!!root.parent,remains:runtime.stormRemains.length,stumps:runtime.charredStumps.length,...state()};
+  },
+  deepBombFood(){
+   this.deepSetup(3);for(const a of runtime.apples)runtime.disposePickupVisual(a.g);runtime.apples.length=0;
+   runtime.makeForage('berry',0,0);const food=runtime.apples.at(-1),owned=new Set();let disposed=0;
+   food.g.traverse(m=>{if(m.geometry&&m.geometry!==runtime.cube)owned.add(m.geometry)});for(const g of owned)g.addEventListener('dispose',()=>disposed++);
+   runtime.boy.position.set(30,0,30);const g=runtime.bombModel(runtime.scene),ring=new T.Mesh(new T.RingGeometry(1,1.1,8),runtime.blastRingMat);runtime.scene.add(ring);
+   runtime.explodeAdventureBomb({x:0,y:0,z:0,g,ring});runtime.paused=true;return{owned:owned.size,disposed,done:food.done,attached:!!food.g.parent,...state()};
+  },
   deepTornadoFood(){
    this.deepSetup(3);for(const a of runtime.apples)runtime.disposePickupVisual(a.g);runtime.apples.length=0;
    let disposed=0;const owned=new Set();
