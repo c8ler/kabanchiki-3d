@@ -33,7 +33,15 @@ jobs:
           RELEASE_SEED: '1901'
         run: |
           node scripts/serve.mjs 8080 > /tmp/release-server.log 2>&1 &
-          node scripts/release-audit-browser.mjs
+          mkdir -p logs screenshots
+          chown pwuser:pwuser logs screenshots
+          runuser -u pwuser -- node scripts/release-audit-browser.mjs
+      - name: Independent route seed
+        if: always() && matrix.browser != 'firefox'
+        env:
+          BROWSER: ${{ matrix.browser }}
+          ROBOT_SEED: '1901'
+        run: node scripts/boar-robot-browser.mjs
       - name: Preserve server log
         if: always()
         run: |
