@@ -24,6 +24,15 @@ export function createQaPart(runtime){
  return{
   deepSetup(level=3){this.releaseSetup(level,true);runtime.adventureInventory.bombs=8;runtime.adventureInventory.wood=100;runtime.adventureInventory.wool=100;runtime.food=runtime.foodCapacity();clock=performance.now();return state()},
   deepState(){return state()},
+  deepTornadoFood(){
+   this.deepSetup(3);for(const a of runtime.apples)runtime.disposePickupVisual(a.g);runtime.apples.length=0;
+   let disposed=0;const owned=new Set();
+   for(let i=0;i<3;i++){const a=runtime.makeForage('apple',i*.15,0);a.g.traverse(m=>{if(m.geometry&&m.geometry!==runtime.cube)owned.add(m.geometry)});runtime.apples.push(a)}
+   for(const g of owned)g.addEventListener('dispose',()=>disposed++);
+   runtime.boy.position.set(30,0,30);runtime.tornadoVisual.reset();runtime.tornadoState.active=true;runtime.tornadoState.x=runtime.tornadoState.z=0;runtime.tornadoSweep=0;
+   runtime.updateTornado(0,performance.now());runtime.paused=true;
+   return{consumed:runtime.apples.filter(a=>a.done).length,remaining:runtime.apples.filter(a=>a.g.parent).length,owned:owned.size,disposed,...state()};
+  },
   deepWatchResources(){resourceWatch??=installResourceWatch(T);return resourceWatch.snapshot(runtime.scene)},
   deepResources(){return resourceWatch?.snapshot(runtime.scene)},
   deepAction(action,live=false){
