@@ -6,6 +6,8 @@ const healthy=s=>assert.deepEqual(s.issues,[],JSON.stringify(s));
 try{
  await d.open();
  await check('tornado-releases-food-geometry',async()=>{const s=await qa('deepTornadoFood');assert.equal(s.consumed,3);assert.equal(s.remaining,0);assert.ok(s.owned>0);assert.equal(s.disposed,s.owned);healthy(s)});
+ await check('storm-reset-releases-remains',async()=>{const s=await qa('deepStormRemains');assert.ok(s.owned>0);assert.equal(s.disposed,s.owned);assert.equal(s.attached,false);assert.equal(s.remains,0);assert.equal(s.stumps,0);healthy(s)});
+ await check('bomb-releases-food-geometry',async()=>{const s=await qa('deepBombFood');assert.ok(s.owned>0);assert.equal(s.disposed,s.owned);assert.equal(s.done,true);assert.equal(s.attached,false);healthy(s)});
  await check('repeated-stress-resource-plateau',async()=>{
   const samples=[];
   for(let round=0;round<4;round++)for(let level=1;level<=7;level++){
