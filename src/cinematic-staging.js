@@ -19,8 +19,9 @@ export function introStagingAt(t){
   const yaw=run>0?Math.atan2(dx,dz):position.walking?position.yaw:Math.atan2(-11.2-x,8-campZ[i]);
   return {...position,visible:t>=exit&&t<15.5,x:position.x+run*dx,z:position.z+run*dz,yaw,spread:0,running:run>0};
  });
- const hero={...walk(-8,6,4.55,-1),visible:t>=4.55};
- const boars=[-4,3.8,6.2].map((x,i)=>{const sx=[-9,0,10][i],sz=[-23,-26,-24][i],z=[6,6.7,5.7][i],enter=ease((t-(8+i*.18))/3.9),run=ease((t-12)/3.2),side=i===0?-1:1,dx=side*(25+i*3),dz=-16-i*2;return {visible:t>=8+i*.18&&t<15.5,x:lerp(sx,x,enter)+run*dx,z:lerp(sz,z,enter)+run*dz,yaw:run>0?Math.atan2(dx,dz):Math.atan2(x-sx,z-sz),scale:.82+.18*enter}});
+ const heroRun=Math.max(0,Math.min(4.4,t-10.6));
+ const hero={...walk(-8,6,4.55,-1),visible:t>=4.55,x:walk(-8,6,4.55,-1).x-heroRun*4,z:walk(-8,6,4.55,-1).z+heroRun*2.3,running:t>10.6&&t<15};
+ const boars=[-4,3.8,6.2].map((x,i)=>{const sx=[-9,0,10][i],sz=[-23,-26,-24][i],z=[6,6.7,5.7][i],enter=ease((t-(8+i*.18))/3.9),run=ease((t-12)/3.2),side=i===0?-1:1,dx=side*(25+i*3),dz=-16-i*2;return {visible:t>8+i*.18&&t<15.5,x:lerp(sx,x,enter)+run*dx,z:lerp(sz,z,enter)+run*dz,yaw:run>0?Math.atan2(dx,dz):Math.atan2(x-sx,z-sz),scale:.82+.18*enter}});
  return {carZ:24-14*ease(t/4),headlights:t<4.1,people,hero,boars,blanketVisible:t>=6.1,blanketScale:.02+.98*ease((t-6.1)/1.4),foodVisible:t>=7.6};
 }
 
