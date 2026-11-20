@@ -27,8 +27,9 @@ function playCinematic(kind,onDone,detail={}){
   const sequence=new IntroSequence(performance.now());runtime.movie.introSequence=sequence;fillControls(runtime.$('cinematicControls'),runtime.mobile);
   const render=()=>{clearTimeout(storyTimer);const story=sequence.phase==='story';text.hidden=!story;text.textContent=sequence.current.text;lesson.hidden=story;(story?overlay:lesson).append(next);progress.hidden=false;progress.textContent=story?'История · '+(sequence.index+1)+' / '+INTRO_STORY.length:'Теперь — управление';next.hidden=false;next.textContent=story?(sequence.index===INTRO_STORY.length-1?'Продолжить → Управление':'Дальше →'):'Продолжить →';skip.hidden=!story;skip.textContent='К управлению →';
    if(story){
-    const countdown=document.createElement('span');countdown.id='cinematicTimer';countdown.setAttribute('aria-hidden','true');progress.append(countdown);
-    storyTimer=setTimeout(()=>{if(runtime.movie?.introSequence===sequence)next.click()},12000);
+    const countdownMs=10000;
+    const countdown=document.createElement('span');countdown.id='cinematicTimer';countdown.style.setProperty('--intro-countdown',countdownMs+'ms');countdown.setAttribute('aria-hidden','true');progress.append(countdown);
+    storyTimer=setTimeout(()=>{if(runtime.movie?.introSequence===sequence)next.click()},countdownMs);
    }
   };
   next.onclick=()=>{if(sequence.advance(performance.now()))finish();else {if(sequence.phase==='story'&&sequence.index===2)runtime.softBoarAttackSound();render()}};
