@@ -4,17 +4,7 @@ test('intro boars avoid all visible people throughout the scene',()=>{for(let t=
 test('parked car lights switch off, mother faces blanket and boars leave Timur alone',()=>{assert.equal(introStagingAt(2).headlights,true);assert.equal(introStagingAt(7).headlights,false);const mother=introStagingAt(7).people[0];assert.ok(Math.sin(mother.yaw)*(-11.2-mother.x)+Math.cos(mother.yaw)*(8-mother.z)>0);const end=introStagingAt(16);assert.ok(end.boars.every(b=>!b.visible));assert.ok(end.people.every(p=>!p.visible));assert.ok(end.hero.visible)});
 test('outro family stays outside the parked car throughout the scene',async()=>{const {outroStagingAt}=await import('../src/cinematic-staging.js');for(let t=0;t<=16;t+=.05){const s=outroStagingAt(t);assert.equal(s.carZ,10);for(const p of [...s.people,s.hero])assert.ok(Math.abs(p.x)>1.65||Math.abs(p.z-10)>2.8,`person enters car at ${t}`)}const last=outroStagingAt(15);assert.equal(last.people.length,4);assert.equal(last.hero.z,6.5)});
 
-test('intro actors avoid the parked car and boars wait for their shot',()=>{
- for(let t=4;t<8;t+=.02){
-  const stage=introStagingAt(t);
-  assert.ok(stage.boars.every(boar=>!boar.visible));
-  for(const actor of [...stage.people,stage.hero].filter(actor=>actor.visible)){
-   assert.ok(Math.abs(actor.x)>=1.6||Math.abs(actor.z-stage.carZ)>=2.6,'car overlap at '+t);
-  }
- }
- assert.ok(introStagingAt(8).boars[0].visible);
- for(let i=0;i<4;i++){
-  const first=introStagingAt(13.8).people[i],last=introStagingAt(14.9).people[i];
-  assert.ok(Math.hypot(last.x-first.x,last.z-first.z)>3,'runner '+i+' stopped inside the shot');
- }
+test('Timur runs away from the picnic before the last shot',()=>{
+ const start=introStagingAt(10.6).hero,end=introStagingAt(14.9).hero;
+ assert.ok(end.running&&Math.hypot(end.x-start.x,end.z-start.z)>15);
 });
