@@ -1,3 +1,4 @@
+import {performanceRegressions} from './performance-gate.mjs';
 import {chromium} from 'playwright';
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
@@ -36,3 +37,5 @@ try{
  await page.close();
  }
 }finally{fs.mkdirSync('logs',{recursive:true});fs.writeFileSync('logs/frame-profile.json',JSON.stringify(reports,null,2));await browser.close()}
+
+const issues=performanceRegressions(reports);fs.writeFileSync('logs/performance-gate.json',JSON.stringify({issues},null,2));console.log('PERFORMANCE_GATE',JSON.stringify({issues}));assert.deepEqual(issues,[],'CPU performance regression');
