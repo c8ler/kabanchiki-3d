@@ -36,7 +36,11 @@ jobs:
           node scripts/serve.mjs 8080 > /tmp/release-server.log 2>&1 &
           mkdir -p logs screenshots
           chown pwuser:pwuser logs screenshots
-          runuser -u pwuser -- node scripts/release-audit-browser.mjs
+          if [ "$BROWSER" = firefox ]; then
+            runuser -u pwuser -- xvfb-run -a node scripts/release-audit-browser.mjs
+          else
+            runuser -u pwuser -- node scripts/release-audit-browser.mjs
+          fi
       - name: Independent route seed
         if: always() && matrix.browser != 'firefox' && steps.sessions.outcome != 'skipped'
         env:
