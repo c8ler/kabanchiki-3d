@@ -5,6 +5,7 @@ for(const engine of [chromium,webkit]){
  page.on('pageerror',e=>errors.push(e.message));
  await page.addInitScript(()=>{
   window.__bootLeak=[];window.__credits226=[];
+  window.__allowMenu226=JSON.parse(localStorage.getItem('kabanchiki3d_campaign')||'{}').introSeen===true;
   const observer=new MutationObserver(()=>{const card=document.getElementById('startupCredits'),text=document.getElementById('startupCreditText')?.textContent;if(card&&!card.hidden&&text&&window.__credits226.at(-1)!==text)window.__credits226.push(text);const menu=document.getElementById('intro');if(!menu||!menu.getClientRects().length)return;if(!window.__allowMenu226)window.__bootLeak.push('menu visible before story completion')});
   observer.observe(document,{subtree:true,attributes:true,childList:true});
  });
