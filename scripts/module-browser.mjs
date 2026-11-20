@@ -21,7 +21,7 @@ for(const engine of [chromium,webkit]){
   assert.equal(await page.evaluate(()=>window.__KABANCHIKI_VERSION__),'v231');assert.equal(await page.evaluate(()=>typeof window.__KABANCHIKI_QA__),'undefined');
   assert.equal(requests.some(url=>url.includes('/src/qa/')),false,'normal startup loads test scenarios');
   await page.evaluate(async()=>{await navigator.serviceWorker.ready});await page.waitForFunction(()=>navigator.serviceWorker.controller,null,{timeout:60000});
-  assert.equal(await page.locator('#loadingVersion').textContent(),'0.696');
+  assert.equal(await page.title(),'Кабанчики 3D 0.696');
   assert.equal(await page.locator('#versionSecret').textContent(),'0.696');
   const cached=await page.evaluate(async()=>{const cache=await caches.open('kabanchiki-pwa-v232');return (await cache.keys()).map(r=>r.url)});
   assert.ok(cached.filter(url=>url.includes('/src/runtime/')).length>=73);
