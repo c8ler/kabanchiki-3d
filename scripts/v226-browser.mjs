@@ -33,7 +33,7 @@ for(const engine of [chromium,webkit]){
   assert.equal(await page.locator('#intro').isVisible(),false);assert.equal(await page.locator('#intro').evaluate(el=>el.inert),true);
   const shot=await page.screenshot({path:'screenshots/v226-'+engine.name()+'-opening.jpg',type:'jpeg',quality:45}),data=shot.toString('base64');for(let i=0;i<data.length;i+=6000)console.log('REVIEW_IMAGE:v226-'+engine.name()+'-opening:'+i/6000+':'+data.slice(i,i+6000));
   for(const scene of INTRO_STORY){assert.equal(await page.locator('#intro').isVisible(),false);assert.equal(await page.locator('#cinematicText').textContent(),scene.text);await page.locator('#cinematicNext').click()}
-  assert.equal(await page.locator('#cinematicLesson').isVisible(),true);assert.deepEqual(await page.evaluate(()=>window.__bootLeak),[]);
+  assert.equal(await page.locator('#cinematicLesson').isVisible(),true);assert.equal(await page.locator('#cinematicLesson #cinematicNext').count(),1);assert.deepEqual(await page.evaluate(()=>window.__bootLeak),[]);
   await page.evaluate(()=>window.__allowMenu226=true);await page.locator('#cinematicNext').click();
   await page.locator('#intro').waitFor({state:'visible'});assert.equal(await page.locator('#intro').evaluate(el=>el.inert),false);
   await page.locator('#watchIntro').click();assert.equal(await page.locator('#startupCredits').isVisible(),false);assert.equal(await page.locator('#cinematicText').textContent(),INTRO_STORY[0].text);
