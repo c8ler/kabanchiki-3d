@@ -4425,5 +4425,6 @@ export const GAME_SOURCES=[
   "src/qa/qa-19.js",
   "src/qa/release-audit.js",
   "src/qa/deep-audit.js",
-  "src/qa/audit-observer.js"
+  "src/qa/audit-observer.js",
+  "src/qa/resource-watch.js"
 ];
