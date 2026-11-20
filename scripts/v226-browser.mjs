@@ -32,8 +32,8 @@ for(const engine of [chromium,webkit]){
   await page.locator('#cinematic').waitFor({state:'visible',timeout:120000});
   assert.deepEqual(await page.evaluate(()=>window.__credits226),['Made by c8ler','Powered by ChatGPT']);assert.equal(await page.locator('#startupCredits button').count(),0);assert.equal(await page.locator('canvas#startupCreditText').count(),1);
   assert.equal(await page.locator('#intro').isVisible(),false);assert.equal(await page.locator('#intro').evaluate(el=>el.inert),true);
-  const shot=await page.screenshot({path:'screenshots/v226-'+engine.name()+'-opening.jpg',type:'jpeg',quality:45}),data=shot.toString('base64');for(let i=0;i<data.length;i+=6000)console.log('REVIEW_IMAGE:v226-'+engine.name()+'-opening:'+i/6000+':'+data.slice(i,i+6000));
   for(const scene of INTRO_STORY){assert.equal(await page.locator('#intro').isVisible(),false);assert.equal(await page.locator('#cinematicText').textContent(),scene.text);await page.locator('#cinematicNext').click()}
+  const shot=await page.screenshot({path:'screenshots/v226-'+engine.name()+'-controls.jpg',type:'jpeg',quality:45}),data=shot.toString('base64');for(let i=0;i<data.length;i+=6000)console.log('REVIEW_IMAGE:v226-'+engine.name()+'-controls:'+i/6000+':'+data.slice(i,i+6000));
   assert.equal(await page.locator('#cinematicLesson').isVisible(),true);assert.equal(await page.locator('#cinematicLesson #cinematicNext').count(),1);assert.deepEqual(await page.evaluate(()=>window.__bootLeak),[]);
   await page.evaluate(()=>window.__allowMenu226=true);await page.locator('#cinematicNext').click();
   await page.locator('#intro').waitFor({state:'visible'});assert.equal(await page.locator('#intro').evaluate(el=>el.inert),false);
