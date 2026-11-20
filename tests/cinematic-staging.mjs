@@ -18,3 +18,12 @@ test('intro actors avoid the parked car and boars wait for their shot',()=>{
   assert.ok(Math.hypot(last.x-first.x,last.z-first.z)>3,'runner '+i+' stopped inside the shot');
  }
 });
+
+test('intro boars keep running until the camera cuts away',()=>{
+ const before=introStagingAt(14.7).boars,end=introStagingAt(14.95).boars;
+ for(let i=0;i<end.length;i++){
+  assert.ok(end[i].visible);
+  assert.ok(Math.hypot(end[i].x-before[i].x,end[i].z-before[i].z)>1);
+ }
+ assert.ok(introStagingAt(15).boars.every(boar=>!boar.visible));
+});
