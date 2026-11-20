@@ -9,7 +9,7 @@ export function drawStartupCredit(canvas,index,progress,{reducedMotion=false,pix
  const width=Math.round(w*ratio),height=Math.round(h*ratio);
  if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height}
  ctx.setTransform(1,0,0,1,0,0);ctx.globalAlpha=1;ctx.fillStyle='#000';ctx.fillRect(0,0,width,height);
- const t=clamp(progress),fade=ease(t/.18)*ease((1-t)/.20),scale=Math.min(w/820,h/440);
+ const t=clamp(progress),fade=ease(t/.18)*ease((1-t)/.20),scale=Math.min(w/820,h/440,0.85);
  ctx.setTransform(ratio*scale,0,0,ratio*scale,width/2,height/2);
  ctx.globalAlpha=fade;ctx.strokeStyle=index?'#acd8c8':'#e9e4da';ctx.fillStyle=ctx.strokeStyle;ctx.lineWidth=2.5;
  ctx.save();ctx.translate(0,-142);
