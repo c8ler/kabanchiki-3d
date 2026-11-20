@@ -10,7 +10,7 @@ import {createModule as createSceneryLayout} from './runtime/scenery-layout.js?v
 import {createModule as createVillage} from './runtime/village.js?v=222';
 import {createModule as createBiomes} from './runtime/biomes.js?v=222';
 import {createModule as createStormState} from './runtime/storm-state.js?v=222';
-import {createModule as createStormDamage} from './runtime/storm-damage.js?v=225';
+import {createModule as createStormDamage} from './runtime/storm-damage.js?v=231';
 import {createModule as createLightningWeather} from './runtime/lightning-weather.js?v=223';
 import {createModule as createLakeScenery} from './runtime/lake-scenery.js?v=222';
 import {createModule as createCharacter} from './runtime/character.js?v=222';
@@ -30,7 +30,7 @@ import {createModule as createHome} from './runtime/home.js?v=222';
 import {createModule as createAdventureWorld} from './runtime/adventure-world.js?v=231';
 import {createModule as createCreative} from './runtime/creative.js?v=231';
 import {createModule as createCrafting} from './runtime/crafting.js?v=229';
-import {createModule as createBombs} from './runtime/bombs.js?v=228';
+import {createModule as createBombs} from './runtime/bombs.js?v=231';
 import {createModule as createLevelLifecycle} from './runtime/level-lifecycle.js?v=231';
 import {createModule as createFeeding} from './runtime/feeding.js?v=231';
 import {createModule as createExitBarriers} from './runtime/exit-barriers.js?v=222';
