@@ -2,7 +2,7 @@ import {chromium,webkit,firefox} from 'playwright';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 const engine=process.env.BROWSER||'chromium',seed=Number(process.env.RELEASE_SEED||1901);
-const browser=await ({chromium,webkit,firefox}[engine]).launch({headless:true});
+const browser=await ({chromium,webkit,firefox}[engine]).launch(engine==='firefox'?{headless:false,firefoxUserPrefs:{'webgl.force-enabled':true},env:{...process.env,LIBGL_ALWAYS_SOFTWARE:'1'}}:{headless:true});
 fs.mkdirSync('logs',{recursive:true});fs.mkdirSync('screenshots',{recursive:true});
 const report={engine,seed,checks:[],warnings:[],errors:[],metrics:[]};
 const page=await browser.newPage({serviceWorkers:'block',viewport:engine==='webkit'?{width:360,height:640}:{width:1280,height:720},...(engine==='webkit'?{isMobile:true,hasTouch:true}:{})});
@@ -87,6 +87,6 @@ try{
   await page.screenshot({path:'screenshots/release-'+engine+'-session.png'});
  });
  await check('runtime-errors',async()=>{assert.deepEqual(report.errors,[]);assert.deepEqual(await page.evaluate(()=>window.__releaseRejections||[]),[])});
-}finally{clearTimeout(watchdog);save();await browser.close()}
+}catch(error){console.error('RELEASE_FATAL',JSON.stringify({message:error.message,errors:report.errors,body:await page.locator('body').innerText().catch(()=>''),version:await page.evaluate(()=>window.__KABANCHIKI_VERSION__).catch(()=>null)}));throw error}finally{clearTimeout(watchdog);save();await browser.close()}
 console.log('RELEASE_SUMMARY',JSON.stringify({engine,checks:report.checks,warnings:report.warnings}));
 if(report.checks.some(c=>!c.ok))process.exitCode=1;
