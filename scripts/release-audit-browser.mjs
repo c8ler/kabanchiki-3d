@@ -38,7 +38,7 @@ try{
  await check('pause-clock',async()=>{
   await qa('releaseSetup',3,false);const time=await qa('releaseTime');await page.waitForTimeout(700);assert.equal(await qa('releaseTime'),time);
   await qa('releaseLive',true);await page.waitForTimeout(700);const progressed=await qa('releaseTime');assert.ok(progressed>time);
-  await qa('releasePause');await page.waitForTimeout(700);assert.equal(await qa('releaseTime'),progressed);
+  const paused=await qa('releasePause');await page.waitForTimeout(700);assert.equal(await qa('releaseTime'),paused.before);
  });
  await check('real-frame-profile',async()=>{
   for(let level=1;level<=7;level++){
@@ -67,7 +67,7 @@ try{
     await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
     samples.push(await qa('releaseInspect'));
    }
-   rounds.push(samples);report.metrics.push({kind:'transition-round',round,samples});
+   rounds.push(samples);report.metrics.push({kind:'transition-round',round,samples});console.log('RELEASE_RESOURCES',engine,round,JSON.stringify(samples.map(s=>({level:s.level,scene:s.sceneChildren,memory:s.memory}))));
   }
   for(let i=0;i<7;i++){
    const warm=rounds[1][i],end=rounds[3][i];
