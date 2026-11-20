@@ -78,12 +78,10 @@ try{chosenSeason=localStorage.getItem('kabanchiki3d_chosen_season')}catch{}
 
 if(unlockedSeasons().includes(chosenSeason))currentSeason=chosenSeason;else chosenSeason=null;
 
-// v103: GAME_VERSION is the single runtime source of truth for every visible version label.
 window.__KABANCHIKI_VERSION__=GAME_VERSION;
 
-for(const id of ['loadingVersion']){const el=document.getElementById(id);if(el)el.textContent=GAME_VERSION;}
 
-document.title=`Кабанчики 3D ${GAME_VERSION}`;
+document.title=`Кабанчики 3D ${window.__KABANCHIKI_RELEASE__ ?? GAME_VERSION}`;
 
 /* init:const */ SUPABASE_URL = 'https://usszaimdbepgexnigiau.supabase.co';
 

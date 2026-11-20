@@ -58,7 +58,12 @@ import vm from 'node:vm';
 test('offline cache covers the complete production module graph without duplicate requests',async()=>{
  const handlers={},requests=[],origin='https://example.test/kabanchiki-3d/';
  const worker=fs.readFileSync(new URL('../service-worker.js',import.meta.url),'utf8');
- vm.runInNewContext(worker,{URL,self:{registration:{scope:origin},addEventListener:(name,fn)=>handlers[name]=fn,skipWaiting:()=>{}},caches:{open:async()=>({addAll:async urls=>requests.push(...urls)})}});
+ vm.runInNewContext(worker,{URL,Request,self:{registration:{scope:origin},addEventListener:(name,fn)=>handlers[name]=fn,skipWaiting:()=>{}},caches:{open:async()=>({addAll:async entries=>{
+  for(const request of entries){
+   assert.equal(request.cache, "reload");
+   requests.push(request.url);
+  }
+ }})}});
  let installed;handlers.install({waitUntil:p=>{installed=p}});await installed;
  assert.equal(new Set(requests).size,requests.length);
  const visited=new Set(),walk=path=>{
