@@ -1,3 +1,4 @@
+import {captureSceneResources,disposeDetachedResources} from '../scene-resources.js?v=230';
 import * as THREE from '../../vendor/three/three.module.min.js';
 import {parseCheatCode} from '../cheat-codes.js?v=228';
 import {createIsland,islandDepth,SECRET_LEVEL} from '../creative-island.js?v=222';
@@ -23,7 +24,7 @@ export function createModule(runtime){
   if(sandboxVisual){sandboxVisual.visible=false;for(const m of sandboxVisual.userData.solids){const index=runtime.treeSolidMeshes.indexOf(m);if(index>=0)runtime.treeSolidMeshes.splice(index,1)}for(const entry of sandboxVisual.userData.rocks){const index=runtime.rockPositions.indexOf(entry);if(index>=0)runtime.rockPositions.splice(index,1)}}
   runtime.syncSeasonChoices();runtime.weatherBaseSky=null;runtime.worldEpoch++;runtime.wallCacheEpoch=-1;
  }
- function enterSandbox(dream=false){runtime.resetCaravan(7);
+ function enterSandbox(dream=false){const previousResources=captureSceneResources(runtime.scene);try{runtime.resetCaravan(7);
   runtime.stopIslandFlight();
   if(!dream){if(runtime.dreamVisit?.active)runtime.wakeFromDream();leaveSandbox();sandboxReturnSeason=runtime.currentSeason;runtime.loadLevel(2)}else sandboxReturnSeason=runtime.currentSeason;sandboxMode=true;craftUnlocked=homeUnlocked=true;runtime.level=SECRET_LEVEL;
   runtime.clearEntities(runtime.foes);runtime.clearEntities(runtime.familyMembers);runtime.clearEntities(runtime.friends);
@@ -48,7 +49,7 @@ export function createModule(runtime){
   runtime.rebuildWorldSurface();runtime.refreshBlastSurface();runtime.adventureInventory.wood=runtime.adventureInventory.wool=runtime.adventureInventory.bombs=0;runtime.life=runtime.diffCfg().playerHP;runtime.invuln=999;runtime.syncCraftUI();runtime.hud();
   runtime.notice('✨ Секретный остров. В меню читов создавай зверьков и строй всё, что захочешь. Припасы подбирай из цветных ящиков на острове.');
   return true;
- }
+ }finally{disposeDetachedResources(previousResources,runtime.scene)}}
  function updateCreative(dt){if(!sandboxMode)return;for(const q of sandboxVisual.userData.supplies){if(q.left>0){q.left=Math.max(0,q.left-dt);q.g.visible=q.left===0;continue}if(q.g.position.distanceTo(runtime.boy.position)>1.6)continue;if(q.kind==='food'&&runtime.food>=runtime.foodCapacity())continue;if(q.kind==='food')runtime.food=Math.min(runtime.foodCapacity(),runtime.food+q.count);else runtime.adventureInventory[q.kind==='bomb'?'bombs':q.kind]+=q.count;q.left=45;q.g.visible=false;runtime.notice(({wood:'🪵 Ветки',wool:'🧶 Шерсть',food:'🍎 Еда',bomb:'💣 Бомбочки'})[q.kind]+' +'+q.count);runtime.syncCraftUI();runtime.hud()}for(const m of sandboxVisual.userData.mushrooms){if(m.spent)continue;if(m.left===null&&Math.hypot(runtime.boy.position.x-m.x,runtime.boy.position.z-m.z)<3.6){m.left=1.8;runtime.notice('🍄 Гриб сейчас взорвётся! Отойди!')}if(m.left!==null){m.left-=dt;m.cap.scale.y=.45+Math.sin(m.left*22)*.07;if(m.left<=0){m.spent=true;for(const part of m.parts)part.visible=false;const index=runtime.treeSolidMeshes.indexOf(m.stem);if(index>=0)runtime.treeSolidMeshes.splice(index,1);const g=runtime.bombModel(runtime.scene),ring=new THREE.Mesh(new THREE.RingGeometry(1,1.1,8),runtime.blastRingMat);runtime.scene.add(ring);runtime.explodeAdventureBomb({x:m.x,y:runtime.terrainHeightAt(m.x,m.z),z:m.z,g,ring});runtime.worldEpoch++}}}runtime.life=runtime.diffCfg().playerHP;runtime.invuln=999;runtime.weatherGroup.visible=false;if(sandboxVisual?.userData.ring)sandboxVisual.userData.ring.rotation.z+=dt*.08}
  function applyCheat(value){
   const code=parseCheatCode(value),result=runtime.$('cheatResult');
