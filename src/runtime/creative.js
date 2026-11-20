@@ -1,4 +1,4 @@
-import {captureSceneResources,disposeDetachedResources} from '../scene-resources.js?v=231';
+import {captureSceneResources,disposeDetachedResources,removeSceneObject} from '../scene-resources.js?v=231';
 import * as THREE from '../../vendor/three/three.module.min.js';
 import {parseCheatCode} from '../cheat-codes.js?v=228';
 import {createIsland,islandDepth,SECRET_LEVEL} from '../creative-island.js?v=222';
@@ -35,7 +35,7 @@ export function createModule(runtime){
   runtime.lakeVisual.visible=runtime.riverVisual.visible=runtime.forestVisual.visible=runtime.forestGround.visible=false;
   for(const t of runtime.treeObjects)t.visible=false;for(const [,,,m]of runtime.rockPositions)if(m)m.visible=false;
   for(const o of runtime.biomeObjects)o.visible=false;
-  for(const a of runtime.apples)runtime.scene.remove(a.g);runtime.apples.length=0;
+  for(const a of runtime.apples)removeSceneObject(runtime.scene,a.g);runtime.apples.length=0;
   for(const a of runtime.adventurePickups)if(dream)a.g.removeFromParent();else runtime.disposePickupVisual(a.g);runtime.adventurePickups.length=0;
   sandboxVisual??=createIsland(THREE,runtime.mats);if(!sandboxVisual.parent)runtime.scene.add(sandboxVisual);sandboxVisual.visible=true;for(const q of sandboxVisual.userData.supplies){q.left=0;q.g.visible=true}for(const m of sandboxVisual.userData.mushrooms){m.spent=false;m.left=null;for(const part of m.parts)part.visible=true;m.cap.scale.y=.45}
   runtime.treeSolidMeshes.push(...sandboxVisual.userData.solids);runtime.rockPositions.push(...sandboxVisual.userData.rocks);
@@ -61,7 +61,7 @@ export function createModule(runtime){
   const supply=()=>{runtime.adventureInventory.wood=200;runtime.adventureInventory.wool=200;runtime.food=runtime.foodCapacity();runtime.home.wood=Math.max(8,runtime.home.wood)};
   if(code.type==='sandbox'){enterSandbox();result.textContent='✨ Секретный остров открыт. Нажми «Продолжить».'}
   else if(code.type==='level'){
-   for(const shot of runtime.shots)runtime.scene.remove(shot.g);runtime.shots.length=0;runtime.throwCooldown=0;runtime.endBoarForm();
+   for(const shot of runtime.shots)removeSceneObject(runtime.scene,shot.g);runtime.shots.length=0;runtime.throwCooldown=0;runtime.endBoarForm();
    runtime.life=runtime.diffCfg().playerHP;runtime.invuln=3;runtime.py=runtime.vy=0;runtime.hasFlashlight=false;runtime.torch.intensity=0;runtime.loadLevel(code.level);
    result.textContent='Локация '+code.level+': '+runtime.levels[code.level-1]+'. Нажми «Продолжить».';
   }else if(code.type==='craft'){craftUnlocked=true;supply();runtime.$('craftPanel').hidden=false;runtime.$('craftPanel').open=true;result.textContent='⚒ Мастерская открыта. Создай предмет и вернись в игру: T — поставить, Z — повернуть.'}
@@ -75,11 +75,11 @@ export function createModule(runtime){
   else if(code.type==='spawnSpider'){const n=runtime.spawnCheatSpiders();result.textContent=n?'🕷 Выпущено пауков: '+n+'. Они плетут паутину и опасно кусаются. Прыжок стряхивает паука с Тимура.':'🕷 Не получилось выпустить: лимит 12 пауков или рядом только вода.'}
   else if(code.type==='spawnCat'||code.type==='spawnDog'){craftUnlocked=true;const added=runtime.craftWorld.addStock(code.type==='spawnCat'?'cat':'dog');result.textContent=added?'Спутник подготовлен. Вернись в игру: T — выпустить перед собой.':'🐾 Лимит: всего два читерских котика и собаки, включая подготовленных.'}
   else if(code.type==='friend'){
-   if(!runtime.friend&&!runtime.creatureRoom(1,true)){result.textContent='Лимит: 16 существ на карте.';return false}if(runtime.friend?.g)runtime.scene.remove(runtime.friend.g);const q=runtime.nearestSafeSpawn(runtime.boy.position.x+3,runtime.boy.position.z,.9,{allowRoad:true})||[0,12];
+   if(!runtime.friend&&!runtime.creatureRoom(1,true)){result.textContent='Лимит: 16 существ на карте.';return false}if(runtime.friend?.g)removeSceneObject(runtime.scene,runtime.friend.g);const q=runtime.nearestSafeSpawn(runtime.boy.position.x+3,runtime.boy.position.z,.9,{allowRoad:true})||[0,12];
    runtime.friend=runtime.makeBoar(q[0],q[1],true);runtime.friendHP=runtime.diffCfg().friendHP;result.textContent='🐗 Кабанчик-друг рядом.';
   }else if(code.type==='tornado'){const made=runtime.tornadoState.schedule(runtime.levelTime);result.textContent=made?'🌪 Торнадо появится через 15 секунд игры. Нажми «В игру».':'🌪 Торнадо уже вызвано.';if(made)runtime.notice('🌪 До вызванного торнадо 15 секунд!')}
   else if(code.type==='bomb'){runtime.adventureInventory.bombs++;result.textContent='💣 Получена 1 бомбочка. Нажми «Продолжить», затем G или кнопку 💣.'}
-  else if(code.type==='light'){runtime.hasFlashlight=!runtime.hasFlashlight;runtime.torch.intensity=runtime.hasFlashlight?42:0;if(runtime.hasFlashlight){if(runtime.flashlightObj){runtime.scene.remove(runtime.flashlightObj);runtime.flashlightObj=null}result.textContent='Фонарик получен.';}else{if(runtime.flashlightObj)runtime.scene.remove(runtime.flashlightObj);const point=runtime.nearestSafeSpawn(runtime.boy.position.x+Math.sin(runtime.yaw)*2.8,runtime.boy.position.z+Math.cos(runtime.yaw)*2.8,.5)||[runtime.boy.position.x,runtime.boy.position.z];runtime.flashlightObj=runtime.group(point[0],point[1]);runtime.flashlightObj.position.y=runtime.terrainHeightAt(point[0],point[1]);runtime.block(runtime.flashlightObj,runtime.mats.gold,0,.45,0,.35,.35,.8);runtime.block(runtime.flashlightObj,runtime.mats.white,0,.45,.55,.28,.28,.28);runtime.flashlightDropUntil=performance.now()+3000;result.textContent='Фонарик выброшен рядом. Его можно подобрать или вернуть кодом LIGHT.';}}
+  else if(code.type==='light'){runtime.hasFlashlight=!runtime.hasFlashlight;runtime.torch.intensity=runtime.hasFlashlight?42:0;if(runtime.hasFlashlight){if(runtime.flashlightObj){removeSceneObject(runtime.scene,runtime.flashlightObj);runtime.flashlightObj=null}result.textContent='Фонарик получен.';}else{if(runtime.flashlightObj)removeSceneObject(runtime.scene,runtime.flashlightObj);const point=runtime.nearestSafeSpawn(runtime.boy.position.x+Math.sin(runtime.yaw)*2.8,runtime.boy.position.z+Math.cos(runtime.yaw)*2.8,.5)||[runtime.boy.position.x,runtime.boy.position.z];runtime.flashlightObj=runtime.group(point[0],point[1]);runtime.flashlightObj.position.y=runtime.terrainHeightAt(point[0],point[1]);runtime.block(runtime.flashlightObj,runtime.mats.gold,0,.45,0,.35,.35,.8);runtime.block(runtime.flashlightObj,runtime.mats.white,0,.45,.55,.28,.28,.28);runtime.flashlightDropUntil=performance.now()+3000;result.textContent='Фонарик выброшен рядом. Его можно подобрать или вернуть кодом LIGHT.';}}
   else {runtime.cheatSession.mark(code);if(code.form==='boar')runtime.startBoarForm();else if(code.form==='cat')runtime.startCatForm();else runtime.endBoarForm();result.textContent=code.form==='human'?'Тимур снова мальчик.':'Превращение действует, пока не отключишь его кнопкой ×.'}
   runtime.cheatSession.mark(code);runtime.updateCheatMode();runtime.hud();return true;
  }
@@ -91,7 +91,7 @@ export function createModule(runtime){
   else if(code.type==='spawnCat'||code.type==='spawnDog'){const kind=code.type==='spawnCat'?'cat':'dog';for(const item of [...runtime.craftWorld.items])if(item.kind===kind)runtime.craftWorld.remove(item);delete runtime.craftWorld.stock[kind];if(runtime.craftWorld.selected===kind)runtime.craftWorld.selected=''}
   else if(code.type==='caravan'){runtime.resetCaravan()}
   else if(code.type==='tornado'){runtime.tornadoState.cancel();runtime.tornadoVisual.reset()}
-  else if(code.type==='friend'){if(runtime.mountedFriend){runtime.mountedFriend=false;runtime.setRiderPose(false);runtime.rideHop.reset();runtime.py=runtime.vy=0;runtime.boy.position.y=runtime.terrainHeightAt(runtime.boy.position.x,runtime.boy.position.z);runtime.dismountLatch.leave(performance.now())}if(runtime.friend){runtime.scene.remove(runtime.friend.g);runtime.friend=null}}
+  else if(code.type==='friend'){if(runtime.mountedFriend){runtime.mountedFriend=false;runtime.setRiderPose(false);runtime.rideHop.reset();runtime.py=runtime.vy=0;runtime.boy.position.y=runtime.terrainHeightAt(runtime.boy.position.x,runtime.boy.position.z);runtime.dismountLatch.leave(performance.now())}if(runtime.friend){removeSceneObject(runtime.scene,runtime.friend.g);runtime.friend=null}}
   else if(code.type==='bomb'){runtime.adventureInventory.bombs=0;for(const b of runtime.armedBombs){runtime.disposePickupVisual(b.g);b.ring.removeFromParent();b.ring.geometry.dispose()}runtime.armedBombs.length=0}
   else if(code.type==='form'){if(code.form==='cat'&&runtime.catFormTime>0||code.form==='boar'&&runtime.boarFormTime>0)runtime.endBoarForm()}
   else if(code.type==='craft'){craftUnlocked=false;runtime.$('craftPanel').open=false}
