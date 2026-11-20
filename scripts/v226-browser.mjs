@@ -39,9 +39,14 @@ for(const engine of [chromium,webkit]){
   await page.locator('#intro').waitFor({state:'visible'});assert.equal(await page.locator('#intro').evaluate(el=>el.inert),false);
   await page.locator('#watchIntro').click();assert.equal(await page.locator('#startupCredits').isVisible(),false);assert.equal(await page.locator('#cinematicText').textContent(),INTRO_STORY[0].text);
   await page.locator('#cinematicSkip').click();await page.locator('#cinematicNext').click();await page.locator('#intro').waitFor({state:'visible'});
-  // Returning visitors still receive the opening order, without losing campaign progress.
-  await page.reload();await page.locator('#cinematic').waitFor({state:'visible',timeout:120000});assert.equal(await page.locator('#intro').isVisible(),false);
-  assert.deepEqual(await page.evaluate(()=>window.__credits226),['Made by c8ler','Powered by ChatGPT']);
+  await page.reload();await page.locator('#intro').waitFor({state:'visible',timeout:120000});
+  assert.equal(await page.locator('#cinematic').isVisible(),false);
+  assert.equal(await page.locator('#startupCredits').isVisible(),false);
+  assert.deepEqual(await page.evaluate(()=>window.__credits226),[]);
+  const replay=await page.locator('#watchIntro').boundingBox(),play=await page.locator('#start').boundingBox();
+  assert.ok(replay&&play&&replay.y<play.y);
+  const menu=await page.locator('#intro > div').boundingBox();
+  assert.ok(Math.abs(menu.x+menu.width/2-page.viewportSize().width/2)<3);
   assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('kabanchiki3d_campaign')).introSeen),true);
   assert.deepEqual(await page.evaluate(()=>window.__bootLeak),[]);
   assert.deepEqual(errors,[]);console.log('PASS226',engine.name(),'credits → story → controls → menu; no menu flash; replay; returning visitor; portrait');
