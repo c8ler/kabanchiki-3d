@@ -31,3 +31,5 @@ export function removeSceneObjects(scene,objects){
  return disposeDetachedResources(previous,scene);
 }
 export function removeSceneObject(scene,object){return removeSceneObjects(scene,[object])}
+
+export function removeSceneSubtree(scene,object){if(!object?.parent)return{geometries:0,materials:0};const previous=captureSceneResources(object);object.removeFromParent();return disposeDetachedResources(previous,scene)}
