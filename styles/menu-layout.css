@@ -41,3 +41,6 @@
 
 #pauseMenu>div{scroll-padding-block:var(--pause-header,62px) 12px}
 @media(max-width:360px){#pauseMenu .pauseHeader{display:grid;grid-template-columns:auto minmax(0,1fr)}#pauseTitle{grid-column:2;grid-row:1}#pauseBack{grid-column:1;grid-row:1}#pauseMenu .pauseHeader #resume{grid-column:1/-1;grid-row:2;width:100%}#pauseBack[hidden]+#pauseTitle{grid-column:1/-1}}
+
+.menuOverlay,#intro,#pauseMenu,#endScreen,#familyPopup,#statsScreen{justify-content:center}
+#cinematicLesson #cinematicNext{position:static;transform:none;display:block;margin:16px auto 0;max-width:100%}
