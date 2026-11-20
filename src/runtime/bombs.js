@@ -1,3 +1,4 @@
+import {removeSceneObject} from '../scene-resources.js?v=231';
 import { bombFlight } from "../blast-terrain.js?v=222";
 import { RECIPES, blastDamage, advanceFuse, BOMB_FUSE, BOMB_RADIUS } from "../crafting-rules.js?v=222";
 import * as THREE from "../../vendor/three/three.module.min.js";
@@ -23,13 +24,13 @@ function explodeAdventureBomb(b){
 
  const hit=blastDamage(d(runtime.boy.position.x,runtime.boy.position.z),runtime.diffCfg().playerHP);
  if(hit&&runtime.py<3){runtime.life=Math.max(0,runtime.life-hit);runtime.playerHitFeedback('bomb');runtime.notice('💥 Тимур оказался рядом со взрывом!');if(runtime.life<=0)runtime.showEnd(false)}
- if(runtime.friend?.g&&d(runtime.friend.g.position.x,runtime.friend.g.position.z)<BOMB_RADIUS){runtime.friendHP=Math.max(0,runtime.friendHP-2);if(runtime.friendHP===0){if(runtime.mountedFriend){runtime.mountedFriend=false;runtime.setRiderPose(false);runtime.py=runtime.vy=0}runtime.scene.remove(runtime.friend.g);runtime.friend=null;runtime.notice('💔 Друг попал под взрыв.')}}
+ if(runtime.friend?.g&&d(runtime.friend.g.position.x,runtime.friend.g.position.z)<BOMB_RADIUS){runtime.friendHP=Math.max(0,runtime.friendHP-2);if(runtime.friendHP===0){if(runtime.mountedFriend){runtime.mountedFriend=false;runtime.setRiderPose(false);runtime.py=runtime.vy=0}removeSceneObject(runtime.scene,runtime.friend.g);runtime.friend=null;runtime.notice('💔 Друг попал под взрыв.')}}
  for(const f of [...runtime.foes])if(d(f.g.position.x,f.g.position.z)<BOMB_RADIUS){if(f.isBoss){f.stagger=Math.max(f.stagger||0,.6);runtime.bossRage=Math.max(.72,runtime.bossRage-.2)}else runtime.removeAdventureFoe(f,'bomb')}
  for(const obj of runtime.treeObjects)if(obj.visible&&d(obj.position.x,obj.position.z)<BOMB_RADIUS)runtime.destroyAdventureObject(obj,'tree');
  for(const obj of runtime.houseObjects)if(obj.visible&&d(obj.position.x,obj.position.z)<BOMB_RADIUS)runtime.destroyAdventureObject(obj,'house');
  for(const obj of runtime.logObstacles)if(obj.g.visible&&d(obj.g.position.x,obj.g.position.z)<BOMB_RADIUS)runtime.destroyAdventureObject(obj.g,'log');
  for(const item of [...runtime.craftWorld.items])if(item.g.visible&&d(item.g.position.x,item.g.position.z)<BOMB_RADIUS)runtime.craftWorld.remove(item);
- for(const a of runtime.apples)if(!a.done&&d(a.x,a.z)<BOMB_RADIUS){a.done=true;runtime.scene.remove(a.g)}
+ for(const a of runtime.apples)if(!a.done&&d(a.x,a.z)<BOMB_RADIUS){a.done=true;removeSceneObject(runtime.scene,a.g)}
  runtime.disposePickupVisual(b.g);b.ring.removeFromParent();b.ring.geometry?.dispose();const flash=new THREE.Mesh(new THREE.SphereGeometry(1,12,8),new THREE.MeshBasicMaterial({color:0xffbd70,transparent:true,opacity:.65,depthWrite:false}));flash.position.set(b.x,b.y+1,b.z);runtime.scene.add(flash);runtime.blastEffects.push({g:flash,t:0});runtime.softEffectTone(85,.42,'triangle',.04,0,40);runtime.worldEpoch++;if(runtime.sceneryBatches)runtime.sceneryEpoch=runtime.worldEpoch;runtime.hud();
 }
 
