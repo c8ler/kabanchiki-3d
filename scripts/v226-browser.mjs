@@ -38,6 +38,8 @@ for(const engine of [chromium,webkit]){
   await page.evaluate(()=>window.__allowMenu226=true);await page.locator('#cinematicNext').click();
   await page.locator('#intro').waitFor({state:'visible'});assert.equal(await page.locator('#intro').evaluate(el=>el.inert),false);
   await page.locator('#watchIntro').click();assert.equal(await page.locator('#startupCredits').isVisible(),false);assert.equal(await page.locator('#cinematicText').textContent(),INTRO_STORY[0].text);
+  assert.equal(await page.locator('#cinematicTimer').count(),1);
+  await page.waitForFunction(text=>document.getElementById('cinematicText').textContent===text,INTRO_STORY[1].text,{timeout:16000});
   await page.locator('#cinematicSkip').click();await page.locator('#cinematicNext').click();await page.locator('#intro').waitFor({state:'visible'});
   await page.reload();await page.locator('#intro').waitFor({state:'visible',timeout:120000});
   assert.equal(await page.locator('#cinematic').isVisible(),false);
