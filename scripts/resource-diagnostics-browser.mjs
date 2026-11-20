@@ -17,5 +17,5 @@ try{
   fs.writeFileSync('logs/resource-diagnostics.json',JSON.stringify({report,errors},null,2));
   if(resources.orphaned>40)break outer;
  }
- assert.deepEqual(errors,[]);
+ assert.deepEqual(errors,[]);assert.ok(report.at(-1).resources.orphaned<=40,JSON.stringify(report.at(-1).resources));
 }finally{await browser.close()}
