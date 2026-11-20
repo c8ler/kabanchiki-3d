@@ -1,3 +1,4 @@
+import {removeSceneObjects} from '../scene-resources.js?v=231';
 import * as THREE from "../../vendor/three/three.module.min.js";
 
 // Owns 9 bindings. See docs/architecture.md for startup order.
@@ -35,7 +36,7 @@ return {g,b,aura,bolt,eyes,x,z,friendly,done:false,angle:runtime.rand(0,7),phase
  // природные припасы: яблоки, грибы, капуста и лечебные ягоды
 function updateBoarChewing(f,now,active){const jaw=f.g.userData.grazingJaw,grass=f.g.userData.grazingGrass;if(!jaw||!grass)return;grass.visible=active;const chew=active?Math.sin(now*.018+f.phase):0;jaw.position.y=.48+chew*.045;jaw.position.x=chew*.035;grass.rotation.z=chew*.12;grass.position.y=.48+chew*.045;if(active){f.b.rotation.x=.34+Math.sin(now*.004+f.phase)*.035;f.b.position.y=-.10}}
 
-function clearEntities(arr){for(const o of arr)runtime.scene.remove(o.g);arr.length=0}
+function clearEntities(arr){removeSceneObjects(runtime.scene,arr.map(o=>o.g));arr.length=0}
 
 function softCrateSound(){if(!runtime.sfxEnabled)return;try{runtime.audio??=new (window.AudioContext||window.webkitAudioContext)();if(runtime.audio.state==='suspended')runtime.audio.resume();const t=runtime.audio.currentTime;[[330,0,.16,.016],[440,.09,.20,.012],[554,.18,.24,.009]].forEach(([freq,delay,dur,gain])=>{const o=runtime.audio.createOscillator(),g=runtime.audio.createGain();o.type='sine';o.frequency.setValueAtTime(freq,t+delay);o.frequency.exponentialRampToValueAtTime(freq*.92,t+delay+dur);g.gain.setValueAtTime(.0001,t+delay);g.gain.exponentialRampToValueAtTime(gain,t+delay+.035);g.gain.exponentialRampToValueAtTime(.0001,t+delay+dur);o.connect(g).connect(runtime.audioBus('effects'));o.start(t+delay);o.stop(t+delay+dur+.03)})}catch{}}
  return {
