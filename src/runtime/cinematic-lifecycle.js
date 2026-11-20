@@ -18,13 +18,13 @@ function playCinematic(kind,onDone,detail={}){
  runtime.cinematicRunning=true;runtime.paused=true;
  if(runtime.boarFormVisual)runtime.boarFormVisual.visible=false;
  const overlay=runtime.$('cinematic'),text=runtime.$('cinematicText'),next=runtime.$('cinematicNext'),skip=runtime.$('cinematicSkip'),lesson=runtime.$('cinematicLesson'),progress=runtime.$('cinematicProgress');
- overlay.style.display='block';lesson.hidden=true;progress.hidden=true;skip.hidden=false;skip.textContent='⏭ Пропустить заставку';
+ overlay.append(next);overlay.style.display='block';lesson.hidden=true;progress.hidden=true;skip.hidden=false;skip.textContent='⏭ Пропустить заставку';
  runtime.cineSetup(kind,detail);runtime.startCinematicMusic(kind);
  const finish=()=>{if(!runtime.cinematicRunning)return;runtime.cinematicRunning=false;runtime.cinematicFinish=null;runtime.cineClear();runtime.stopCinematicMusic();overlay.style.display='none';lesson.hidden=true;progress.hidden=true;next.hidden=true;skip.hidden=false;onDone?.();if(!runtime.cinematicRunning)runtime.startMusic()};
  runtime.cinematicFinish=finish;
  if(kind==='intro'){
   const sequence=new IntroSequence(performance.now());runtime.movie.introSequence=sequence;fillControls(runtime.$('cinematicControls'),runtime.mobile);
-  const render=()=>{const story=sequence.phase==='story';text.hidden=!story;text.textContent=sequence.current.text;lesson.hidden=story;progress.hidden=false;progress.textContent=story?'История · '+(sequence.index+1)+' / '+INTRO_STORY.length:'Теперь — управление';next.hidden=false;next.textContent=story?(sequence.index===INTRO_STORY.length-1?'Продолжить → Управление':'Дальше →'):'Понятно, продолжить →';skip.hidden=!story;skip.textContent='К управлению →'};
+  const render=()=>{const story=sequence.phase==='story';text.hidden=!story;text.textContent=sequence.current.text;lesson.hidden=story;(story?overlay:lesson).append(next);progress.hidden=false;progress.textContent=story?'История · '+(sequence.index+1)+' / '+INTRO_STORY.length:'Теперь — управление';next.hidden=false;next.textContent=story?(sequence.index===INTRO_STORY.length-1?'Продолжить → Управление':'Дальше →'):'Продолжить →';skip.hidden=!story;skip.textContent='К управлению →'};
   next.onclick=()=>{if(sequence.advance(performance.now()))finish();else {if(sequence.phase==='story'&&sequence.index===2)runtime.softBoarAttackSound();render()}};
   skip.onclick=()=>{sequence.skipStory();render()};render();return;
  }
