@@ -1,0 +1,95 @@
+name: Deep game audit
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      soak_minutes:
+        description: Real soak duration, 30–60 minutes
+        default: '30'
+  schedule:
+    - cron: '41 3 * * 6'
+permissions:
+  contents: read
+concurrency:
+  group: deep-audit-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  mutation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm test
+      - run: node scripts/mutation-audit.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mutation-audit
+          path: logs/
+          retention-days: 7
+  scenarios:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+      options: --ipc=host
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, webkit, firefox]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save --package-lock=false playwright@1.56.1
+      - name: Seeded fuzz and combinations
+        env:
+          BROWSER: ${{ matrix.browser }}
+          AUDIT_SEED: '1901'
+        run: |
+          node scripts/serve.mjs 8080 > /tmp/deep-server.log 2>&1 &
+          mkdir -p logs
+          chown pwuser:pwuser logs
+          if [ "$BROWSER" = firefox ]; then
+            runuser -u pwuser -- xvfb-run -a node scripts/deep-audit-browser.mjs
+          else
+            runuser -u pwuser -- node scripts/deep-audit-browser.mjs
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: deep-audit-${{ matrix.browser }}
+          path: logs/
+          retention-days: 7
+  soak:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+      options: --ipc=host
+    timeout-minutes: 80
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save --package-lock=false playwright@1.56.1
+      - name: Real continuous session
+        env:
+          BROWSER: chromium
+          AUDIT_SEED: '20261120'
+          SOAK_MINUTES: ${{ inputs.soak_minutes || '30' }}
+        run: |
+          node scripts/serve.mjs 8080 > /tmp/soak-server.log 2>&1 &
+          mkdir -p logs
+          chown pwuser:pwuser logs
+          runuser -u pwuser -- node scripts/soak-audit-browser.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: soak-audit
+          path: logs/
+          retention-days: 7
