@@ -27,7 +27,7 @@ export function createQaPart(runtime){
   deepTornadoFood(){
    this.deepSetup(3);for(const a of runtime.apples)runtime.disposePickupVisual(a.g);runtime.apples.length=0;
    let disposed=0;const owned=new Set();
-   for(let i=0;i<3;i++){const a=runtime.makeForage('apple',i*.15,0);a.g.traverse(m=>{if(m.geometry&&m.geometry!==runtime.cube)owned.add(m.geometry)});runtime.apples.push(a)}
+   for(let i=0;i<3;i++){runtime.makeForage('berry',i*.15,0);const a=runtime.apples.at(-1);a.g.traverse(m=>{if(m.geometry&&m.geometry!==runtime.cube)owned.add(m.geometry)})}
    for(const g of owned)g.addEventListener('dispose',()=>disposed++);
    runtime.boy.position.set(30,0,30);runtime.tornadoVisual.reset();runtime.tornadoState.active=true;runtime.tornadoState.x=runtime.tornadoState.z=0;runtime.tornadoSweep=0;
    runtime.updateTornado(0,performance.now());runtime.paused=true;
